@@ -24,15 +24,22 @@ Edu-match/
 
 ---
 
-## 관리자 계정
+## 관리자 인증
 
-| 항목 | 값 |
-|------|----|
-| ID | `admin1124` |
-| PW | `1124` |
+관리자 ID/PW 는 **Supabase Edge Function `em-admin-auth`** 의 환경 변수
+(`EDUMATCH_ADMIN_ID`, `EDUMATCH_ADMIN_PW`, `EDUMATCH_ADMIN_JWT_SECRET`)
+로 관리됩니다. 소스 코드에는 어떤 자격증명도 포함되지 않습니다.
 
-로그인 → 관리자 탭 → 위 정보 입력 → `admin.html` 진입.
-세션은 `localStorage` (`edumatch_admin_session`) 에 저장됩니다.
+로그인 흐름:
+1. 로그인 페이지 → 관리자 탭 → ID/PW 입력
+2. 프론트엔드가 `em-admin-auth` 에 POST (`action=login`)
+3. Edge Function 이 자격증명을 검증하고 HS256 HMAC 서명된 8시간짜리 세션 토큰 발급
+4. 토큰은 `localStorage` (`edumatch_admin_token`) 에 저장
+5. `admin.html` 진입 시 `action=verify` 로 서버에서 토큰 유효성 재검증
+
+초기 자격증명은 프로젝트 관리자에게 문의하세요.
+운영 시에는 Supabase Dashboard → Functions → Secrets 에서 반드시 교체해야 합니다.
+시크릿 경로: <https://supabase.com/dashboard/project/pkwbqbxuujpcvndpacsc/functions/secrets>
 
 ---
 
@@ -101,6 +108,7 @@ python -m http.server 8080
 
 ## 보안 참고
 
-- 관리자 계정은 프론트엔드 하드코딩입니다. 운영 전 Edge Function + service_role 기반 인증 교체 권장.
-- 현재 `em_*` 테이블은 public CRUD 정책입니다. 운영 전 RLS 정책 강화 필요.
+- 관리자 자격증명은 Edge Function (`em-admin-auth`) 의 서버 측 시크릿에만 존재합니다. 프론트엔드에는 어떤 크리덴셜도 포함되지 않습니다.
+- 초기 기본 시크릿(`EDUMATCH_ADMIN_JWT_SECRET`) 은 반드시 운영 환경에서 고유 랜덤 값으로 교체하세요.
+- 현재 `em_*` 테이블은 public CRUD RLS 정책입니다. 운영 전 정책 강화 필요.
 - Gemini API 키는 Edge Function Secrets 에만 존재하며 클라이언트에 노출되지 않습니다.

@@ -4,7 +4,7 @@
 // 관리자 세션 검증 + Supabase CRUD + Gemini 기반 공고 생성
 // =========================================================
 
-(function () {
+(async function () {
   const em = window.EduMatch || {};
   const supabase = em.supabase;
   const TABLES = em.TABLES || {
@@ -14,12 +14,21 @@
     profiles: "em_profiles",
   };
 
-  // ---------- 세션 가드 ----------
-  function isAdminLoggedIn() {
-    return localStorage.getItem("edumatch_admin_session") === "true";
+  // ---------- 세션 가드 (Edge Function 검증) ----------
+  if (typeof em.adminVerify !== "function" || typeof em.getAdminToken !== "function") {
+    alert("관리자 인증 모듈이 로드되지 않았습니다.");
+    window.location.href = "./login.html";
+    return;
   }
-  if (!isAdminLoggedIn()) {
+  if (!em.getAdminToken()) {
     alert("관리자 인증이 필요합니다. 로그인 페이지로 이동합니다.");
+    window.location.href = "./login.html";
+    return;
+  }
+  const ok = await em.adminVerify();
+  if (!ok) {
+    em.clearAdminToken && em.clearAdminToken();
+    alert("관리자 세션이 만료되었습니다. 다시 로그인해주세요.");
     window.location.href = "./login.html";
     return;
   }
@@ -38,7 +47,7 @@
   const logoutBtn = document.getElementById("admin-logout");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("edumatch_admin_session");
+      em.clearAdminToken && em.clearAdminToken();
       window.location.href = "./index.html";
     });
   }

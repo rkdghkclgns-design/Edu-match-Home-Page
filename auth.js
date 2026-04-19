@@ -2,13 +2,12 @@
 // Edu-match — Authentication (Signup / Login)
 // =========================================================
 // Supabase Auth + em_profiles 테이블 연동
-// 관리자(admin1124/1124) 로그인은 localStorage 세션으로 처리
+// 관리자 로그인은 em-admin-auth Edge Function (HMAC 세션 토큰) 으로 검증
 // =========================================================
 
 (function () {
   const em = window.EduMatch || {};
   const supabase = em.supabase;
-  const adminCreds = em.ADMIN_CREDENTIALS || { id: "admin1124", pw: "1124" };
   const TABLES = em.TABLES || { profiles: "em_profiles" };
 
   function showMessage(el, text, type) {
@@ -115,22 +114,31 @@
     });
   }
 
-  // ---------- 관리자 로그인 ----------
+  // ---------- 관리자 로그인 (Supabase Edge Function 경유) ----------
   const adminForm = document.getElementById("admin-login-form");
   if (adminForm) {
-    adminForm.addEventListener("submit", (e) => {
+    adminForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const msg = document.getElementById("admin-login-message");
+      const submitBtn = adminForm.querySelector("button[type=submit]");
       const id = document.getElementById("admin-id").value.trim();
       const pw = document.getElementById("admin-pw").value;
 
-      if (id === adminCreds.id && pw === adminCreds.pw) {
-        if (typeof em.setAdminSession === "function") em.setAdminSession(true);
-        else localStorage.setItem("edumatch_admin_session", "true");
+      if (typeof em.adminLogin !== "function") {
+        showMessage(msg, "관리자 인증 엔드포인트가 설정되지 않았습니다.", "error");
+        return;
+      }
+
+      try {
+        submitBtn.disabled = true;
+        showMessage(msg, "인증 중…", "success");
+        await em.adminLogin(id, pw);
         showMessage(msg, "관리자 인증 성공. 관리자 페이지로 이동합니다…", "success");
-        setTimeout(() => (window.location.href = "./admin.html"), 900);
-      } else {
-        showMessage(msg, "관리자 ID 또는 비밀번호가 일치하지 않습니다.", "error");
+        setTimeout(() => (window.location.href = "./admin.html"), 800);
+      } catch (err) {
+        showMessage(msg, (err && err.message) ? err.message : "관리자 인증 실패", "error");
+      } finally {
+        submitBtn.disabled = false;
       }
     });
   }

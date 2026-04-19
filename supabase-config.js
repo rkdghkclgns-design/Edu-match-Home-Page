@@ -9,8 +9,12 @@
 const SUPABASE_URL = "https://pkwbqbxuujpcvndpacsc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_09z4u2K4XVU5fUl2e532Fg_kqct0zez";
 
-// Gemini 프록시 엣지펑션 (GEMINI_API_KEY 는 서버 측 비밀로 보관)
+// Edge Function 엔드포인트
+// - gemini-proxy: GEMINI_API_KEY 를 서버 측 비밀로 보관하고 Gemini API 를 대신 호출
+// - em-admin-auth: 관리자 ID/PW 검증 + HMAC 세션 토큰 발급/검증 (크리덴셜은 서버 비밀에만 존재)
 const GEMINI_PROXY_URL = `${SUPABASE_URL}/functions/v1/gemini-proxy`;
+const ADMIN_AUTH_URL = `${SUPABASE_URL}/functions/v1/em-admin-auth`;
+const ADMIN_TOKEN_KEY = "edumatch_admin_token";
 
 // Supabase 클라이언트 (CDN 로드 후 window.supabase 사용)
 const supabaseClient = window.supabase
@@ -23,12 +27,6 @@ const EM_TABLES = {
   jobs: "em_job_postings",
   applications: "em_applications",
   profiles: "em_profiles",
-};
-
-// 관리자 계정
-const ADMIN_CREDENTIALS = {
-  id: "admin1124",
-  pw: "1124",
 };
 
 // 강의/서비스 카테고리
@@ -55,14 +53,54 @@ async function getCurrentUser() {
   return user;
 }
 
-// 관리자 세션 헬퍼
-const ADMIN_SESSION_KEY = "edumatch_admin_session";
-function isAdminLoggedIn() {
-  return localStorage.getItem(ADMIN_SESSION_KEY) === "true";
+// 관리자 세션 헬퍼 (Edge Function 기반 HMAC 토큰)
+function getAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_KEY);
 }
-function setAdminSession(flag) {
-  if (flag) localStorage.setItem(ADMIN_SESSION_KEY, "true");
-  else localStorage.removeItem(ADMIN_SESSION_KEY);
+function setAdminToken(token) {
+  if (token) localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  else localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+function clearAdminToken() {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+async function adminLogin(id, pw) {
+  const resp = await fetch(ADMIN_AUTH_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ action: "login", id, pw }),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok || !data.ok) {
+    throw new Error(data.error || `로그인 실패 (HTTP ${resp.status})`);
+  }
+  setAdminToken(data.token);
+  return data;
+}
+
+async function adminVerify() {
+  const token = getAdminToken();
+  if (!token) return false;
+  try {
+    const resp = await fetch(ADMIN_AUTH_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ action: "verify", token }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    return Boolean(resp.ok && data.ok);
+  } catch {
+    return false;
+  }
 }
 
 // Gemini 호출 헬퍼 (Edge Function 경유)
@@ -127,13 +165,16 @@ window.EduMatch = {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
   GEMINI_PROXY_URL,
+  ADMIN_AUTH_URL,
   TABLES: EM_TABLES,
-  ADMIN_CREDENTIALS,
   SERVICE_CATEGORIES,
   categoryLabel,
   getCurrentUser,
-  isAdminLoggedIn,
-  setAdminSession,
+  getAdminToken,
+  setAdminToken,
+  clearAdminToken,
+  adminLogin,
+  adminVerify,
   callGemini,
   extractJson,
 };
