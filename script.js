@@ -125,6 +125,8 @@ function jobCardHtml(job, cats) {
   `;
 }
 
+const MATCH_INQUIRY_URL = "https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3";
+
 function instructorCardHtml(ins) {
   const avatarColor = ins.avatar_color || "a";
   const initial = ins.avatar_initial || (ins.name || "").charAt(0) || "?";
@@ -139,11 +141,14 @@ function instructorCardHtml(ins) {
     .map((t) => `<span>${escapeHtml(t)}</span>`)
     .join("");
   const feature = ins.is_featured ? "instructor-card--feature" : "";
+  const avatarInner = ins.avatar_url
+    ? `<img src="${escapeHtml(ins.avatar_url)}" alt="${escapeHtml(ins.name)}" loading="lazy" referrerpolicy="no-referrer" />`
+    : `<span>${escapeHtml(initial)}</span>`;
   return `
     <article class="instructor-card ${feature}" data-instructor-id="${escapeHtml(ins.id || "")}">
       <div class="instructor-card__header">
-        <div class="instructor-card__avatar avatar--${escapeHtml(avatarColor)}">
-          <span>${escapeHtml(initial)}</span>
+        <div class="instructor-card__avatar avatar--${escapeHtml(avatarColor)}${ins.avatar_url ? " instructor-card__avatar--photo" : ""}">
+          ${avatarInner}
         </div>
         <div class="instructor-card__meta">
           ${badge}
@@ -156,7 +161,7 @@ function instructorCardHtml(ins) {
       <div class="instructor-card__tags">${tags}</div>
       <div class="instructor-card__footer">
         <span class="instructor-card__exp">경력 ${escapeHtml(ins.experience_years || 0)}년</span>
-        <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+        <a class="instructor-card__link" href="${MATCH_INQUIRY_URL}" target="_blank" rel="noopener">매칭 문의 →</a>
       </div>
     </article>
   `;
