@@ -4,32 +4,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Edu-match — 강사를 위한 강의 공고 허브</title>
-    <meta name="description" content="기업·공공기관·대학의 최신 강의 공고를 강사가 직접 탐색·지원하는 매칭 플랫폼. Pro 멤버십으로 우선 노출·프리미엄 공고 열람." />
+    <meta name="description" content="강사가 직접 공고를 탐색/지원하고, 품앗이(수익 10% 쉐어)·출장비·Pro 멤버십까지 한곳에서. Edu-match 매칭 플랫폼." />
 
-    <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              brand: {
-                50:"#eef2ff",100:"#e0e7ff",200:"#c7d2fe",300:"#a5b4fc",
-                400:"#818cf8",500:"#6366f1",600:"#4f46e5",700:"#4338ca",
-                800:"#3730a3",900:"#312e81",
-              },
-              accent: { 500:"#06b6d4", 600:"#0891b2" },
+              brand:{50:"#eef2ff",100:"#e0e7ff",200:"#c7d2fe",300:"#a5b4fc",400:"#818cf8",500:"#6366f1",600:"#4f46e5",700:"#4338ca",800:"#3730a3",900:"#312e81"},
+              accent:{500:"#06b6d4",600:"#0891b2"},
             },
-            fontFamily: {
-              sans: ['Pretendard','ui-sans-serif','system-ui','-apple-system'],
-            },
+            fontFamily: { sans:['Pretendard','ui-sans-serif','system-ui'] },
           },
         },
       };
     </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>
+      .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+      .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+      .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700}
+    </style>
 
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-client.js" defer></script>
   </head>
@@ -42,15 +39,26 @@
           <span class="text-xl font-extrabold tracking-tight text-brand-600">Edu-match</span>
           <span class="text-xs font-medium text-slate-400">platform</span>
         </a>
-        <nav class="hidden md:flex items-center gap-6 text-sm text-slate-600">
-          <a href="#jobs" class="hover:text-slate-900">강의 공고</a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="#jobs" class="hover:text-slate-900">공고</a>
+          <a href="#instructors" class="hover:text-slate-900">강사진</a>
+          <a href="#categories" class="hover:text-slate-900">분야</a>
           <a href="#pricing" class="hover:text-slate-900">요금제</a>
-          <a href="#how" class="hover:text-slate-900">매칭 흐름</a>
-          <a href="./admin-dashboard.html" class="hover:text-slate-900">관리자</a>
+          <div class="relative group">
+            <button class="hover:text-slate-900 inline-flex items-center gap-1">더보기 ▾</button>
+            <div class="hidden group-hover:block absolute right-0 top-full w-56 bg-white border border-slate-100 shadow-lg rounded-xl p-2 text-sm">
+              <a href="./materials.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">📚 강사 자료실</a>
+              <a href="./register-lecture.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">📝 강의 등록 (의뢰자)</a>
+              <a href="./pbl-request.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">🎯 PBL 문서 초안 의뢰</a>
+              <a href="./slide-request.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">🎞 강의 슬라이드 의뢰</a>
+              <div class="border-t border-slate-100 my-1"></div>
+              <a href="./admin-dashboard.html" class="block px-3 py-2 rounded-md hover:bg-slate-50 text-brand-600 font-semibold">⚙︎ 관리자</a>
+            </div>
+          </div>
         </nav>
         <div class="flex items-center gap-2">
           <button id="nav-auth-btn" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-brand-600">로그인</button>
-          <a href="#contact-match" class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition">매칭 문의</a>
+          <button id="btn-open-match" class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition">매칭 문의</button>
         </div>
       </div>
     </header>
@@ -60,152 +68,176 @@
       <!-- HERO -->
       <section class="relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-cyan-50"></div>
-        <div class="relative max-w-6xl mx-auto px-5 py-20 lg:py-28">
+        <div class="relative max-w-6xl mx-auto px-5 py-20 lg:py-24">
           <div class="max-w-2xl">
             <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
               <span class="w-2 h-2 rounded-full bg-brand-500"></span>
-              강사 중심 매칭 플랫폼 · Pro 멤버십 오픈
+              강사 중심 매칭 · 품앗이 10% 쉐어 · Pro 멤버십
             </span>
             <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold tracking-tight">
               전문 강사를 위한<br/>
               <span class="bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-transparent">강의 공고 허브</span>
             </h1>
             <p class="mt-5 text-lg text-slate-600 leading-relaxed">
-              기업·공공기관·대학의 최신 공고를 직접 탐색하고 지원하세요. Pro 멤버로 전환하면 <strong>프리미엄 공고 우선 노출</strong>, <strong>지원 일 제한 해제</strong>, <strong>전용 매칭 매니저</strong> 지원을 받습니다.
+              공고 탐색 · 지원 · 품앗이 쉐어 · 자료실 · PBL/슬라이드 의뢰까지 한 곳에서. 강사가 직접 진행하는 매칭입니다.
             </p>
             <div class="mt-8 flex flex-wrap gap-3">
               <a href="#jobs" class="inline-flex items-center px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition shadow-sm">공고 탐색 →</a>
-              <a href="#pricing" class="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 hover:border-slate-300 transition">Pro 멤버십 보기</a>
+              <a href="#pricing" class="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 hover:border-slate-300 transition">Pro 멤버십</a>
+              <a href="./register-lecture.html" class="inline-flex items-center px-6 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition">강의 등록 (의뢰자)</a>
             </div>
-            <dl class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-xl">
+            <dl class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
               <div><dt class="text-xs text-slate-500">활동 강사</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-lecturers">—</dd></div>
               <div><dt class="text-xs text-slate-500">Pro 강사</dt><dd class="text-2xl font-bold text-brand-600 mt-1" id="kpi-pros">—</dd></div>
               <div><dt class="text-xs text-slate-500">공개 공고</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-jobs">—</dd></div>
-              <div><dt class="text-xs text-slate-500">매칭 완료</dt><dd class="text-2xl font-bold text-accent-500 mt-1" id="kpi-matches">—</dd></div>
+              <div><dt class="text-xs text-slate-500">품앗이 공고</dt><dd class="text-2xl font-bold text-yellow-600 mt-1" id="kpi-share">—</dd></div>
             </dl>
           </div>
         </div>
       </section>
 
+      <!-- CATEGORIES -->
+      <section id="categories" class="max-w-6xl mx-auto px-5 py-20">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Categories</span>
+          <h2 class="mt-2 text-3xl font-extrabold">8개 서비스 분야</h2>
+          <p class="mt-3 text-slate-600">기업 교육부터 공방·DIY 까지 분야별 공고를 한눈에.</p>
+        </div>
+        <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4" id="cat-grid">
+          <!-- categories injected by JS -->
+        </div>
+      </section>
+
       <!-- JOBS -->
-      <section id="jobs" class="max-w-6xl mx-auto px-5 py-20">
+      <section id="jobs" class="max-w-6xl mx-auto px-5 py-20 border-t border-slate-100">
         <div class="flex items-end justify-between flex-wrap gap-4">
           <div>
             <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Open Positions</span>
             <h2 class="mt-2 text-3xl font-extrabold">지금 지원 가능한 공고</h2>
-            <p class="mt-2 text-slate-600">관심 공고에 <strong>지원하기</strong>, 의뢰자에게는 <strong>매칭 문의</strong> 버튼으로 연결됩니다.</p>
+            <p class="mt-2 text-slate-600">⭐ PREMIUM / 🤝 품앗이 10% / ✈ 출장비 / 💰 시간당·과정당 단가 표기.</p>
           </div>
-          <input id="jobs-search" type="search" placeholder="제목 · 카테고리 검색" class="w-72 max-w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-300 focus:border-brand-400 text-sm outline-none" />
         </div>
-        <div id="jobs-grid" class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <div class="text-slate-400 text-sm">공고를 불러오는 중…</div>
+
+        <!-- Filters -->
+        <div class="mt-6 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+          <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
+            <input id="jf-q" type="search" placeholder="🔍 제목·기관·태그" class="col-span-2 md:col-span-2 px-3 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
+            <select id="jf-category" class="px-3 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+              <option value="">전체 분야</option>
+              <option value="corporate-lecture">기업출강</option>
+              <option value="teambuilding">팀빌딩</option>
+              <option value="craft-experience">공방체험</option>
+              <option value="diy-kit">DIY키트</option>
+              <option value="it-ai">IT · AI</option>
+              <option value="leadership">리더십</option>
+              <option value="design">디자인 · UX</option>
+              <option value="data">데이터 분석</option>
+            </select>
+            <select id="jf-format" class="px-3 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+              <option value="">전체 형태</option>
+              <option value="offline">오프라인</option>
+              <option value="online">온라인</option>
+              <option value="hybrid">하이브리드</option>
+            </select>
+            <select id="jf-sort" class="px-3 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+              <option value="recent">최신순</option>
+              <option value="premium">프리미엄 우선</option>
+              <option value="budget-high">예산 높은 순</option>
+              <option value="budget-low">예산 낮은 순</option>
+            </select>
+            <div class="flex items-center gap-2">
+              <label class="flex items-center gap-1 text-xs text-slate-600 whitespace-nowrap"><input id="jf-urgent" type="checkbox" class="rounded"> 긴급만</label>
+              <label class="flex items-center gap-1 text-xs text-slate-600 whitespace-nowrap"><input id="jf-share" type="checkbox" class="rounded"> 품앗이</label>
+              <button id="jf-reset" class="ml-auto px-3 py-1 text-xs rounded-lg bg-white border border-slate-200 hover:bg-slate-100 font-semibold">초기화</button>
+            </div>
+          </div>
+          <div id="jf-count" class="mt-2 text-xs text-slate-500">공고를 불러오는 중…</div>
+        </div>
+
+        <div id="jobs-grid" class="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3"></div>
+      </section>
+
+      <!-- INSTRUCTORS (Peer Network) -->
+      <section id="instructors" class="bg-slate-50 border-y border-slate-100">
+        <div class="max-w-6xl mx-auto px-5 py-20">
+          <div class="text-center max-w-2xl mx-auto">
+            <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Peer Network</span>
+            <h2 class="mt-2 text-3xl font-extrabold">함께 활동하는 동료 강사</h2>
+            <p class="mt-3 text-slate-600">프로필·평점·전문 분야를 확인하고 매칭 문의는 강사 이메일로 직접 전달됩니다.</p>
+          </div>
+          <div id="ins-grid" class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </div>
       </section>
 
       <!-- PRICING -->
-      <section id="pricing" class="bg-slate-50 border-y border-slate-100">
-        <div class="max-w-6xl mx-auto px-5 py-20">
-          <div class="text-center max-w-2xl mx-auto">
-            <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Pricing</span>
-            <h2 class="mt-2 text-3xl font-extrabold">강사에게 맞는 요금제를 선택하세요</h2>
-            <p class="mt-3 text-slate-600">Basic 은 무료로 시작, Pro 는 더 많은 공고와 우선 노출을 제공합니다.</p>
-          </div>
-
-          <div class="mt-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <!-- Basic -->
-            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex flex-col">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xl font-bold">Basic</h3>
-                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600">무료</span>
-              </div>
-              <div class="mt-4">
-                <span class="text-4xl font-extrabold">₩0</span>
-                <span class="text-slate-500">/월</span>
-              </div>
-              <p class="mt-2 text-sm text-slate-600">공고 탐색과 기본 지원을 시작해보세요.</p>
-              <ul class="mt-6 space-y-3 text-sm text-slate-700 flex-grow">
-                <li class="flex gap-2"><span class="text-brand-500">✓</span> 전체 공개 공고 열람</li>
-                <li class="flex gap-2"><span class="text-brand-500">✓</span> 월 10건 지원 가능</li>
-                <li class="flex gap-2"><span class="text-brand-500">✓</span> 기본 프로필 등록</li>
-                <li class="flex gap-2 text-slate-400"><span>×</span> 프리미엄 공고 열람</li>
-                <li class="flex gap-2 text-slate-400"><span>×</span> 우선 노출</li>
-              </ul>
-              <button class="mt-8 w-full py-3 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">현재 플랜</button>
-            </div>
-            <!-- Pro -->
-            <div class="relative bg-gradient-to-br from-brand-600 to-accent-600 rounded-2xl p-8 border-2 border-brand-500 shadow-lg text-white flex flex-col">
-              <div class="absolute -top-3 left-6">
-                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-400 text-brand-900 text-xs font-bold shadow">⭐ RECOMMENDED</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <h3 class="text-xl font-bold">Pro</h3>
-                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/20 backdrop-blur">프리미엄</span>
-              </div>
-              <div class="mt-4">
-                <span class="text-4xl font-extrabold">₩29,000</span>
-                <span class="opacity-80">/월</span>
-              </div>
-              <p class="mt-2 text-sm opacity-90">공고 우선 노출 · 프리미엄 공고 독점 접근.</p>
-              <ul class="mt-6 space-y-3 text-sm flex-grow">
-                <li class="flex gap-2"><span>✓</span> Basic 의 모든 혜택</li>
-                <li class="flex gap-2"><span>✓</span> <strong>프리미엄 공고 전체 열람</strong></li>
-                <li class="flex gap-2"><span>✓</span> 지원 횟수 무제한</li>
-                <li class="flex gap-2"><span>✓</span> 프로필에 <strong>Pro 배지</strong> 노출</li>
-                <li class="flex gap-2"><span>✓</span> 전용 매칭 매니저 배정</li>
-              </ul>
-              <button id="btn-upgrade-pro" class="mt-8 w-full py-3 text-sm font-bold text-brand-900 bg-white hover:bg-slate-100 rounded-lg transition">Pro 구독하기</button>
-            </div>
-          </div>
-          <p class="mt-6 text-center text-xs text-slate-500">* 결제는 데모용 모의 처리입니다. 실제 결제 연동은 PG 사 연결 시 활성화됩니다.</p>
-        </div>
-      </section>
-
-      <!-- HOW -->
-      <section id="how" class="max-w-6xl mx-auto px-5 py-20">
+      <section id="pricing" class="max-w-6xl mx-auto px-5 py-20">
         <div class="text-center max-w-2xl mx-auto">
-          <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">How it works</span>
-          <h2 class="mt-2 text-3xl font-extrabold">3단계 매칭 프로세스</h2>
+          <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Pricing</span>
+          <h2 class="mt-2 text-3xl font-extrabold">강사에게 맞는 요금제를 선택하세요</h2>
+          <p class="mt-3 text-slate-600">Basic 은 무료로 시작, Pro 는 프리미엄 공고 독점 접근 · 우선 노출.</p>
         </div>
-        <div class="mt-12 grid md:grid-cols-3 gap-6">
-          <div class="p-6 rounded-2xl border border-slate-100 bg-white shadow-sm">
-            <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-bold">①</div>
-            <h3 class="mt-4 font-bold">공고 탐색</h3>
-            <p class="mt-2 text-sm text-slate-600">의뢰 기관이 등록한 최신 공고를 카테고리·예산·형태로 탐색합니다.</p>
+
+        <div class="mt-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold">Basic</h3>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600">무료</span>
+            </div>
+            <div class="mt-4"><span class="text-4xl font-extrabold">₩0</span><span class="text-slate-500">/월</span></div>
+            <p class="mt-2 text-sm text-slate-600">공고 탐색과 기본 지원부터 시작하세요.</p>
+            <ul class="mt-6 space-y-2 text-sm text-slate-700 flex-grow">
+              <li>✓ 전체 공개 공고 열람</li>
+              <li>✓ 월 10건 지원 가능</li>
+              <li>✓ 기본 프로필 · 품앗이 공고 게시 1회</li>
+              <li class="text-slate-400">× 프리미엄 공고 열람</li>
+              <li class="text-slate-400">× 강사진 상단 우선 노출</li>
+            </ul>
+            <button class="mt-8 w-full py-3 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">현재 플랜</button>
           </div>
-          <div class="p-6 rounded-2xl border border-slate-100 bg-white shadow-sm">
-            <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-bold">②</div>
-            <h3 class="mt-4 font-bold">지원 · 매칭</h3>
-            <p class="mt-2 text-sm text-slate-600">이력서 + 제안서로 바로 지원, 의뢰 담당자가 직접 검토합니다.</p>
-          </div>
-          <div class="p-6 rounded-2xl border border-slate-100 bg-white shadow-sm">
-            <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-bold">③</div>
-            <h3 class="mt-4 font-bold">계약 · 실행</h3>
-            <p class="mt-2 text-sm text-slate-600">일정 확정, 표준 계약서 생성, 강의 완료 후 리뷰가 누적됩니다.</p>
+          <div class="relative bg-gradient-to-br from-brand-600 to-accent-600 rounded-2xl p-8 border-2 border-brand-500 shadow-lg text-white flex flex-col">
+            <div class="absolute -top-3 left-6"><span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-400 text-brand-900 text-xs font-bold shadow">⭐ RECOMMENDED</span></div>
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-bold">Pro</h3>
+              <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/20 backdrop-blur">프리미엄</span>
+            </div>
+            <div class="mt-4"><span class="text-4xl font-extrabold">₩29,000</span><span class="opacity-80">/월</span></div>
+            <p class="mt-2 text-sm opacity-90">프리미엄 공고 · 우선 노출 · 품앗이 무제한.</p>
+            <ul class="mt-6 space-y-2 text-sm flex-grow">
+              <li>✓ Basic 의 모든 혜택</li>
+              <li>✓ <strong>프리미엄 공고 전체 열람</strong></li>
+              <li>✓ 지원 횟수 무제한</li>
+              <li>✓ 프로필 <strong>Pro 배지</strong></li>
+              <li>✓ 품앗이 공고 무제한 + 우선 노출</li>
+              <li>✓ 전용 매칭 매니저</li>
+            </ul>
+            <button id="btn-upgrade-pro" class="mt-8 w-full py-3 text-sm font-bold text-brand-900 bg-white hover:bg-slate-100 rounded-lg transition">Pro 구독하기</button>
           </div>
         </div>
+        <p class="mt-6 text-center text-xs text-slate-500">* 결제는 데모용 모의 처리입니다. 실제 결제 연동은 PG 사 연결 시 활성화됩니다.</p>
       </section>
 
       <!-- CONTACT CTA -->
-      <section id="contact-match" class="bg-gradient-to-br from-brand-600 to-accent-600 text-white">
-        <div class="max-w-6xl mx-auto px-5 py-16 flex flex-col md:flex-row items-center justify-between gap-6">
+      <section class="bg-gradient-to-br from-brand-600 to-accent-600 text-white">
+        <div class="max-w-6xl mx-auto px-5 py-16 grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h2 class="text-3xl font-extrabold">강의를 의뢰하시나요?</h2>
-            <p class="mt-2 opacity-90">강의 주제·일정·예산을 알려주시면 Edu-match 매니저가 최적 강사를 48시간 내 매칭합니다.</p>
+            <p class="mt-2 opacity-90">강의 주제·일정·예산을 알려주시면 매니저가 48시간 내 매칭합니다. 또는 바로 공고를 등록하세요.</p>
           </div>
-          <div class="flex gap-3">
-            <button id="btn-open-match" class="px-6 py-3 bg-white text-brand-700 font-bold rounded-lg hover:bg-slate-100 transition">매칭 문의하기</button>
-            <a href="./register-lecture.html" class="px-6 py-3 bg-white/10 border border-white/30 font-bold rounded-lg hover:bg-white/20 transition">직접 공고 등록</a>
+          <div class="flex flex-wrap gap-3">
+            <button id="btn-open-match-2" class="px-6 py-3 bg-white text-brand-700 font-bold rounded-lg hover:bg-slate-100 transition">매칭 문의</button>
+            <a href="./register-lecture.html" class="px-6 py-3 bg-white/10 border border-white/30 font-bold rounded-lg hover:bg-white/20 transition">공고 등록</a>
+            <a href="./pbl-request.html" class="px-6 py-3 bg-white/10 border border-white/30 font-bold rounded-lg hover:bg-white/20 transition">PBL 의뢰</a>
+            <a href="./slide-request.html" class="px-6 py-3 bg-white/10 border border-white/30 font-bold rounded-lg hover:bg-white/20 transition">슬라이드 의뢰</a>
           </div>
         </div>
       </section>
 
-      <footer class="max-w-6xl mx-auto px-5 py-12 text-center text-sm text-slate-500">
-        <p>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</p>
-        <p class="mt-1">강사를 위한 강의 공고 매칭 허브 · <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" class="hover:text-brand-600">고용노동부 HRD-Net</a></p>
+      <footer class="max-w-6xl mx-auto px-5 py-10 text-center text-sm text-slate-500">
+        <p>© <span id="year">2026</span> Edu-match Platform · 단가 참고: <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" class="text-brand-600 hover:underline">고용노동부 HRD-Net</a></p>
       </footer>
     </main>
 
-    <!-- ============ Modals ============ -->
+    <!-- ================= Modals ================= -->
 
     <!-- Auth modal -->
     <div id="modal-auth" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -221,124 +253,107 @@
         <form id="auth-form" class="mt-5 space-y-4">
           <div class="hidden" data-auth-only="signup">
             <label class="block text-sm font-medium text-slate-700">이름</label>
-            <input name="full_name" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none" />
+            <input name="full_name" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
           </div>
           <div class="hidden" data-auth-only="signup">
             <label class="block text-sm font-medium text-slate-700">가입 유형</label>
-            <select name="role" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none">
+            <select name="role" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300">
               <option value="lecturer">강사 회원</option>
               <option value="client">의뢰자 회원</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700">이메일</label>
-            <input name="email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none" />
+            <input name="email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700">비밀번호 (6자 이상)</label>
-            <input name="password" type="password" minlength="6" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none" />
+            <input name="password" type="password" minlength="6" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
           </div>
-          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" id="auth-submit">로그인</button>
+          <button type="submit" id="auth-submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">로그인</button>
         </form>
       </div>
     </div>
 
-    <!-- Matching request modal -->
+    <!-- Matching modal (공통 매칭 문의) -->
     <div id="modal-match" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
         <div class="flex items-center justify-between">
-          <h3 class="text-xl font-bold">매칭 문의</h3>
+          <h3 class="text-xl font-bold" id="match-title">매칭 문의</h3>
           <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
         </div>
-        <p class="mt-1 text-sm text-slate-500">강의 주제·규모·예산을 알려주시면 매니저가 회신드립니다.</p>
+        <p class="mt-1 text-sm text-slate-500" id="match-context">강의 주제·규모·예산을 알려주시면 매니저가 회신드립니다.</p>
         <form id="match-form" class="mt-5 space-y-4">
+          <input id="match-target-instructor" type="hidden" />
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-slate-700">담당자 성함</label>
-              <input name="client_name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700">회사 · 기관</label>
-              <input name="company" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700">이메일</label>
-              <input name="email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700">연락처</label>
-              <input name="phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
+            <div><label class="block text-sm font-medium text-slate-700">담당자 성함</label><input name="client_name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div><label class="block text-sm font-medium text-slate-700">회사 · 기관</label><input name="company" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div><label class="block text-sm font-medium text-slate-700">이메일</label><input name="email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div><label class="block text-sm font-medium text-slate-700">연락처</label><input name="phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
             <div>
               <label class="block text-sm font-medium text-slate-700">분야</label>
-              <select name="category" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none">
-                <option>IT · AI 교육</option>
-                <option>데이터 분석</option>
-                <option>디자인 · UX</option>
-                <option>리더십</option>
-                <option>팀빌딩</option>
-                <option>기업출강</option>
+              <select name="category" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option>IT · AI 교육</option><option>데이터 분석</option><option>디자인 · UX</option>
+                <option>리더십</option><option>팀빌딩</option><option>기업출강</option>
               </select>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700">예산 (원)</label>
-              <input name="budget" type="number" min="0" step="100000" placeholder="예) 15000000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
+            <div><label class="block text-sm font-medium text-slate-700">예산 (원)</label><input name="budget" type="number" min="0" step="100000" placeholder="15000000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700">요청 내용</label>
-            <textarea name="message" rows="4" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none"></textarea>
-          </div>
-          <label class="flex items-start gap-2 text-xs text-slate-600">
-            <input name="consent" type="checkbox" required class="mt-0.5" />
-            <span>개인정보(성함·이메일·연락처) 수집 및 매칭 목적 활용에 동의합니다.</span>
-          </label>
-          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition">문의 제출</button>
+          <div><label class="block text-sm font-medium text-slate-700">요청 내용</label><textarea name="message" rows="4" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+          <label class="flex items-start gap-2 text-xs text-slate-600"><input name="consent" type="checkbox" required class="mt-0.5" /><span>개인정보 수집 및 매칭 목적 활용에 동의합니다.</span></label>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">문의 제출</button>
         </form>
       </div>
     </div>
 
-    <!-- Application modal -->
+    <!-- Apply modal -->
     <div id="modal-apply" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
         <div class="flex items-center justify-between">
-          <h3 class="text-xl font-bold">공고 지원하기</h3>
+          <h3 class="text-xl font-bold">공고 지원</h3>
           <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
         </div>
         <p class="mt-1 text-sm text-slate-500" id="apply-job-title">—</p>
         <form id="apply-form" class="mt-5 space-y-4">
           <input id="apply-job-id" type="hidden" />
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-slate-700">강사 성함</label>
-              <input name="applicant_name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700">이메일</label>
-              <input name="applicant_email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
-            </div>
+            <div><label class="block text-sm font-medium text-slate-700">강사 성함</label><input name="applicant_name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div><label class="block text-sm font-medium text-slate-700">이메일</label><input name="applicant_email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" /></div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700">이력서 (PDF · DOCX · JPG / 10MB 이하)</label>
+            <label class="block text-sm font-medium text-slate-700">이력서 (PDF · DOCX · JPG · 10MB 이하)</label>
             <input name="resume" type="file" accept=".pdf,.doc,.docx,image/*" class="mt-1 w-full text-sm" />
-            <p class="mt-1 text-xs text-slate-500">업로드된 파일은 Supabase Storage <code class="px-1.5 py-0.5 bg-slate-100 rounded">resumes</code> 버킷에 저장됩니다.</p>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700">제안서 (지원 동기 · 커리큘럼 · 가능 일정)</label>
-            <textarea name="proposal" rows="5" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none"></textarea>
-          </div>
-          <label class="flex items-start gap-2 text-xs text-slate-600">
-            <input name="consent" type="checkbox" required class="mt-0.5" />
-            <span>개인정보(성함·이메일·이력서) 수집 및 해당 공고 검토 목적 활용에 동의합니다.</span>
-          </label>
-          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition">지원서 제출</button>
+          <div><label class="block text-sm font-medium text-slate-700">제안서</label><textarea name="proposal" rows="5" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+          <label class="flex items-start gap-2 text-xs text-slate-600"><input name="consent" type="checkbox" required class="mt-0.5" /><span>개인정보 수집 · 공고 검토 목적 활용에 동의합니다.</span></label>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">지원서 제출</button>
         </form>
       </div>
     </div>
 
-    <script>
-      document.getElementById("year").textContent = String(new Date().getFullYear());
-    </script>
+    <!-- Job detail modal (자세히 보기) -->
+    <div id="modal-detail" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold">공고 자세히 보기</h3>
+          <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
+        </div>
+        <div id="detail-body" class="p-6"></div>
+      </div>
+    </div>
+
+    <!-- Instructor detail modal -->
+    <div id="modal-ins" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold">강사 상세 정보</h3>
+          <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
+        </div>
+        <div id="ins-body" class="p-6"></div>
+      </div>
+    </div>
+
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
     <script src="./app-landing.js" defer></script>
   </body>
 </html>
