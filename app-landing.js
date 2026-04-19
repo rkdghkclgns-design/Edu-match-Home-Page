@@ -25,19 +25,53 @@
   ];
   const catLabel = (key) => CATEGORIES.find((c) => c.key === key)?.label || key || "";
 
-  // ---------- Tiny markdown ----------
+  // ---------- Tiny markdown (images + YouTube embed supported) ----------
   function md(raw) {
     if (!raw) return "";
-    let t = escape(String(raw));
+    // 1) 원본 보존하여 임베드 요소를 먼저 토큰으로 치환
+    let t = String(raw);
+    const tokens = [];
+    function pushToken(html) {
+      const k = `@@TOKEN_${tokens.length}@@`;
+      tokens.push(html);
+      return k;
+    }
+
+    // YouTube 임베드: [[youtube:VIDEO_ID]]
+    t = t.replace(/\[\[youtube:([a-zA-Z0-9_-]{11})\]\]/g, (_, id) =>
+      pushToken(`<div class="aspect-video my-3 rounded-xl overflow-hidden border border-slate-100"><iframe src="https://www.youtube.com/embed/${id}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`)
+    );
+
+    // raw YouTube URL (한 줄에 단독일 때) 자동 임베드
+    t = t.replace(/^(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?(?:[^\s]*&)?v=[a-zA-Z0-9_-]{11}[^\s]*|youtu\.be\/[a-zA-Z0-9_-]{11}[^\s]*))$/gm, (url) => {
+      const m = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      return m ? pushToken(`<div class="aspect-video my-3 rounded-xl overflow-hidden border border-slate-100"><iframe src="https://www.youtube.com/embed/${m[1]}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`) : url;
+    });
+
+    // 이미지: ![alt](https://...)
+    t = t.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, (_, alt, url) =>
+      pushToken(`<figure class="my-3"><img src="${url}" alt="${escape(alt)}" class="rounded-xl w-full max-h-96 object-cover border border-slate-100" loading="lazy" referrerpolicy="no-referrer"/>${alt ? `<figcaption class="mt-1 text-xs text-slate-500">${escape(alt)}</figcaption>` : ""}</figure>`)
+    );
+
+    // 2) 나머지 텍스트는 escape 후 마크다운 치환
+    t = escape(t);
+    // 토큰 복원 (escape 는 @@ 건드리지 않으므로 안전)
+    t = t.replace(/@@TOKEN_(\d+)@@/g, (_, i) => tokens[Number(i)] || "");
+
+    // 굵게
     t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    // 링크 [text](url)
     t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-brand-600 hover:underline">$1</a>');
+    // 제목
     t = t.replace(/^#{3}\s+(.+)$/gm, '<h4 class="mt-3 font-semibold">$1</h4>');
     t = t.replace(/^#{2}\s+(.+)$/gm, '<h3 class="mt-4 text-lg font-bold">$1</h3>');
     t = t.replace(/^#\s+(.+)$/gm,    '<h2 class="mt-4 text-xl font-extrabold">$1</h2>');
+    // 리스트
     t = t.replace(/^(?:-\s+.+(?:\n|$))+?/gm, (block) => {
       const items = block.trim().split("\n").map((l) => l.replace(/^-\s+/, "")).map((l) => `<li>${l}</li>`).join("");
       return `<ul class="list-disc ml-5 my-2 space-y-1">${items}</ul>`;
     });
+    // 줄바꿈
     t = t.replace(/\n{2,}/g, "<br/><br/>").replace(/\n/g, "<br/>");
     return t;
   }

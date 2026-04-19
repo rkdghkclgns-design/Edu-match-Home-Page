@@ -77,6 +77,130 @@
   // --- image upload
   const pendingImages = [];
 
+  // ==========================================================
+  // Body textarea: paste-image + YouTube embed helpers
+  // ==========================================================
+  const bodyEl = $("j-body");
+  const bodyHint = $("j-body-hint");
+
+  function setHint(text, color) {
+    if (!bodyHint) return;
+    bodyHint.textContent = text;
+    bodyHint.className = "mt-1 text-xs " + (color || "text-slate-500");
+  }
+
+  function insertAtCursor(textarea, insertText) {
+    const start = textarea.selectionStart || 0;
+    const end = textarea.selectionEnd || 0;
+    const before = textarea.value.slice(0, start);
+    const after  = textarea.value.slice(end);
+    textarea.value = before + insertText + after;
+    const pos = start + insertText.length;
+    textarea.selectionStart = textarea.selectionEnd = pos;
+    textarea.focus();
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function replaceFirst(textarea, needle, replacement) {
+    if (!textarea.value.includes(needle)) return;
+    const idx = textarea.value.indexOf(needle);
+    textarea.value = textarea.value.slice(0, idx) + replacement + textarea.value.slice(idx + needle.length);
+  }
+
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    const m = String(url).match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  // 본문 안에 삽입되는 이미지는 썸네일 갤러리와 분리 관리
+  const bodyEmbeddedImages = [];
+
+  async function uploadBodyFile(file) {
+    if (!file) throw new Error("파일이 없습니다.");
+    if (!file.type.startsWith("image/")) throw new Error("이미지 형식만 지원합니다.");
+    if (file.size > MAX_SIZE) throw new Error("8MB 이하로 업로드해주세요.");
+    const path = `jobs/${new Date().toISOString().slice(0, 10)}/${randomName(file)}`;
+    const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+      cacheControl: "3600", upsert: false, contentType: file.type,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    bodyEmbeddedImages.push({ url: data.publicUrl, path, name: file.name });
+    return { url: data.publicUrl, path };
+  }
+
+  // --- Paste handler: clipboard image → upload + insert markdown
+  bodyEl.addEventListener("paste", async (e) => {
+    const cd = e.clipboardData;
+    if (!cd) return;
+
+    // 1) 클립보드에 이미지가 있으면 업로드
+    const items = Array.from(cd.items || []);
+    const imageItem = items.find((it) => it.kind === "file" && it.type.startsWith("image/"));
+    if (imageItem) {
+      e.preventDefault();
+      const file = imageItem.getAsFile();
+      const placeholder = `\n![업로드 중…](uploading-${Date.now()})\n`;
+      insertAtCursor(bodyEl, placeholder);
+      setHint("📤 클립보드 이미지 업로드 중…", "text-brand-600");
+      try {
+        if (pendingImages.length >= MAX_IMAGES) throw new Error(`본문 이미지는 최대 ${MAX_IMAGES}장까지.`);
+        const { url } = await uploadBodyFile(file);
+        const fileName = file.name && file.name !== "image.png" ? file.name.replace(/\.[^.]+$/, "") : "붙여넣은 이미지";
+        replaceFirst(bodyEl, placeholder.trim(), `\n![${fileName}](${url})\n`);
+        setHint("✅ 이미지가 업로드되고 본문에 삽입되었습니다.", "text-emerald-600");
+      } catch (err) {
+        replaceFirst(bodyEl, placeholder.trim(), `\n[이미지 업로드 실패: ${err.message}]\n`);
+        setHint("❌ 업로드 실패: " + err.message, "text-red-600");
+      }
+      return;
+    }
+
+    // 2) 텍스트 중 YouTube URL 이면 자동 임베드 마커로 변환
+    const text = cd.getData("text");
+    const ytId = extractYouTubeId(text);
+    if (ytId) {
+      e.preventDefault();
+      insertAtCursor(bodyEl, `\n[[youtube:${ytId}]]\n`);
+      setHint("🎥 YouTube 영상이 임베드 마커로 삽입되었습니다.", "text-emerald-600");
+    }
+    // 그 외 일반 텍스트는 기본 붙여넣기 유지
+  });
+
+  // --- Toolbar buttons
+  $("j-body-btn-image").addEventListener("click", async () => {
+    const picker = document.createElement("input");
+    picker.type = "file";
+    picker.accept = "image/*";
+    picker.addEventListener("change", async () => {
+      const file = picker.files?.[0];
+      if (!file) return;
+      setHint("📤 이미지 업로드 중…", "text-brand-600");
+      try {
+        if (pendingImages.length >= MAX_IMAGES) throw new Error(`본문 이미지는 최대 ${MAX_IMAGES}장까지.`);
+        const { url } = await uploadBodyFile(file);
+        insertAtCursor(bodyEl, `\n![${file.name.replace(/\.[^.]+$/, "")}](${url})\n`);
+        setHint("✅ 이미지가 본문에 삽입되었습니다.", "text-emerald-600");
+      } catch (err) {
+        setHint("❌ 업로드 실패: " + err.message, "text-red-600");
+      }
+    });
+    picker.click();
+  });
+
+  $("j-body-btn-youtube").addEventListener("click", () => {
+    const url = prompt("YouTube 영상 URL 을 붙여넣으세요.\n(예: https://www.youtube.com/watch?v=XXXXXXXXXXX)");
+    if (!url) return;
+    const id = extractYouTubeId(url);
+    if (!id) {
+      setHint("❌ 올바른 YouTube URL 이 아닙니다.", "text-red-600");
+      return;
+    }
+    insertAtCursor(bodyEl, `\n[[youtube:${id}]]\n`);
+    setHint("🎥 YouTube 영상이 임베드 마커로 삽입되었습니다.", "text-emerald-600");
+  });
+
   function renderGallery() {
     gallery.innerHTML = pendingImages.map((img, idx) => `
       <div class="relative aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 bg-slate-100">

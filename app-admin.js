@@ -360,13 +360,14 @@
       try {
         const { error } = await supabase.from("job_postings").update({
           match_status: "matched",
+          status: "closed",                  // 매칭 완료 시 공개 목록에서 자동 제외
           matched_at: new Date().toISOString(),
           matched_amount: amount,
           platform_fee_percent: pct,
           platform_fee_amount: fee,
         }).eq("id", id);
         if (error) throw error;
-        EM.toast(`매칭 완료 · 수수료 ${fee.toLocaleString("ko-KR")}원 적립`, "ok");
+        EM.toast(`매칭 완료 · 수수료 ${fee.toLocaleString("ko-KR")}원 적립 · 공고 비공개 처리`, "ok");
         loadJobs(); loadKpis();
       } catch (err) { EM.toast("처리 실패: " + err.message, "err"); }
       return;
