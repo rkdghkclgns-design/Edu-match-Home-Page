@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070d" />
+    <title>회원가입 — Edu-match</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js" defer></script>
+    <script src="./auth.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a href="./index.html" class="nav__logo" aria-label="홈">
+        <span class="nav__logo-mark">Edu-match</span>
+        <span class="nav__logo-sub">platform</span>
+      </a>
+      <nav class="nav__links" aria-label="주요 섹션">
+        <a href="./index.html#categories">서비스 분야</a>
+        <a href="./index.html#instructors">강사진</a>
+        <a href="./index.html#jobs">강의 공고</a>
+      </nav>
+      <div class="nav__auth">
+        <a href="./login.html" class="nav__auth-link">로그인</a>
+        <a href="./index.html" class="nav__cta">홈으로</a>
+      </div>
+    </header>
+
+    <main class="auth-wrap">
+      <div class="auth-card">
+        <span class="auth-card__tag">Sign Up</span>
+        <h1 class="auth-card__title">Edu-match 회원가입</h1>
+        <p class="auth-card__sub">강의 공고 등록·강사 매칭·DIY키트 구매를 위해 회원 정보를 입력해주세요.</p>
+
+        <form id="signup-form" class="auth-form" novalidate>
+          <div class="form-field">
+            <label for="signup-name">이름</label>
+            <input id="signup-name" name="name" type="text" required placeholder="홍길동" />
+          </div>
+
+          <div class="form-field">
+            <label for="signup-email">이메일</label>
+            <input id="signup-email" name="email" type="email" required placeholder="you@company.com" />
+          </div>
+
+          <div class="form-field">
+            <label for="signup-phone">연락처</label>
+            <input id="signup-phone" name="phone" type="tel" placeholder="010-0000-0000" />
+          </div>
+
+          <div class="form-field">
+            <label for="signup-role">가입 유형</label>
+            <select id="signup-role" name="role" required>
+              <option value="user">일반 회원 (공고 등록 · 프로그램 문의)</option>
+              <option value="instructor">강사 회원 (강의 · 워크샵 제공)</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="signup-category">관심 분야</label>
+            <select id="signup-category" name="category">
+              <option value="">선택 안 함</option>
+              <option value="corporate-lecture">기업출강 워크샵</option>
+              <option value="teambuilding">팀빌딩 프로그램</option>
+              <option value="craft-experience">공방체험</option>
+              <option value="diy-kit">DIY키트</option>
+              <option value="it-ai">IT · AI 교육</option>
+              <option value="leadership">리더십 · 조직개발</option>
+              <option value="design">디자인 · UX</option>
+              <option value="data">데이터 분석</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="signup-password">비밀번호 (6자 이상)</label>
+            <input id="signup-password" name="password" type="password" required minlength="6" />
+          </div>
+
+          <div class="form-field">
+            <label for="signup-password2">비밀번호 확인</label>
+            <input id="signup-password2" name="password2" type="password" required minlength="6" />
+          </div>
+
+          <button type="submit" class="auth-submit">회원가입 완료</button>
+
+          <div id="signup-message" class="auth-message"></div>
+        </form>
+
+        <div class="auth-divider">─ OR ─</div>
+        <p class="auth-alt">이미 계정이 있으신가요?<a href="./login.html">로그인</a></p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</span>
+        <span class="footer__tag">Connecting Experts · Empowering Education</span>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+  </body>
+</html>

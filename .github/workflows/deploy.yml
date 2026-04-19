@@ -1,0 +1,69 @@
+name: Deploy Edu-match to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare build output
+        run: |
+          mkdir -p _site
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='_site' \
+            --exclude='node_modules' \
+            --exclude='README.md' \
+            --exclude='schema.sql' \
+            ./ _site/
+          # SPA-ish fallback so deep links resolve on GH Pages
+          cp _site/index.html _site/404.html || true
+          # CNAME or nojekyll
+          touch _site/.nojekyll
+
+      - name: Validate HTML files exist
+        run: |
+          test -f _site/index.html
+          test -f _site/login.html
+          test -f _site/signup.html
+          test -f _site/admin.html
+          test -f _site/styles.css
+          test -f _site/script.js
+          test -f _site/admin.js
+          test -f _site/auth.js
+          test -f _site/supabase-config.js
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,137 @@
+// =========================================================
+// Edu-match — Authentication (Signup / Login)
+// =========================================================
+// Supabase Auth + em_profiles 테이블 연동
+// 관리자(admin1124/1124) 로그인은 localStorage 세션으로 처리
+// =========================================================
+
+(function () {
+  const em = window.EduMatch || {};
+  const supabase = em.supabase;
+  const adminCreds = em.ADMIN_CREDENTIALS || { id: "admin1124", pw: "1124" };
+  const TABLES = em.TABLES || { profiles: "em_profiles" };
+
+  function showMessage(el, text, type) {
+    if (!el) return;
+    el.textContent = text;
+    el.className = "auth-message is-shown auth-message--" + (type || "error");
+  }
+
+  // ---------- 회원가입 ----------
+  const signupForm = document.getElementById("signup-form");
+  if (signupForm) {
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("signup-message");
+      const data = new FormData(signupForm);
+      const name = (data.get("name") || "").toString().trim();
+      const email = (data.get("email") || "").toString().trim();
+      const phone = (data.get("phone") || "").toString().trim();
+      const role = (data.get("role") || "user").toString();
+      const category = (data.get("category") || "").toString();
+      const password = (data.get("password") || "").toString();
+      const password2 = (data.get("password2") || "").toString();
+
+      if (password.length < 6) {
+        showMessage(msg, "비밀번호는 6자 이상이어야 합니다.", "error");
+        return;
+      }
+      if (password !== password2) {
+        showMessage(msg, "비밀번호가 일치하지 않습니다.", "error");
+        return;
+      }
+
+      if (!supabase) {
+        showMessage(msg, "Supabase 설정이 필요합니다. supabase-config.js 를 확인해주세요.", "error");
+        return;
+      }
+
+      try {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name, role, category } },
+        });
+        if (signUpError) throw signUpError;
+
+        const user = signUpData.user;
+        const { error: profileError } = await supabase
+          .from(TABLES.profiles)
+          .insert({
+            user_id: user ? user.id : null,
+            email,
+            name,
+            phone,
+            role,
+            category,
+          });
+        if (profileError) console.warn("profile insert error:", profileError);
+
+        showMessage(msg, "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다…", "success");
+        signupForm.reset();
+        setTimeout(() => (window.location.href = "./login.html"), 1800);
+      } catch (err) {
+        showMessage(msg, "회원가입 실패: " + (err.message || err), "error");
+      }
+    });
+  }
+
+  // ---------- 로그인 탭 전환 ----------
+  const tabs = document.querySelectorAll(".auth-tab");
+  const panels = document.querySelectorAll("[data-panel]");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const key = tab.getAttribute("data-tab");
+      tabs.forEach((t) => t.classList.toggle("is-active", t === tab));
+      panels.forEach((p) => {
+        if (p.getAttribute("data-panel") === key) p.style.display = "";
+        else if (p.classList.contains("auth-form")) p.style.display = "none";
+      });
+    });
+  });
+
+  // ---------- 일반 로그인 ----------
+  const loginForm = document.getElementById("login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("login-message");
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      if (!supabase) {
+        showMessage(msg, "Supabase 설정이 필요합니다.", "error");
+        return;
+      }
+
+      try {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showMessage(msg, "로그인 성공! 홈으로 이동합니다…", "success");
+        setTimeout(() => (window.location.href = "./index.html"), 1200);
+      } catch (err) {
+        showMessage(msg, "로그인 실패: " + (err.message || err), "error");
+      }
+    });
+  }
+
+  // ---------- 관리자 로그인 ----------
+  const adminForm = document.getElementById("admin-login-form");
+  if (adminForm) {
+    adminForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("admin-login-message");
+      const id = document.getElementById("admin-id").value.trim();
+      const pw = document.getElementById("admin-pw").value;
+
+      if (id === adminCreds.id && pw === adminCreds.pw) {
+        if (typeof em.setAdminSession === "function") em.setAdminSession(true);
+        else localStorage.setItem("edumatch_admin_session", "true");
+        showMessage(msg, "관리자 인증 성공. 관리자 페이지로 이동합니다…", "success");
+        setTimeout(() => (window.location.href = "./admin.html"), 900);
+      } else {
+        showMessage(msg, "관리자 ID 또는 비밀번호가 일치하지 않습니다.", "error");
+      }
+    });
+  }
+})();

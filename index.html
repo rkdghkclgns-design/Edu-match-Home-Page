@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070d" />
+    <meta name="description" content="기업출강 워크샵·팀빌딩·공방체험·DIY키트·전문 교강사 매칭 플랫폼 Edu-match. 기업·기관의 교육 니즈에 최적화된 프로그램과 강사를 빠르게 찾아드립니다." />
+    <title>Edu-match — 기업출강 · 팀빌딩 · 교강사 매칭 플랫폼</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+
+    <!-- NAV -->
+    <header class="nav">
+      <a href="#top" class="nav__logo" aria-label="홈">
+        <span class="nav__logo-mark">Edu-match</span>
+        <span class="nav__logo-sub">platform</span>
+      </a>
+      <nav class="nav__links" aria-label="주요 섹션">
+        <a href="#about">플랫폼 소개</a>
+        <a href="#categories">서비스 분야</a>
+        <a href="#instructors">강사진</a>
+        <a href="#jobs">강의 공고</a>
+        <a href="#how">매칭 방식</a>
+      </nav>
+      <div class="nav__auth">
+        <a href="./login.html" class="nav__auth-link">로그인</a>
+        <a href="./signup.html" class="nav__cta">회원가입</a>
+      </div>
+    </header>
+
+    <main id="top">
+
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero__eyebrow">
+          <span class="dot dot--violet"></span>
+          Corporate Workshop · Team Building · Instructor Matching
+        </div>
+        <h1 class="hero__title">
+          <span class="hero__line">기업출강 · 팀빌딩 · 교강사,</span>
+          <span class="hero__line hero__line--grad">Edu-match가 맞춤 매칭합니다.</span>
+        </h1>
+        <p class="hero__lede">
+          기업출강 워크샵부터 팀빌딩 · 공방체험 · DIY키트 · IT/AI 교육까지. Edu-match는 현장에서 검증된 전문 교강사와 프로그램을 기업·기관의 니즈에 맞춰 즉시 연결합니다.
+        </p>
+        <div class="hero__ctas">
+          <a class="btn btn--primary" href="#jobs">
+            강의 공고 둘러보기
+            <span class="btn__arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn btn--ghost" href="#instructors">강사진 보기</a>
+        </div>
+
+        <dl class="hero__metrics">
+          <div>
+            <dt>등록 강사</dt>
+            <dd><span data-counter="340">0</span><span class="hero__metric-unit">명</span></dd>
+          </div>
+          <div>
+            <dt>누적 매칭 완료</dt>
+            <dd><span data-counter="1280">0</span><span class="hero__metric-unit">건</span></dd>
+          </div>
+          <div>
+            <dt>협력 기관</dt>
+            <dd><span data-counter="95">0</span><span class="hero__metric-unit">곳</span></dd>
+          </div>
+          <div>
+            <dt>평균 만족도</dt>
+            <dd><span data-counter="97">0</span><span class="hero__metric-unit">/100</span></dd>
+          </div>
+        </dl>
+
+        <div class="hero__marquee" aria-hidden="true">
+          <div class="hero__marquee-track">
+            <span>Python</span><span>•</span><span>ChatGPT</span><span>•</span>
+            <span>데이터 분석</span><span>•</span><span>UX 디자인</span><span>•</span>
+            <span>리더십</span><span>•</span><span>마케팅</span><span>•</span>
+            <span>클라우드</span><span>•</span><span>보안</span><span>•</span>
+            <span>스타트업</span><span>•</span><span>직무 역량</span><span>•</span>
+            <span>Python</span><span>•</span><span>ChatGPT</span><span>•</span>
+            <span>데이터 분석</span><span>•</span><span>UX 디자인</span><span>•</span>
+            <span>리더십</span><span>•</span><span>마케팅</span><span>•</span>
+            <span>클라우드</span><span>•</span><span>보안</span><span>•</span>
+            <span>스타트업</span><span>•</span><span>직무 역량</span><span>•</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="section">
+        <div class="section__head">
+          <span class="section__tag">01 &nbsp;· &nbsp;About</span>
+          <h2 class="section__title">
+            교육 수요와 강사 역량,<br />
+            <span class="grad-text">정확하게 이어드립니다</span>
+          </h2>
+          <p class="section__sub">강의 공고를 올리면 분야별 검증 강사 후보를 72시간 이내에 제안합니다.</p>
+        </div>
+
+        <div class="about">
+          <p class="about__lead">
+            Edu-match는 단순 인력 소개를 넘어 강의 목적·수강자 수준·일정에 맞는 강사를 구조적으로 매칭합니다. 모든 강사는 현장 경력·강의 이력·수강자 평점으로 3중 검증을 거칩니다.
+            기업 HRD 담당자부터 대학 교무처까지, 교육 공고를 등록하면 플랫폼이 최적 후보를 추천하고 계약까지 원스톱으로 지원합니다.
+          </p>
+          <ul class="about__facts">
+            <li>
+              <span class="about__facts-key">서비스 유형</span>
+              <span class="about__facts-val">워크샵 · 교강사 매칭</span>
+            </li>
+            <li>
+              <span class="about__facts-key">매칭 소요 시간</span>
+              <span class="about__facts-val">평균 48시간</span>
+            </li>
+            <li>
+              <span class="about__facts-key">주요 분야</span>
+              <span class="about__facts-val">기업출강 · 팀빌딩 · 공방 · IT</span>
+            </li>
+            <li>
+              <span class="about__facts-key">강사 검증</span>
+              <span class="about__facts-val">경력 · 이력 · 평점 3중 심사</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CATEGORIES (솜씨당Biz 반영) -->
+      <section id="categories" class="section">
+        <div class="section__head">
+          <span class="section__tag">02 &nbsp;· &nbsp;Categories</span>
+          <h2 class="section__title">
+            기업 교육부터 공방·DIY까지<br />
+            <span class="grad-text">8개 서비스 분야</span>
+          </h2>
+          <p class="section__sub">기업출강 워크샵·팀빌딩 프로그램·공방체험·DIY키트 등 다양한 현장 교육을 한 곳에서 비교하고 매칭받으세요.</p>
+        </div>
+
+        <div class="categories-grid">
+          <article class="category-card">
+            <div class="category-card__icon">🏢</div>
+            <h3 class="category-card__title">기업출강 워크샵</h3>
+            <p class="category-card__desc">임직원 대상 전문 강사 출강. 직무·비즈니스·트렌드 교육.</p>
+            <span class="category-card__count">120+ 프로그램</span>
+          </article>
+
+          <article class="category-card category-card--highlight">
+            <div class="category-card__icon">🤝</div>
+            <h3 class="category-card__title">팀빌딩 프로그램</h3>
+            <p class="category-card__desc">조직 결속·협업 강화. 체험형 액티비티와 워크숍 결합.</p>
+            <span class="category-card__count">85+ 프로그램</span>
+          </article>
+
+          <article class="category-card">
+            <div class="category-card__icon">🎨</div>
+            <h3 class="category-card__title">공방체험</h3>
+            <p class="category-card__desc">도예·가죽·캔들·플라워 등 오감 자극 실습 클래스.</p>
+            <span class="category-card__count">60+ 프로그램</span>
+          </article>
+
+          <article class="category-card">
+            <div class="category-card__icon">📦</div>
+            <h3 class="category-card__title">DIY키트</h3>
+            <p class="category-card__desc">재택·원격 팀에게 배송되는 체험 패키지. 온라인 라이브 병행.</p>
+            <span class="category-card__count">40+ 키트</span>
+          </article>
+
+          <article class="category-card">
+            <div class="category-card__icon">💻</div>
+            <h3 class="category-card__title">IT · AI 교육</h3>
+            <p class="category-card__desc">ChatGPT·데이터 분석·클라우드 등 실무형 기술 교육.</p>
+            <span class="category-card__count">95+ 과정</span>
+          </article>
+
+          <article class="category-card">
+            <div class="category-card__icon">👥</div>
+            <h3 class="category-card__title">리더십 · 조직개발</h3>
+            <p class="category-card__desc">팀장·관리자 리더십, 성과관리, 코칭 워크숍.</p>
+            <span class="category-card__count">50+ 과정</span>
+          </article>
+
+          <article class="category-card">
+            <div class="category-card__icon">🎯</div>
+            <h3 class="category-card__title">디자인 · UX</h3>
+            <p class="category-card__desc">디자인 씽킹·Figma·서비스 기획 실무 집중 과정.</p>
+            <span class="category-card__count">35+ 과정</span>
+          </article>
+
+          <article class="category-card">
+            <div class="category-card__icon">📊</div>
+            <h3 class="category-card__title">데이터 분석</h3>
+            <p class="category-card__desc">SQL·Tableau·A/B 테스트 기반 데이터 드리븐 교육.</p>
+            <span class="category-card__count">30+ 과정</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section id="how" class="section">
+        <div class="section__head">
+          <span class="section__tag">03 &nbsp;· &nbsp;How It Works</span>
+          <h2 class="section__title">
+            3단계로 완성되는<br />
+            <span class="grad-text">강사 매칭 프로세스</span>
+          </h2>
+          <p class="section__sub">공고 등록부터 강의 완료까지 플랫폼이 전 과정을 안내합니다.</p>
+        </div>
+
+        <div class="pillars">
+          <article class="pillar">
+            <div class="pillar__icon pillar__icon--violet" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="8" y="10" width="32" height="28" rx="5"/>
+                <path d="M16 10v28M8 20h32"/>
+                <path d="M22 30h8M22 26h5"/>
+              </svg>
+            </div>
+            <h3 class="pillar__title">① 강의 공고 등록</h3>
+            <p class="pillar__desc">교육 목적, 분야, 기간, 수강 대상, 예산을 입력하면 공고가 즉시 게시됩니다.</p>
+            <ul class="pillar__list">
+              <li>강의 분야 및 세부 주제 설정</li>
+              <li>수강 대상 레벨 지정</li>
+              <li>오프라인 · 온라인 · 하이브리드 선택</li>
+              <li>예산 범위 및 일정 조율</li>
+            </ul>
+          </article>
+
+          <article class="pillar">
+            <div class="pillar__icon pillar__icon--cyan" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="24" r="10"/>
+                <path d="M24 7v5M24 36v5M7 24h5M36 24h5"/>
+                <path d="M18 18l-4-4M34 34l-4-4M30 18l4-4M14 34l4-4"/>
+              </svg>
+            </div>
+            <h3 class="pillar__title">② AI 기반 매칭</h3>
+            <p class="pillar__desc">공고 조건과 강사 프로필을 분석해 최적 후보 3~5인을 72시간 이내에 추천합니다.</p>
+            <ul class="pillar__list">
+              <li>전문 분야 · 경력 매칭 점수 산출</li>
+              <li>수강자 평점 · 재의뢰율 반영</li>
+              <li>일정 · 지역 · 강의 형태 필터</li>
+              <li>후보 강사 프로필 비교 제공</li>
+            </ul>
+          </article>
+
+          <article class="pillar">
+            <div class="pillar__icon pillar__icon--lime" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 34l8-8 6 6 10-12"/>
+                <rect x="6" y="6" width="36" height="36" rx="6"/>
+              </svg>
+            </div>
+            <h3 class="pillar__title">③ 계약 · 강의 완료</h3>
+            <p class="pillar__desc">강사 확정 후 계약서 작성, 커리큘럼 협의, 강의 완료까지 플랫폼이 지원합니다.</p>
+            <ul class="pillar__list">
+              <li>표준 강의 계약서 자동 생성</li>
+              <li>커리큘럼 초안 공동 작업</li>
+              <li>강의 완료 후 평가 수집</li>
+              <li>재의뢰 · 후속 과정 연계</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- INSTRUCTORS -->
+      <section id="instructors" class="section">
+        <div class="section__head">
+          <span class="section__tag">04 &nbsp;· &nbsp;Instructors</span>
+          <h2 class="section__title">
+            현장과 강단을 모두 아는<br />
+            <span class="grad-text">검증 강사진</span>
+          </h2>
+          <p class="section__sub">모든 강사는 실무 경력 5년 이상, 강의 이력 검증, 수강자 평점 심사를 통과했습니다.</p>
+        </div>
+
+        <div class="instructors-grid">
+
+          <article class="instructor-card instructor-card--feature">
+            <div class="instructor-card__header">
+              <div class="instructor-card__avatar avatar--a">
+                <span>김</span>
+              </div>
+              <div class="instructor-card__meta">
+                <span class="instructor-card__badge instructor-card__badge--hot">인기</span>
+                <div class="instructor-card__rating">★ 4.9 <span>(리뷰 142)</span></div>
+              </div>
+            </div>
+            <h3 class="instructor-card__name">김지현</h3>
+            <p class="instructor-card__title">AI · 머신러닝 전문 강사</p>
+            <p class="instructor-card__bio">前 네이버 AI Lab 연구원 · 카이스트 AI 대학원 출신. GPT 프롬프트 엔지니어링, 파이썬 머신러닝, LLM 실무 교육 전문.</p>
+            <div class="instructor-card__tags">
+              <span>Python</span><span>머신러닝</span><span>LLM</span><span>프롬프트</span>
+            </div>
+            <div class="instructor-card__footer">
+              <span class="instructor-card__exp">경력 8년</span>
+              <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+            </div>
+          </article>
+
+          <article class="instructor-card">
+            <div class="instructor-card__header">
+              <div class="instructor-card__avatar avatar--b">
+                <span>박</span>
+              </div>
+              <div class="instructor-card__meta">
+                <span class="instructor-card__badge">전문</span>
+                <div class="instructor-card__rating">★ 4.8 <span>(리뷰 98)</span></div>
+              </div>
+            </div>
+            <h3 class="instructor-card__name">박성민</h3>
+            <p class="instructor-card__title">클라우드 · DevOps 강사</p>
+            <p class="instructor-card__bio">AWS 공인 아키텍트 · 삼성SDS 출신. 클라우드 전환, 쿠버네티스, CI/CD 파이프라인 구축 실습 교육.</p>
+            <div class="instructor-card__tags">
+              <span>AWS</span><span>Docker</span><span>Kubernetes</span>
+            </div>
+            <div class="instructor-card__footer">
+              <span class="instructor-card__exp">경력 11년</span>
+              <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+            </div>
+          </article>
+
+          <article class="instructor-card">
+            <div class="instructor-card__header">
+              <div class="instructor-card__avatar avatar--c">
+                <span>이</span>
+              </div>
+              <div class="instructor-card__meta">
+                <span class="instructor-card__badge">신규</span>
+                <div class="instructor-card__rating">★ 4.9 <span>(리뷰 34)</span></div>
+              </div>
+            </div>
+            <h3 class="instructor-card__name">이수아</h3>
+            <p class="instructor-card__title">UX 디자인 · 서비스 기획 강사</p>
+            <p class="instructor-card__bio">라인 · 카카오 UX 리서처 출신. 사용자 인터뷰, 와이어프레임, Figma 실무, 서비스 기획 프로세스 전문.</p>
+            <div class="instructor-card__tags">
+              <span>Figma</span><span>UX 리서치</span><span>서비스 기획</span>
+            </div>
+            <div class="instructor-card__footer">
+              <span class="instructor-card__exp">경력 7년</span>
+              <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+            </div>
+          </article>
+
+          <article class="instructor-card">
+            <div class="instructor-card__header">
+              <div class="instructor-card__avatar avatar--d">
+                <span>최</span>
+              </div>
+              <div class="instructor-card__meta">
+                <span class="instructor-card__badge">전문</span>
+                <div class="instructor-card__rating">★ 4.7 <span>(리뷰 76)</span></div>
+              </div>
+            </div>
+            <h3 class="instructor-card__name">최동욱</h3>
+            <p class="instructor-card__title">디지털 마케팅 · 콘텐츠 전략 강사</p>
+            <p class="instructor-card__bio">현대자동차 디지털팀 · 오길비 출신. SEO, 퍼포먼스 마케팅, 브랜드 콘텐츠 전략 실무 중심 교육.</p>
+            <div class="instructor-card__tags">
+              <span>퍼포먼스 마케팅</span><span>SEO</span><span>브랜딩</span>
+            </div>
+            <div class="instructor-card__footer">
+              <span class="instructor-card__exp">경력 9년</span>
+              <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+            </div>
+          </article>
+
+          <article class="instructor-card">
+            <div class="instructor-card__header">
+              <div class="instructor-card__avatar avatar--e">
+                <span>정</span>
+              </div>
+              <div class="instructor-card__meta">
+                <span class="instructor-card__badge">전문</span>
+                <div class="instructor-card__rating">★ 4.8 <span>(리뷰 55)</span></div>
+              </div>
+            </div>
+            <h3 class="instructor-card__name">정유진</h3>
+            <p class="instructor-card__title">리더십 · 조직 역량 개발 강사</p>
+            <p class="instructor-card__bio">맥킨지 · 딜로이트 컨설팅 출신. 팀장급 리더십, 성과 관리, 코칭 기반 조직 개발 워크숍 전문.</p>
+            <div class="instructor-card__tags">
+              <span>리더십</span><span>성과 관리</span><span>코칭</span>
+            </div>
+            <div class="instructor-card__footer">
+              <span class="instructor-card__exp">경력 13년</span>
+              <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+            </div>
+          </article>
+
+          <article class="instructor-card">
+            <div class="instructor-card__header">
+              <div class="instructor-card__avatar avatar--f">
+                <span>한</span>
+              </div>
+              <div class="instructor-card__meta">
+                <span class="instructor-card__badge instructor-card__badge--hot">인기</span>
+                <div class="instructor-card__rating">★ 5.0 <span>(리뷰 89)</span></div>
+              </div>
+            </div>
+            <h3 class="instructor-card__name">한서준</h3>
+            <p class="instructor-card__title">데이터 분석 · 비즈니스 인텔리전스 강사</p>
+            <p class="instructor-card__bio">쿠팡 · 토스 데이터팀 출신. SQL, 태블로, 파이썬 분석, A/B 테스트, 대시보드 설계 실전 교육.</p>
+            <div class="instructor-card__tags">
+              <span>SQL</span><span>Tableau</span><span>A/B 테스트</span>
+            </div>
+            <div class="instructor-card__footer">
+              <span class="instructor-card__exp">경력 10년</span>
+              <a class="instructor-card__link" href="#contact">매칭 문의 →</a>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="instructors-more">
+          <a href="#contact" class="btn btn--ghost">
+            전체 강사진 보기
+            <span class="btn__arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- JOBS -->
+      <section id="jobs" class="section">
+        <div class="section__head">
+          <span class="section__tag">05 &nbsp;· &nbsp;Open Positions</span>
+          <h2 class="section__title">
+            지금 매칭 중인<br />
+            <span class="grad-text">강의 공고</span>
+          </h2>
+          <p class="section__sub">기업·대학·공공기관의 최신 강의 의뢰를 확인하고 지원하세요.</p>
+        </div>
+
+        <div class="jobs-grid">
+
+          <article class="job-card job-card--urgent">
+            <div class="job-card__header">
+              <span class="job-card__org">삼성전자 DX 부문 HRD</span>
+              <span class="job-badge job-badge--urgent">긴급</span>
+            </div>
+            <h3 class="job-card__title">생성형 AI 임직원 교육 강사 모집</h3>
+            <p class="job-card__desc">전 임직원 대상 ChatGPT·Copilot 실무 활용 교육. 부서별 맞춤 커리큘럼 조율 가능.</p>
+            <div class="job-card__details">
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">기간</span>
+                <span>2026.05 ~ 2026.07 (3개월)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">형태</span>
+                <span>오프라인 출강 (수원·서울)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">대상</span>
+                <span>직원 300명 (팀별 분반)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">예산</span>
+                <span>강사비 협의</span>
+              </div>
+            </div>
+            <div class="job-card__tags">
+              <span>생성형 AI</span><span>ChatGPT</span><span>MS Copilot</span><span>기업 교육</span>
+            </div>
+            <a class="job-card__cta btn btn--primary" href="#contact">지원하기 →</a>
+          </article>
+
+          <article class="job-card">
+            <div class="job-card__header">
+              <span class="job-card__org">한국산업인력공단</span>
+              <span class="job-badge">모집 중</span>
+            </div>
+            <h3 class="job-card__title">파이썬 데이터 분석 훈련 교사</h3>
+            <p class="job-card__desc">국비 지원 직업훈련 과정 강사 모집. 비전공자 대상 파이썬 기초 ~ 데이터 시각화.</p>
+            <div class="job-card__details">
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">기간</span>
+                <span>2026.06 ~ 2026.09 (16주)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">형태</span>
+                <span>오프라인 (서울 강남)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">대상</span>
+                <span>취업 준비생 20명</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">예산</span>
+                <span>시간당 50,000 ~ 80,000원</span>
+              </div>
+            </div>
+            <div class="job-card__tags">
+              <span>Python</span><span>데이터 분석</span><span>시각화</span>
+            </div>
+            <a class="job-card__cta btn btn--ghost" href="#contact">지원하기 →</a>
+          </article>
+
+          <article class="job-card">
+            <div class="job-card__header">
+              <span class="job-card__org">연세대학교 미래교육원</span>
+              <span class="job-badge">모집 중</span>
+            </div>
+            <h3 class="job-card__title">UX/UI 디자인 특강 강사</h3>
+            <p class="job-card__desc">경영·인문 전공 대학원생 대상 디자인 씽킹 & Figma 실습 집중 과정. 현장 중심 포트폴리오 지도.</p>
+            <div class="job-card__details">
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">기간</span>
+                <span>2026.05 (2일 집중)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">형태</span>
+                <span>오프라인 (신촌 캠퍼스)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">대상</span>
+                <span>대학원생 30명</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">예산</span>
+                <span>일 40만 원 (협의 가능)</span>
+              </div>
+            </div>
+            <div class="job-card__tags">
+              <span>UX</span><span>Figma</span><span>디자인 씽킹</span>
+            </div>
+            <a class="job-card__cta btn btn--ghost" href="#contact">지원하기 →</a>
+          </article>
+
+          <article class="job-card">
+            <div class="job-card__header">
+              <span class="job-card__org">중소벤처기업부 스마트공장 지원단</span>
+              <span class="job-badge">모집 중</span>
+            </div>
+            <h3 class="job-card__title">스마트 팩토리 · IoT 현장 교육 강사</h3>
+            <p class="job-card__desc">제조업 중소기업 임직원 대상 스마트 팩토리 개념·사례·도입 전략 교육. 현장 방문 강의 포함.</p>
+            <div class="job-card__details">
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">기간</span>
+                <span>2026.06 ~ 12 (수시)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">형태</span>
+                <span>출장 강의 (전국)</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">대상</span>
+                <span>기업 임직원 10~30명</span>
+              </div>
+              <div class="job-card__detail">
+                <span class="job-card__detail-label">예산</span>
+                <span>건당 협의</span>
+              </div>
+            </div>
+            <div class="job-card__tags">
+              <span>스마트 팩토리</span><span>IoT</span><span>제조 혁신</span>
+            </div>
+            <a class="job-card__cta btn btn--ghost" href="#contact">지원하기 →</a>
+          </article>
+
+        </div>
+
+        <div class="instructors-more">
+          <a href="#contact" class="btn btn--ghost">
+            전체 공고 보기
+            <span class="btn__arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- TRUSTED BY -->
+      <section class="section section--tight">
+        <p class="logos__label">Partner Organizations</p>
+        <ul class="logos">
+          <li>삼성전자</li>
+          <li>LG CNS</li>
+          <li>카카오</li>
+          <li>한국산업인력공단</li>
+          <li>연세대학교</li>
+          <li>KAIST</li>
+          <li>중소벤처기업부</li>
+          <li>서울시50플러스재단</li>
+        </ul>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact" class="section contact">
+        <div class="contact__card">
+          <div>
+            <span class="section__tag">06 &nbsp;· &nbsp;Contact</span>
+            <h2 class="section__title contact__title">
+              강사 등록 · 공고 문의<br />
+              <span class="grad-text">지금 시작하세요.</span>
+            </h2>
+            <p class="contact__desc">
+              강사로 등록하거나 강의 공고를 올리려면 아래로 연락주세요.
+              담당 매니저가 24시간 이내에 답변드립니다.
+            </p>
+          </div>
+          <div class="contact__actions">
+            <a class="btn btn--primary btn--lg" href="mailto:match@edumatch.kr">
+              match@edumatch.kr
+              <span class="btn__arrow" aria-hidden="true">→</span>
+            </a>
+            <div class="contact__dual">
+              <a class="btn btn--ghost" href="mailto:instructor@edumatch.kr">
+                강사 등록 문의
+              </a>
+              <a class="btn btn--ghost" href="mailto:edu@edumatch.kr">
+                강의 공고 등록
+              </a>
+            </div>
+            <div class="contact__links">
+              <a href="#">카카오 채널</a>
+              <a href="#">LinkedIn</a>
+              <a href="#">YouTube</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</span>
+        <span class="footer__tag">Connecting Experts · Empowering Education</span>
+      </div>
+    </footer>
+
+    <script src="./script.js" defer></script>
+  </body>
+</html>
