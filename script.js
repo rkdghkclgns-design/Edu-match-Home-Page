@@ -87,6 +87,28 @@ function formatWon(n) {
   return Number(n).toLocaleString("ko-KR") + "원";
 }
 
+// 아주 가벼운 마크다운 → HTML (제목/굵게/기울임/링크/리스트/줄바꿈만 지원)
+function tinyMarkdown(raw) {
+  if (!raw) return "";
+  let t = String(raw);
+  t = t.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  t = t.replace(/(^|[\s(])\*(.+?)\*(?=[\s.,)!?]|$)/g, "$1<em>$2</em>");
+  t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#9ae6ff;">$1</a>');
+  // 제목
+  t = t.replace(/^#{3}\s+(.+)$/gm, '<h4 style="margin:12px 0 4px; font-size:14px;">$1</h4>');
+  t = t.replace(/^#{2}\s+(.+)$/gm, '<h3 style="margin:14px 0 6px; font-size:15px; font-weight:700;">$1</h3>');
+  t = t.replace(/^#\s+(.+)$/gm,    '<h2 style="margin:16px 0 8px; font-size:16px; font-weight:800;">$1</h2>');
+  // 리스트
+  t = t.replace(/^(?:-\s+.+(?:\n|$))+?/gm, (block) => {
+    const items = block.trim().split("\n").map((l) => l.replace(/^-\s+/, "")).map((l) => `<li>${l}</li>`).join("");
+    return `<ul style="margin:6px 0 10px 18px; padding:0;">${items}</ul>`;
+  });
+  // 줄바꿈 (단, 이미 블록 태그가 들어간 줄은 제외)
+  t = t.replace(/\n{2,}/g, "<br/><br/>").replace(/\n/g, "<br/>");
+  return t;
+}
+
 function jobCardHtml(job, cats) {
   const urgent = job.is_urgent;
   const catLabel = cats.find((c) => c.key === job.category)?.label || job.category || "";
@@ -110,6 +132,16 @@ function jobCardHtml(job, cats) {
 
   const minPriceLink = job.min_price_ref_url
     ? `<div style="margin-top:8px; font-size:12px; color: var(--text-soft);">최소 단가 참고: <a href="${escapeHtml(job.min_price_ref_url)}" target="_blank" rel="noopener" style="color:#9ae6ff;">솜씨당Biz 동일 서비스 →</a></div>`
+    : "";
+
+  const bodyHtml = job.body_content
+    ? `<div class="job-card__body">${tinyMarkdown(job.body_content)}</div>
+       <button type="button" class="job-card__body-toggle">본문 펼치기 ▾</button>`
+    : "";
+
+  const images = Array.isArray(job.body_images) ? job.body_images : [];
+  const galleryHtml = images.length > 0
+    ? `<div class="job-card__gallery">${images.slice(0, 6).map((m) => `<a href="${escapeHtml(m.url)}" target="_blank" rel="noopener"><img src="${escapeHtml(m.url)}" alt="${escapeHtml(m.name || "첨부 이미지")}" loading="lazy" /></a>`).join("")}</div>`
     : "";
 
   return `
@@ -145,6 +177,8 @@ function jobCardHtml(job, cats) {
         ${catLabel ? `<div class="job-card__detail"><span class="job-card__detail-label">분야</span><span>${escapeHtml(catLabel)}</span></div>` : ""}
       </div>
       <div class="job-card__tags">${tags}</div>
+      ${bodyHtml}
+      ${galleryHtml}
       ${minPriceLink}
       <a class="job-card__cta btn ${urgent ? "btn--primary" : "btn--ghost"}" href="#contact">지원하기 →</a>
     </article>
@@ -283,8 +317,19 @@ if (document.readyState === "loading") {
     if (e.key === "Escape") closeModal();
   });
 
-  // 공고 카드의 "지원하기" 버튼만 모달 트리거 (강사 카드는 공고 섹션으로 스크롤하는 내부 앵커로 유지)
+  // 공고 카드의 "지원하기" 버튼만 모달 트리거
   document.body.addEventListener("click", (e) => {
+    // 본문 펼치기 토글
+    const toggle = e.target.closest(".job-card__body-toggle");
+    if (toggle) {
+      const body = toggle.previousElementSibling;
+      if (body?.classList.contains("job-card__body")) {
+        body.classList.toggle("is-open");
+        toggle.textContent = body.classList.contains("is-open") ? "본문 접기 ▴" : "본문 펼치기 ▾";
+      }
+      return;
+    }
+
     const hit = e.target.closest(".job-card__cta,[data-inquiry]");
     if (!hit) return;
     const card = hit.closest(".job-card");

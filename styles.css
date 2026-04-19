@@ -1480,3 +1480,69 @@ main, .nav, .footer__inner { position: relative; z-index: 1; }
   font-weight: 700;
   letter-spacing: 0.2px;
 }
+
+/* 본문 이미지 업로드 갤러리 */
+.posting-media-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.posting-media-gallery .tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: rgba(16,16,24,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.posting-media-gallery .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.posting-media-gallery .tile .status {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text-soft); background: rgba(0,0,0,0.4);
+}
+.posting-media-gallery .tile .remove {
+  position: absolute; top: 6px; right: 6px;
+  width: 24px; height: 24px;
+  background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+  cursor: pointer; font-size: 14px; line-height: 1;
+}
+
+/* 공고 카드 본문/이미지 */
+.job-card__body {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(16,16,24,0.6);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+.job-card__body.is-open { max-height: none; }
+.job-card__body::after {
+  content: "";
+  position: absolute; left:0; right:0; bottom:0; height: 48px;
+  background: linear-gradient(180deg, transparent, rgba(16,16,24,1));
+  pointer-events: none;
+}
+.job-card__body.is-open::after { display: none; }
+.job-card__body-toggle {
+  margin-top: 8px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-soft); border-radius: 10px;
+  padding: 6px 12px; cursor: pointer; font-size: 12px;
+}
+.job-card__gallery {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px; margin-top: 12px;
+}
+.job-card__gallery a {
+  display: block; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.job-card__gallery a img { width:100%; height:100%; object-fit: cover; display:block; }

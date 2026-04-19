@@ -1,5 +1,5 @@
 // =========================================================
-// Edu-match — 의뢰자용 강의 공고 등록
+// Edu-match — 의뢰자용 강의 공고 등록 (본문 + 이미지)
 // =========================================================
 
 (function () {
@@ -10,11 +10,16 @@
   }
   const supabase = em.supabase;
   const TABLES = em.TABLES;
+  const BUCKET = "em-posting-media";
+  const MAX_IMAGES = 6;
+  const MAX_SIZE = 8 * 1024 * 1024; // 8MB
 
   const form = document.getElementById("register-form");
   const msg = document.getElementById("reg-msg");
   const shareCheckbox = document.getElementById("j-share");
   const shareBlock = document.getElementById("share-block");
+  const fileInput = document.getElementById("j-body-files");
+  const gallery = document.getElementById("j-body-gallery");
 
   shareCheckbox?.addEventListener("change", () => {
     shareBlock.style.display = shareCheckbox.checked ? "" : "none";
@@ -25,32 +30,98 @@
     msg.className = "auth-message is-shown auth-message--" + type;
   }
 
-  function getTravelFee() {
-    const picked = form.querySelector('input[name="travel_fee_region"]:checked');
-    if (!picked) return { region: null, amount: 0 };
-    return {
-      region: picked.value,
-      amount: Number(picked.dataset.amount) || 0,
-    };
-  }
-
-  // 필수 입력 검증 (공백 · 최소 길이 모두 검사)
   function validateRequired(fields) {
     for (const [id, label, min] of fields) {
       const el = document.getElementById(id);
       const v = (el?.value || "").trim();
-      if (!v) {
-        el?.focus();
-        return `${label} 을(를) 입력해주세요.`;
-      }
-      if (min && v.length < min) {
-        el?.focus();
-        return `${label} 은(는) 최소 ${min}자 이상 입력해주세요.`;
-      }
+      if (!v) { el?.focus(); return `${label} 을(를) 입력해주세요.`; }
+      if (min && v.length < min) { el?.focus(); return `${label} 은(는) 최소 ${min}자 이상 입력해주세요.`; }
     }
     return null;
   }
 
+  function getTravelFee() {
+    const picked = form.querySelector('input[name="travel_fee_region"]:checked');
+    if (!picked) return { region: null, amount: 0 };
+    return { region: picked.value, amount: Number(picked.dataset.amount) || 0 };
+  }
+
+  // ----- 이미지 업로드 -----
+  // pendingImages: { file, previewUrl, publicUrl?, status, path }
+  const pendingImages = [];
+
+  function renderGallery() {
+    gallery.innerHTML = pendingImages.map((img, idx) => `
+      <div class="tile" data-idx="${idx}">
+        <img src="${img.previewUrl}" alt="preview" />
+        ${img.status === "uploading" ? '<div class="status">업로드 중…</div>' : ""}
+        ${img.status === "error" ? '<div class="status">업로드 실패</div>' : ""}
+        <button type="button" class="remove" aria-label="제거" data-idx="${idx}">×</button>
+      </div>
+    `).join("");
+  }
+
+  function randomName(file) {
+    const ext = (file.name.split(".").pop() || "img").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 4) || "jpg";
+    const r = Math.random().toString(36).slice(2, 10);
+    const d = Date.now().toString(36);
+    return `${d}-${r}.${ext}`;
+  }
+
+  async function uploadOne(img) {
+    img.status = "uploading";
+    renderGallery();
+    const path = `jobs/${new Date().toISOString().slice(0, 10)}/${randomName(img.file)}`;
+    const { error } = await supabase.storage.from(BUCKET).upload(path, img.file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: img.file.type,
+    });
+    if (error) {
+      img.status = "error";
+      renderGallery();
+      return;
+    }
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    img.path = path;
+    img.publicUrl = data.publicUrl;
+    img.status = "done";
+    renderGallery();
+  }
+
+  fileInput?.addEventListener("change", async () => {
+    const files = Array.from(fileInput.files || []);
+    for (const f of files) {
+      if (pendingImages.length >= MAX_IMAGES) {
+        show(`본문 이미지는 최대 ${MAX_IMAGES} 장까지 첨부 가능합니다.`, "error");
+        break;
+      }
+      if (!f.type.startsWith("image/")) continue;
+      if (f.size > MAX_SIZE) {
+        show(`'${f.name}' 용량이 8MB 를 초과합니다.`, "error");
+        continue;
+      }
+      const img = { file: f, previewUrl: URL.createObjectURL(f), status: "uploading" };
+      pendingImages.push(img);
+      renderGallery();
+      uploadOne(img);
+    }
+    fileInput.value = "";
+  });
+
+  gallery?.addEventListener("click", (e) => {
+    const btn = e.target.closest(".remove");
+    if (!btn) return;
+    const idx = Number(btn.getAttribute("data-idx"));
+    const img = pendingImages[idx];
+    if (img?.path) {
+      supabase.storage.from(BUCKET).remove([img.path]).catch(() => {});
+    }
+    pendingImages.splice(idx, 1);
+    renderGallery();
+  });
+
+  // ----- 제출 -----
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -64,8 +135,15 @@
       ["j-target",  "수강 대상 · 규모",  2],
       ["j-budget",  "예산 · 단가",       2],
     ]);
-    if (err) {
-      show(err, "error");
+    if (err) { show(err, "error"); return; }
+
+    // 업로드 중인 이미지 확인
+    if (pendingImages.some((i) => i.status === "uploading")) {
+      show("이미지 업로드가 완료될 때까지 잠시만 기다려주세요.", "error");
+      return;
+    }
+    if (pendingImages.some((i) => i.status === "error")) {
+      show("업로드 실패한 이미지가 있습니다. 제거 후 다시 시도해주세요.", "error");
       return;
     }
 
@@ -84,7 +162,6 @@
     }
 
     const travel = getTravelFee();
-
     const descBase = document.getElementById("j-desc").value.trim();
     const description = [
       descBase,
@@ -93,10 +170,17 @@
       isShared ? `— 강사 등록 · 수익 10% 쉐어 → ${shareName} (${shareEmail})` : "",
     ].filter(Boolean).join("\n");
 
+    const bodyContent = document.getElementById("j-body").value.trim();
+    const bodyImages = pendingImages
+      .filter((i) => i.status === "done" && i.publicUrl)
+      .map((i) => ({ url: i.publicUrl, path: i.path, name: i.file.name }));
+
     const payload = {
       organization: org,
       title: document.getElementById("j-title").value.trim(),
       description,
+      body_content: bodyContent || null,
+      body_images: bodyImages,
       category: document.getElementById("j-category").value,
       format: document.getElementById("j-format").value,
       period: document.getElementById("j-period").value.trim(),
@@ -116,13 +200,13 @@
 
     show("등록 중…", "success");
     const { data, error } = await supabase.from(TABLES.jobs).insert(payload).select().single();
-    if (error) {
-      show("등록 실패: " + error.message, "error");
-      return;
-    }
-    show(`공고가 등록되었습니다. (공고번호: ${data.id.slice(0, 8)}) 강사 지원이 들어오면 담당자 이메일로 알려드립니다.`, "success");
+    if (error) { show("등록 실패: " + error.message, "error"); return; }
+
+    show(`공고가 등록되었습니다. (공고번호: ${data.id.slice(0, 8)}) 본문/이미지 ${bodyImages.length}장 포함. 강사 지원이 들어오면 담당자 이메일로 알려드립니다.`, "success");
     form.reset();
     if (shareBlock) shareBlock.style.display = "none";
+    pendingImages.length = 0;
+    renderGallery();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 })();

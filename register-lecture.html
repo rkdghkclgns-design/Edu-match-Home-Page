@@ -98,6 +98,30 @@
             <label for="j-desc">강의 상세 설명 · 커리큘럼 요청사항</label>
             <textarea id="j-desc" name="description" required placeholder="강의 목적, 주요 주제, 학습자 배경, 기대 산출물을 상세히 기재해주세요."></textarea>
           </div>
+
+          <div class="form-field">
+            <label for="j-body">
+              본문 · 상세 내용 <span style="font-weight: 400; color: var(--text-soft); font-size: 12px;">(선택 · 마크다운 지원)</span>
+            </label>
+            <textarea id="j-body" name="body_content" rows="10" placeholder="## 커리큘럼 예시
+- 1주차: 오프닝 · 현황 진단
+- 2주차: 핵심 개념 워크숍
+- 3주차: 실습 · PBL
+
+## 기대 효과
+강사님이 참고하시면 좋은 본문 내용을 자유롭게 작성하세요.
+
+이미지는 아래 &quot;본문 이미지 첨부&quot; 에서 추가할 수 있고, 제출 시 자동으로 업로드됩니다."></textarea>
+            <small style="display:block; margin-top:6px; color: var(--text-soft); font-size:12px;">
+              마크다운(# 제목, - 목록, **굵게**, [링크](url)) · 줄바꿈 반영됨
+            </small>
+          </div>
+
+          <div class="form-field">
+            <label>본문 이미지 첨부 <span style="font-weight: 400; color: var(--text-soft); font-size: 12px;">(최대 6장 · 8MB/장)</span></label>
+            <input id="j-body-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:block; margin-bottom: 10px;" />
+            <div id="j-body-gallery" class="posting-media-gallery"></div>
+          </div>
           <div class="pbl-form__grid">
             <div class="form-field">
               <label for="j-category">카테고리</label>
