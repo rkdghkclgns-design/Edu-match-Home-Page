@@ -232,8 +232,10 @@ if (document.readyState === "loading") {
 
   function openModal(ref) {
     currentRef = ref || {};
-    titleEl.textContent = ref.jobId ? "공고 지원하기" : "매칭 문의";
-    contextEl.textContent = ref.label || "원하시는 강사 또는 공고에 대한 문의 내역을 남겨주세요.";
+    titleEl.textContent = "공고 지원하기";
+    contextEl.textContent = ref.label
+      ? `지원 대상: ${ref.label}`
+      : "지원하실 공고 정보를 확인하고 지원서를 작성해주세요.";
     msgEl.textContent = "";
     msgEl.className = "em-modal__msg";
     modal.classList.add("is-open");
@@ -250,19 +252,20 @@ if (document.readyState === "loading") {
     if (e.key === "Escape") closeModal();
   });
 
+  // 공고 카드의 "지원하기" 버튼만 모달 트리거 (강사 카드는 공고 섹션으로 스크롤하는 내부 앵커로 유지)
   document.body.addEventListener("click", (e) => {
-    const hit = e.target.closest("[data-inquiry],.instructor-card__link,.job-card__cta");
+    const hit = e.target.closest(".job-card__cta,[data-inquiry]");
     if (!hit) return;
+    const card = hit.closest(".job-card");
+    if (!card) return;
     e.preventDefault();
-    const card = hit.closest(".instructor-card") || hit.closest(".job-card");
-    const name = card?.querySelector(".instructor-card__name, .job-card__title")?.textContent?.trim() || "";
-    const org = card?.querySelector(".job-card__org")?.textContent?.trim();
-    const ref = {
-      instructorId: card?.dataset?.instructorId || null,
-      jobId: card?.dataset?.jobId || null,
-      label: org ? `${org} · ${name}` : name ? `강사: ${name}` : "",
-    };
-    openModal(ref);
+    const name = card.querySelector(".job-card__title")?.textContent?.trim() || "";
+    const org = card.querySelector(".job-card__org")?.textContent?.trim() || "";
+    openModal({
+      instructorId: null,
+      jobId: card.dataset?.jobId || null,
+      label: org ? `${org} · ${name}` : name,
+    });
   });
 
   form.addEventListener("submit", async (e) => {

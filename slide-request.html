@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070d" />
+    <title>강의 슬라이드 의뢰 — Edu-match</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a href="./index.html" class="nav__logo" aria-label="홈">
+        <span class="nav__logo-mark">Edu-match</span>
+        <span class="nav__logo-sub">slides</span>
+      </a>
+      <nav class="nav__links" aria-label="주요 섹션">
+        <a href="./index.html#jobs">강의 공고</a>
+        <a href="./register-lecture.html">강의 등록</a>
+        <a href="./pbl-request.html">PBL 의뢰</a>
+        <a href="./materials.html">자료실</a>
+      </nav>
+      <div class="nav__auth">
+        <a href="./login.html" class="nav__auth-link">로그인</a>
+        <a href="./signup.html" class="nav__cta">회원가입</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="section pbl-hero">
+        <div class="section__head">
+          <span class="section__tag">Slide Draft Service</span>
+          <h2 class="section__title">
+            강의 슬라이드<br />
+            <span class="grad-text">초안 제작 의뢰</span>
+          </h2>
+          <p class="section__sub">
+            임직원 교육·임원 브리핑·현장 연수용 강의 슬라이드 초안을 의뢰하세요.
+            Edu-match 강사 네트워크 + AI 리서치로 1~2주 내 1차 드래프트를 제공합니다.
+          </p>
+        </div>
+
+        <form id="slide-form" class="pbl-form" novalidate>
+          <h3 style="margin:0 0 18px; font-weight:700;">① 의뢰자 정보</h3>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="sr-name">담당자 성함</label>
+              <input id="sr-name" name="requester_name" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="sr-email">이메일</label>
+              <input id="sr-email" name="requester_email" type="email" required />
+            </div>
+            <div class="form-field">
+              <label for="sr-phone">연락처</label>
+              <input id="sr-phone" name="requester_phone" type="tel" placeholder="010-0000-0000" />
+            </div>
+            <div class="form-field">
+              <label for="sr-org">기관/기업명</label>
+              <input id="sr-org" name="organization" type="text" />
+            </div>
+          </div>
+
+          <h3 style="margin:24px 0 18px; font-weight:700;">② 강의 슬라이드 개요</h3>
+          <div class="form-field">
+            <label for="ss-topic">강의 주제</label>
+            <input id="ss-topic" name="topic" type="text" required placeholder="예) MLOps 파이프라인 구축 실무" />
+          </div>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="ss-domain">분야</label>
+              <input id="ss-domain" name="domain" type="text" placeholder="IT·AI / 데이터 / 리더십 / 제조 등" />
+            </div>
+            <div class="form-field">
+              <label for="ss-level">대상 수준</label>
+              <select id="ss-level" name="target_level">
+                <option value="입문">입문</option>
+                <option value="중급" selected>중급</option>
+                <option value="고급">고급</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="ss-size">수강 인원 (명)</label>
+              <input id="ss-size" name="audience_size" type="number" min="0" value="50" />
+            </div>
+            <div class="form-field">
+              <label for="ss-hours">총 강의 시간 (h)</label>
+              <input id="ss-hours" name="duration_hours" type="number" min="0" value="8" />
+            </div>
+            <div class="form-field">
+              <label for="ss-slides">예상 슬라이드 수 (장)</label>
+              <input id="ss-slides" name="slide_count" type="number" min="0" value="40" />
+            </div>
+            <div class="form-field">
+              <label for="ss-format">산출물 형식</label>
+              <select id="ss-format" name="deliverable_format">
+                <option value="pptx" selected>PPTX</option>
+                <option value="pdf">PDF</option>
+                <option value="keynote">Keynote</option>
+                <option value="google-slides">Google Slides</option>
+              </select>
+            </div>
+          </div>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="ss-style">스타일 선호</label>
+              <input id="ss-style" name="style_preference" type="text" placeholder="실무형 · 다이어그램 중심 / 키노트형 / 임원 브리핑형 등" />
+            </div>
+            <div class="form-field">
+              <label for="ss-color">컬러/브랜드 테마</label>
+              <input id="ss-color" name="color_theme" type="text" placeholder="다크 블루 + 네온 바이올렛 등" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="ss-obj">강의 목표 / 핵심 메시지</label>
+            <textarea id="ss-obj" name="objectives" required placeholder="학습자가 가져갈 핵심 메시지 3가지를 기재해주세요."></textarea>
+          </div>
+          <div class="form-field">
+            <label for="ss-notes">기타 요청사항</label>
+            <input id="ss-notes" name="notes" type="text" placeholder="벤치마킹 브랜드, 금기 표현, 기밀 레벨 등" />
+          </div>
+
+          <h3 style="margin:24px 0 10px; font-weight:700;">③ 참고 자료 취합</h3>
+          <p class="admin-header__meta" style="margin:0 0 12px;">
+            브랜드 가이드·기존 사내 템플릿·레퍼런스 슬라이드 등 공유 링크를 첨부해주세요.
+          </p>
+          <div id="slide-materials-list" class="pbl-materials"></div>
+          <button type="button" class="pbl-material-add" id="slide-add-material">+ 참고자료 항목 추가</button>
+
+          <div style="margin-top: 24px;">
+            <button type="submit" class="auth-submit">슬라이드 의뢰 제출</button>
+            <div id="slide-msg" class="auth-message"></div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>© <span id="year">2026</span> Edu-match Platform.</span>
+        <span class="footer__tag">Slide Drafting · Brand Aligned</span>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+    <script src="./slide-request.js" defer></script>
+  </body>
+</html>

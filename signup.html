@@ -37,7 +37,7 @@
       <div class="auth-card">
         <span class="auth-card__tag">Sign Up</span>
         <h1 class="auth-card__title">Edu-match 회원가입</h1>
-        <p class="auth-card__sub">강의 공고 등록·강사 매칭·DIY키트 구매를 위해 회원 정보를 입력해주세요.</p>
+        <p class="auth-card__sub">Edu-match 는 강사를 위한 공간입니다. 강사 회원으로 가입하면 공고 지원·자료실·문서 의뢰 모두 이용할 수 있습니다. 강의를 의뢰하시는 기관 담당자는 회원가입 없이 <a href="./register-lecture.html">강의 등록</a> 에서 공고를 올리실 수 있습니다.</p>
 
         <form id="signup-form" class="auth-form" novalidate>
           <div class="form-field">
@@ -58,8 +58,8 @@
           <div class="form-field">
             <label for="signup-role">가입 유형</label>
             <select id="signup-role" name="role" required>
-              <option value="user">일반 회원 (공고 등록 · 프로그램 문의)</option>
-              <option value="instructor">강사 회원 (강의 · 워크샵 제공)</option>
+              <option value="instructor" selected>강사 회원 (공고 지원 · 자료실 · 문서 의뢰)</option>
+              <option value="user">의뢰자 회원 (지원 현황 · 재의뢰 추적)</option>
             </select>
           </div>
 

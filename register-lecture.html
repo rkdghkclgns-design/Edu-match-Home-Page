@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070d" />
+    <title>강의 등록 (의뢰자) — Edu-match</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a href="./index.html" class="nav__logo" aria-label="홈">
+        <span class="nav__logo-mark">Edu-match</span>
+        <span class="nav__logo-sub">register lecture</span>
+      </a>
+      <nav class="nav__links" aria-label="주요 섹션">
+        <a href="./index.html#jobs">강의 공고</a>
+        <a href="./pbl-request.html">PBL 의뢰</a>
+        <a href="./slide-request.html">슬라이드 의뢰</a>
+      </nav>
+      <div class="nav__auth">
+        <a href="./login.html" class="nav__auth-link">로그인</a>
+        <a href="./signup.html" class="nav__cta">회원가입</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="section pbl-hero">
+        <div class="section__head">
+          <span class="section__tag">For Requesters</span>
+          <h2 class="section__title">
+            의뢰자용<br />
+            <span class="grad-text">강의 공고 등록</span>
+          </h2>
+          <p class="section__sub">
+            기업·공공기관·대학 HRD 담당자용 페이지입니다. 공고를 등록하면 즉시 Edu-match 강사진에게 공개되어
+            강사가 직접 지원서를 제출합니다. 로그인 없이 등록 가능합니다.
+          </p>
+        </div>
+
+        <form id="register-form" class="pbl-form" novalidate>
+          <h3 style="margin:0 0 18px; font-weight:700;">① 기관 · 담당자 정보</h3>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="r-org">기관명 / 기업명</label>
+              <input id="r-org" name="organization" type="text" required placeholder="예) 삼성전자 DX 부문 HRD" />
+            </div>
+            <div class="form-field">
+              <label for="r-contact">담당자 성함</label>
+              <input id="r-contact" name="contact" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="r-email">담당자 이메일</label>
+              <input id="r-email" name="email" type="email" required />
+            </div>
+            <div class="form-field">
+              <label for="r-phone">연락처</label>
+              <input id="r-phone" name="phone" type="tel" placeholder="010-0000-0000" />
+            </div>
+          </div>
+
+          <h3 style="margin:24px 0 18px; font-weight:700;">② 강의 · 공고 상세</h3>
+          <div class="form-field">
+            <label for="j-title">공고 제목</label>
+            <input id="j-title" name="title" type="text" required placeholder="예) 생성형 AI 임직원 교육 강사 모집" />
+          </div>
+          <div class="form-field">
+            <label for="j-desc">강의 상세 설명 · 커리큘럼 요청사항</label>
+            <textarea id="j-desc" name="description" required placeholder="강의 목적, 주요 주제, 학습자 배경, 기대 산출물을 상세히 기재해주세요."></textarea>
+          </div>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="j-category">카테고리</label>
+              <select id="j-category" name="category" required>
+                <option value="corporate-lecture">기업출강 워크샵</option>
+                <option value="teambuilding">팀빌딩 프로그램</option>
+                <option value="craft-experience">공방체험</option>
+                <option value="diy-kit">DIY키트</option>
+                <option value="it-ai" selected>IT · AI 교육</option>
+                <option value="leadership">리더십 · 조직개발</option>
+                <option value="design">디자인 · UX</option>
+                <option value="data">데이터 분석</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="j-format">강의 형태</label>
+              <select id="j-format" name="format">
+                <option value="offline">오프라인 출강</option>
+                <option value="online">온라인</option>
+                <option value="hybrid">하이브리드</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="j-period">강의 기간</label>
+              <input id="j-period" name="period" type="text" required placeholder="2026.06 ~ 2026.08 (3개월)" />
+            </div>
+            <div class="form-field">
+              <label for="j-target">수강 대상 · 규모</label>
+              <input id="j-target" name="target_audience" type="text" required placeholder="직원 30명 (팀별 분반)" />
+            </div>
+            <div class="form-field">
+              <label for="j-budget">예산 · 단가</label>
+              <input id="j-budget" name="budget" type="text" required placeholder="강사비 협의 · 시간당 8만 원 등" />
+            </div>
+            <div class="form-field">
+              <label for="j-tags">태그 (쉼표 구분)</label>
+              <input id="j-tags" name="tags" type="text" placeholder="생성형 AI, 실습, 임직원" />
+            </div>
+          </div>
+          <label style="display:flex; gap:8px; align-items:center; font-size:13px; color: var(--text-soft); margin-top: 8px;">
+            <input type="checkbox" id="j-urgent" name="is_urgent" />
+            긴급 공고로 표시 (48시간 내 강사 매칭 희망)
+          </label>
+
+          <div style="margin-top: 24px;">
+            <button type="submit" class="auth-submit">공고 등록 · 강사 모집 시작</button>
+            <div id="reg-msg" class="auth-message"></div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>© <span id="year">2026</span> Edu-match Platform.</span>
+        <span class="footer__tag">Request · Post · Match</span>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+    <script src="./register-lecture.js" defer></script>
+  </body>
+</html>

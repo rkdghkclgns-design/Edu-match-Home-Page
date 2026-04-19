@@ -614,6 +614,98 @@
   document.getElementById("refresh-materials")?.addEventListener("click", loadMaterialsAdmin);
   document.getElementById("refresh-pbl")?.addEventListener("click", loadPbl);
 
+  // ---------- 슬라이드 의뢰 ----------
+  const SLIDES = "em_slide_requests";
+  const SLIDE_MATS = "em_slide_materials";
+
+  async function loadSlides() {
+    const tbody = document.getElementById("slides-tbody");
+    if (!tbody) return;
+    if (!mustSupabase()) { tbody.innerHTML = emptyRow(7, "Supabase 설정 필요"); return; }
+    tbody.innerHTML = emptyRow(7, "불러오는 중…");
+    const { data, error } = await supabase.from(SLIDES).select("*").order("created_at", { ascending: false });
+    if (error) { tbody.innerHTML = emptyRow(7, "오류: " + error.message); return; }
+    if (!data || data.length === 0) { tbody.innerHTML = emptyRow(7, "등록된 슬라이드 의뢰가 없습니다."); return; }
+    tbody.innerHTML = data.map((s) => `
+      <tr>
+        <td>${safeText(s.requester_name)}<br/><span class="admin-header__meta">${safeText(s.requester_email)}</span></td>
+        <td>${safeText(s.organization)}</td>
+        <td>${safeText(s.topic)}<br/><span class="admin-header__meta">${safeText(s.domain)}</span></td>
+        <td>${safeText(s.audience_size)}명 · ${safeText(s.slide_count)}장</td>
+        <td>
+          <select data-action="slide-status" data-id="${s.id}" class="admin-action">
+            ${["pending","reviewing","drafted","delivered","closed"].map((st) =>
+              `<option value="${st}" ${s.status===st?"selected":""}>${st}</option>`).join("")}
+          </select>
+        </td>
+        <td>${fmtDate(s.created_at)}</td>
+        <td>
+          <button class="admin-action" data-action="slide-detail" data-id="${s.id}">상세</button>
+          <button class="admin-action" data-action="delete-slide" data-id="${s.id}">삭제</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  async function renderSlideDetail(id) {
+    const root = document.getElementById("slides-detail");
+    if (!root) return;
+    const { data: req } = await supabase.from(SLIDES).select("*").eq("id", id).maybeSingle();
+    const { data: mats } = await supabase.from(SLIDE_MATS).select("*").eq("request_id", id).order("created_at", { ascending: true });
+    if (!req) { root.innerHTML = `<p class="admin-empty">의뢰를 찾을 수 없습니다.</p>`; return; }
+    root.innerHTML = `
+      <article class="job-card">
+        <div class="job-card__header">
+          <span class="job-card__org">${safeText(req.organization || "—")}</span>
+          <span class="job-badge">${safeText(req.status)}</span>
+        </div>
+        <h3 class="job-card__title">${safeText(req.topic)}</h3>
+        <p class="job-card__desc"><strong>목표:</strong> ${safeText(req.objectives || "—")}</p>
+        <div class="job-card__details">
+          <div class="job-card__detail"><span class="job-card__detail-label">의뢰자</span><span>${safeText(req.requester_name)} · ${safeText(req.requester_email)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">연락처</span><span>${safeText(req.requester_phone || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">분야/수준</span><span>${safeText(req.domain)} · ${safeText(req.target_level)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">규모</span><span>${safeText(req.audience_size)}명 · ${safeText(req.duration_hours)}h · ${safeText(req.slide_count)}장 · ${safeText(req.deliverable_format)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">스타일</span><span>${safeText(req.style_preference || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">컬러</span><span>${safeText(req.color_theme || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">비고</span><span>${safeText(req.notes || "—")}</span></div>
+        </div>
+        <div style="margin-top:14px;">
+          <strong>첨부 자료 (${(mats||[]).length}건)</strong>
+          <ul style="margin:8px 0 0; padding-left: 18px;">
+            ${(mats||[]).map((m) => `<li>${safeText(m.name)} — ${m.url ? `<a href="${safeText(m.url)}" target="_blank" rel="noopener">${safeText(m.url)}</a>` : "(링크 없음)"}</li>`).join("") || "<li>첨부 자료 없음</li>"}
+          </ul>
+        </div>
+      </article>
+    `;
+  }
+
+  // slide actions (piggy-back on existing click delegate)
+  document.body.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-action='slide-detail'], [data-action='delete-slide']");
+    if (!btn) return;
+    const action = btn.getAttribute("data-action");
+    const id = btn.getAttribute("data-id");
+    if (!id || !mustSupabase()) return;
+    if (action === "slide-detail") {
+      renderSlideDetail(id);
+    } else if (action === "delete-slide") {
+      if (!confirm("슬라이드 의뢰를 삭제할까요?")) return;
+      const { error } = await supabase.from(SLIDES).delete().eq("id", id);
+      if (error) return alert("삭제 실패: " + error.message);
+      loadSlides();
+    }
+  });
+  document.body.addEventListener("change", async (e) => {
+    const sel = e.target.closest("[data-action='slide-status']");
+    if (!sel) return;
+    const id = sel.getAttribute("data-id");
+    const status = sel.value;
+    const { error } = await supabase.from(SLIDES).update({ status }).eq("id", id);
+    if (error) return alert("상태 변경 실패: " + error.message);
+  });
+  document.getElementById("refresh-slides")?.addEventListener("click", loadSlides);
+
   // ---------- 딥리서치 ----------
   const drForm = document.getElementById("deep-research-form");
   if (drForm) {
@@ -676,4 +768,5 @@
   loadApprovals();
   loadMaterialsAdmin();
   loadPbl();
+  loadSlides();
 })();
