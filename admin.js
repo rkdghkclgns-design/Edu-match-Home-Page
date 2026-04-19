@@ -236,15 +236,35 @@
       e.preventDefault();
       const msg = document.getElementById("new-job-message");
       if (!mustSupabase()) return;
+
+      const org = document.getElementById("job-org").value.trim();
+      const title = document.getElementById("job-title").value.trim();
+      const desc = document.getElementById("job-desc").value.trim();
+      const period = document.getElementById("job-period").value.trim();
+      const target = document.getElementById("job-target").value.trim();
+      const budget = document.getElementById("job-budget").value.trim();
+
+      const errs = [];
+      if (org.length < 2) errs.push("기관명 2자 이상");
+      if (title.length < 4) errs.push("공고 제목 4자 이상");
+      if (desc.length < 20) errs.push("상세 설명 20자 이상");
+      if (!period) errs.push("기간 입력");
+      if (!target) errs.push("수강 대상 입력");
+      if (!budget) errs.push("예산 입력");
+      if (errs.length) {
+        showFormMessage(msg, "입력 오류: " + errs.join(" · "), "error");
+        return;
+      }
+
       const payload = {
-        organization: document.getElementById("job-org").value.trim(),
-        title: document.getElementById("job-title").value.trim(),
-        description: document.getElementById("job-desc").value.trim(),
+        organization: org,
+        title,
+        description: desc,
         category: document.getElementById("job-category").value,
         format: document.getElementById("job-format").value,
-        period: document.getElementById("job-period").value.trim(),
-        target_audience: document.getElementById("job-target").value.trim(),
-        budget: document.getElementById("job-budget").value.trim(),
+        period,
+        target_audience: target,
+        budget,
         tags: document.getElementById("job-tags").value.split(",").map((s) => s.trim()).filter(Boolean),
         is_urgent: document.getElementById("job-urgent").checked,
         status: "open",
