@@ -142,7 +142,7 @@ function jobCardHtml(job, cats) {
   const minPriceLink = `
     <div style="margin-top:8px; font-size:12px; color: var(--text-soft);">
       단가 참고: <a href="${escapeHtml(refUrl)}" target="_blank" rel="noopener" style="color:#9ae6ff;">고용노동부 HRD-Net →</a>
-      · <a href="https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000242033" target="_blank" rel="noopener" style="color:#9ae6ff;">「직업능력개발훈련 실시기준 등에 관한 고시」 →</a>
+      · <a href="https://www.law.go.kr/LSW/admRulSc.do?menuId=1&subMenuId=15&query=%EC%A7%81%EC%97%85%EB%8A%A5%EB%A0%A5%EA%B0%9C%EB%B0%9C%ED%9B%88%EB%A0%A8+%EC%8B%A4%EC%8B%9C%EA%B8%B0%EC%A4%80" target="_blank" rel="noopener" style="color:#9ae6ff;">국가법령정보센터 「직업능력개발훈련 실시기준」 →</a>
     </div>`;
 
   const bodyHtml = job.body_content
@@ -191,7 +191,10 @@ function jobCardHtml(job, cats) {
       ${bodyHtml}
       ${galleryHtml}
       ${minPriceLink}
-      <a class="job-card__cta btn ${urgent ? "btn--primary" : "btn--ghost"}" href="#contact">지원하기 →</a>
+      <div class="job-card__ctas">
+        <button type="button" class="btn btn--detail job-card__detail-btn" data-job-id="${escapeHtml(job.id || "")}">자세히 보기</button>
+        <a class="job-card__cta btn ${urgent ? "btn--primary" : "btn--ghost"}" href="#contact">지원하기 →</a>
+      </div>
     </article>
   `;
 }
@@ -238,6 +241,73 @@ function instructorCardHtml(ins) {
   `;
 }
 
+let __jobsCache = [];
+
+function applyJobFilters(em) {
+  const grid = document.querySelector("#jobs .jobs-grid");
+  if (!grid) return;
+  const q = (document.getElementById("jf-q")?.value || "").trim().toLowerCase();
+  const cat = document.getElementById("jf-category")?.value || "";
+  const fmt = document.getElementById("jf-format")?.value || "";
+  const bt = document.getElementById("jf-budget")?.value || "";
+  const urgentOnly = document.getElementById("jf-urgent")?.checked || false;
+  const sort = document.getElementById("jf-sort")?.value || "recent";
+
+  let list = __jobsCache.slice();
+  if (q) {
+    list = list.filter((j) => {
+      const hay = [
+        j.title, j.organization, j.description, j.body_content,
+        (j.tags || []).join(" "), j.target_audience, j.period, j.budget,
+      ].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  if (cat) list = list.filter((j) => j.category === cat);
+  if (fmt) list = list.filter((j) => j.format === fmt);
+  if (bt)  list = list.filter((j) => j.budget_type === bt);
+  if (urgentOnly) list = list.filter((j) => j.is_urgent);
+
+  if (sort === "recent") {
+    list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  } else if (sort === "urgent") {
+    list.sort((a, b) => Number(b.is_urgent) - Number(a.is_urgent) || new Date(b.created_at) - new Date(a.created_at));
+  } else if (sort === "budget-high") {
+    list.sort((a, b) => (b.budget_amount || 0) - (a.budget_amount || 0));
+  } else if (sort === "budget-low") {
+    list.sort((a, b) => (a.budget_amount || 0) - (b.budget_amount || 0));
+  }
+
+  const countEl = document.getElementById("jf-count");
+  if (countEl) countEl.textContent = `총 ${__jobsCache.length}건 중 ${list.length}건 표시`;
+
+  if (list.length === 0) {
+    grid.innerHTML = `<p class="admin-empty" style="grid-column: 1 / -1; text-align:center; padding: 40px; color: var(--text-soft);">조건에 맞는 공고가 없습니다.</p>`;
+    return;
+  }
+  grid.innerHTML = list.map((j) => jobCardHtml(j, em.SERVICE_CATEGORIES)).join("");
+  applyReveal(grid);
+}
+
+function bindJobFilters(em) {
+  const ids = ["jf-q", "jf-category", "jf-format", "jf-budget", "jf-urgent", "jf-sort"];
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const ev = el.tagName === "INPUT" && el.type === "search" ? "input" : "change";
+    el.addEventListener(ev, () => applyJobFilters(em));
+  });
+  document.getElementById("jf-reset")?.addEventListener("click", () => {
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === "checkbox") el.checked = false;
+      else el.value = id === "jf-sort" ? "recent" : "";
+    });
+    applyJobFilters(em);
+  });
+}
+
 async function hydrateJobs(em) {
   const grid = document.querySelector("#jobs .jobs-grid");
   if (!grid || !em?.supabase) return;
@@ -248,11 +318,12 @@ async function hydrateJobs(em) {
       .eq("status", "open")
       .order("is_urgent", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(12);
+      .limit(200);
     if (error) throw error;
-    if (!data || data.length === 0) return; // 그대로 정적 데모 유지
-    grid.innerHTML = data.map((j) => jobCardHtml(j, em.SERVICE_CATEGORIES)).join("");
-    applyReveal(grid);
+    if (!data || data.length === 0) return;
+    __jobsCache = data;
+    bindJobFilters(em);
+    applyJobFilters(em);
   } catch (err) {
     console.warn("[Edu-match] jobs hydrate failed:", err);
   }
@@ -382,5 +453,101 @@ if (document.readyState === "loading") {
     msgEl.textContent = "접수되었습니다. 담당 매니저가 24시간 내 연락드립니다.";
     msgEl.className = "em-modal__msg em-modal__msg--ok";
     setTimeout(closeModal, 1400);
+  });
+})();
+
+// =========================================================
+// 공고 자세히 보기 모달
+// =========================================================
+(function setupDetailModal() {
+  const modal = document.getElementById("em-detail-modal");
+  if (!modal) return;
+  const body = document.getElementById("em-detail-body");
+
+  function open() { modal.classList.add("is-open"); }
+  function close() { modal.classList.remove("is-open"); body.innerHTML = ""; }
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal || e.target.closest("[data-modal-close]")) close();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("is-open")) close();
+  });
+
+  document.body.addEventListener("click", (e) => {
+    const btn = e.target.closest(".job-card__detail-btn");
+    if (!btn) return;
+    const jobId = btn.getAttribute("data-job-id");
+    const job = (typeof __jobsCache !== "undefined" ? __jobsCache : []).find((j) => j.id === jobId);
+    if (!job) return;
+
+    const em = window.EduMatch;
+    const cats = em?.SERVICE_CATEGORIES || [];
+    const catLabel = cats.find((c) => c.key === job.category)?.label || job.category || "";
+    const urgent = job.is_urgent;
+    const images = Array.isArray(job.body_images) ? job.body_images : [];
+    const heroImg = images[0]?.url;
+    const budgetLabel = (() => {
+      if (job.budget_type === "per_hour" && job.budget_amount) return `시간당 ${formatWon(job.budget_amount)}`;
+      if (job.budget_type === "per_course" && job.budget_amount) return `과정당 ${formatWon(job.budget_amount)}`;
+      if (job.budget_type === "negotiable") return "예산 협의";
+      return job.budget || "협의";
+    })();
+
+    body.innerHTML = `
+      <div class="em-modal__sub">${escapeHtml(job.organization || "")}</div>
+      <h2 class="em-modal__title" style="margin-top: 4px;">${escapeHtml(job.title || "")}</h2>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin: 12px 0;">
+        ${urgent ? '<span class="job-badge job-badge--urgent">긴급</span>' : '<span class="job-badge">모집 중</span>'}
+        <span class="job-card__budget">💰 ${escapeHtml(budgetLabel)}</span>
+        ${job.travel_fee_region ? `<span class="job-card__travel">✈ ${escapeHtml(job.travel_fee_region)} · ${escapeHtml(formatWon(job.travel_fee_amount))}</span>` : ""}
+        ${Number(job.revenue_share_percent) > 0 ? `<span class="job-card__share">🤝 강사 등록 · ${escapeHtml(job.revenue_share_percent)}% 쉐어${job.posted_by_name ? ` (${escapeHtml(job.posted_by_name)})` : ""}</span>` : ""}
+      </div>
+
+      ${heroImg ? `<img class="detail-hero-img" src="${escapeHtml(heroImg)}" alt="대표 이미지" />` : ""}
+
+      <div class="detail-section">
+        <h4>개요</h4>
+        <p style="white-space: pre-wrap; line-height: 1.7;">${escapeHtml(job.description || "")}</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>상세 정보</h4>
+        <div class="job-card__details">
+          <div class="job-card__detail"><span class="job-card__detail-label">기간</span><span>${escapeHtml(job.period || "협의")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">형태</span><span>${escapeHtml(job.format || "offline")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">대상</span><span>${escapeHtml(job.target_audience || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">예산</span><span>${escapeHtml(budgetLabel)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">출장비</span><span>${escapeHtml(job.travel_fee_region || "미선택")} · ${escapeHtml(formatWon(job.travel_fee_amount))}</span></div>
+          ${catLabel ? `<div class="job-card__detail"><span class="job-card__detail-label">분야</span><span>${escapeHtml(catLabel)}</span></div>` : ""}
+        </div>
+      </div>
+
+      ${job.body_content ? `
+        <div class="detail-section">
+          <h4>본문</h4>
+          <div style="line-height:1.7;">${tinyMarkdown(job.body_content)}</div>
+        </div>` : ""}
+
+      ${images.length > 0 ? `
+        <div class="detail-section">
+          <h4>첨부 이미지 (${images.length}장)</h4>
+          <div class="detail-gallery">
+            ${images.map((m) => `<a href="${escapeHtml(m.url)}" target="_blank" rel="noopener"><img src="${escapeHtml(m.url)}" alt="${escapeHtml(m.name || "")}" loading="lazy" /></a>`).join("")}
+          </div>
+        </div>` : ""}
+
+      ${(job.tags || []).length > 0 ? `
+        <div class="detail-section">
+          <h4>태그</h4>
+          <div class="job-card__tags">${(job.tags || []).map((t) => `<span>${escapeHtml(t)}</span>`).join("")}</div>
+        </div>` : ""}
+
+      <div class="detail-section" style="margin-top: 24px;">
+        <a class="btn btn--primary" href="#contact" data-modal-close>지원하기 →</a>
+        <button type="button" class="btn btn--ghost" data-modal-close style="margin-left: 8px;">닫기</button>
+      </div>
+    `;
+    open();
   });
 })();

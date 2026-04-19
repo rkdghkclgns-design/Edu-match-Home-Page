@@ -437,6 +437,45 @@
           <p class="section__sub">관심 공고의 <strong>지원하기</strong> 버튼을 눌러 바로 지원서를 제출하세요. 의뢰 담당자가 직접 검토합니다.</p>
         </div>
 
+        <!-- 공고 검색/필터 -->
+        <div class="jobs-filter">
+          <div class="jobs-filter__row">
+            <input id="jf-q" type="search" placeholder="제목 · 기관 · 설명 · 태그 검색" autocomplete="off" />
+            <select id="jf-category">
+              <option value="">전체 분야</option>
+              <option value="corporate-lecture">기업출강 워크샵</option>
+              <option value="teambuilding">팀빌딩 프로그램</option>
+              <option value="craft-experience">공방체험</option>
+              <option value="diy-kit">DIY키트</option>
+              <option value="it-ai">IT · AI 교육</option>
+              <option value="leadership">리더십 · 조직개발</option>
+              <option value="design">디자인 · UX</option>
+              <option value="data">데이터 분석</option>
+            </select>
+            <select id="jf-format">
+              <option value="">전체 형태</option>
+              <option value="offline">오프라인</option>
+              <option value="online">온라인</option>
+              <option value="hybrid">하이브리드</option>
+            </select>
+            <select id="jf-budget">
+              <option value="">전체 단가</option>
+              <option value="per_hour">시간당</option>
+              <option value="per_course">과정당</option>
+              <option value="negotiable">협의</option>
+            </select>
+            <select id="jf-sort">
+              <option value="recent">최신순</option>
+              <option value="urgent">긴급 우선</option>
+              <option value="budget-high">예산 높은 순</option>
+              <option value="budget-low">예산 낮은 순</option>
+            </select>
+            <label class="jf-check"><input id="jf-urgent" type="checkbox" /><span>긴급만</span></label>
+            <button type="button" class="jf-reset" id="jf-reset">초기화</button>
+          </div>
+          <div class="jobs-filter__meta" id="jf-count">공고를 불러오는 중…</div>
+        </div>
+
         <div class="jobs-grid">
 
           <article class="job-card job-card--urgent">
@@ -629,6 +668,14 @@
         <span class="footer__tag">Connecting Experts · Empowering Education</span>
       </div>
     </footer>
+
+    <!-- 공고 상세 모달 -->
+    <div id="em-detail-modal" class="em-modal em-modal--wide" role="dialog" aria-modal="true" aria-labelledby="em-detail-title">
+      <div class="em-modal__card em-modal__card--wide">
+        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
+        <div id="em-detail-body"></div>
+      </div>
+    </div>
 
     <!-- 매칭/지원 모달 -->
     <div id="em-modal" class="em-modal" role="dialog" aria-modal="true" aria-labelledby="em-modal-title">

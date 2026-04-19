@@ -1572,3 +1572,130 @@ main, .nav, .footer__inner { position: relative; z-index: 1; }
   border: 1px solid rgba(180, 255, 200, 0.25);
   color: #b8f0c8; font-size: 12px; font-weight: 700;
 }
+
+/* =========================================================
+   공고 검색 · 필터
+   ========================================================= */
+.jobs-filter {
+  background: rgba(16,16,24,0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.jobs-filter__row {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(120px, 1fr)) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+@media (max-width: 1100px) {
+  .jobs-filter__row { grid-template-columns: 1fr 1fr; }
+}
+.jobs-filter input[type="search"],
+.jobs-filter select {
+  width: 100%;
+  background: rgba(10,10,16,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+.jobs-filter input[type="search"]:focus,
+.jobs-filter select:focus {
+  outline: none;
+  border-color: rgba(154,230,255,0.5);
+  box-shadow: 0 0 0 3px rgba(154,230,255,0.1);
+}
+.jf-check {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-soft); font-size: 13px;
+  white-space: nowrap;
+}
+.jf-reset {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: var(--text-soft);
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.jf-reset:hover { color: var(--text); border-color: rgba(255,255,255,0.35); }
+.jobs-filter__meta {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+/* =========================================================
+   썸네일/갤러리 크기 고정 (카드 내 동일)
+   ========================================================= */
+.job-card__gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+@media (max-width: 560px) {
+  .job-card__gallery { grid-template-columns: repeat(2, 1fr); }
+}
+.job-card__gallery a {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.35);
+}
+.job-card__gallery a img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* =========================================================
+   공고 자세히 보기 모달 (wide)
+   ========================================================= */
+.em-modal--wide { padding: 20px; }
+.em-modal__card--wide {
+  width: min(820px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.detail-hero-img {
+  width: 100%;
+  max-height: 340px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin: 12px 0 16px;
+}
+.detail-section { margin-top: 18px; }
+.detail-section h4 {
+  font-size: 14px; margin: 0 0 8px; color: #9ae6ff;
+}
+.detail-gallery {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.detail-gallery a {
+  display: block; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.detail-gallery a img { width:100%; height:100%; object-fit: cover; }
+
+/* 카드 하단 CTA 묶음 */
+.job-card__ctas {
+  display: flex; gap: 8px; align-items: center; margin-top: 10px;
+}
+.job-card__ctas .btn { flex: 1 1 auto; }
+.job-card__ctas .btn--detail {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: var(--text);
+}
+.job-card__ctas .btn--detail:hover {
+  border-color: rgba(154,230,255,0.5);
+  color: #9ae6ff;
+}
