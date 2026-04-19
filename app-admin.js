@@ -67,20 +67,34 @@
   // ---------- KPI ----------
   async function loadKpis() {
     try {
-      const [usersTotal, pros, pending, completed] = await Promise.all([
+      const [usersTotal, pros, pending, completed, feeRows, premium, share, openJobs] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }).eq("membership", "pro"),
         supabase.from("matching_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("matching_requests").select("budget").eq("status", "completed"),
+        supabase.from("job_postings").select("matched_amount,platform_fee_amount").eq("match_status", "matched"),
+        supabase.from("job_postings").select("id", { count: "exact", head: true }).eq("is_premium", true),
+        supabase.from("job_postings").select("id", { count: "exact", head: true }).gt("revenue_share_percent", 0),
+        supabase.from("job_postings").select("id", { count: "exact", head: true }).eq("status", "open").eq("match_status", "open"),
       ]);
 
       qs("#kpi-users").textContent = usersTotal.count ?? 0;
       qs("#kpi-pros").textContent = pros.count ?? 0;
       qs("#kpi-pending").textContent = pending.count ?? 0;
 
-      const revenue = (completed.data || []).reduce((s, r) => s + (Number(r.budget) || 0), 0);
-      qs("#kpi-revenue").textContent = revenue > 0 ? Math.round(revenue / 10000).toLocaleString("ko-KR") + "만원" : "—";
+      const matchingRevenue = (completed.data || []).reduce((s, r) => s + (Number(r.budget) || 0), 0);
+      qs("#kpi-revenue").textContent = matchingRevenue > 0 ? Math.round(matchingRevenue / 10000).toLocaleString("ko-KR") + "만원" : "—";
       qs("#kpi-revenue-sub").textContent = `${(completed.data || []).length} 건 완료`;
+
+      // 공고 알선 수수료 (5%) KPI
+      const gross = (feeRows.data || []).reduce((s, r) => s + (Number(r.matched_amount) || 0), 0);
+      const fee   = (feeRows.data || []).reduce((s, r) => s + (Number(r.platform_fee_amount) || 0), 0);
+      qs("#kpi-fee-revenue").textContent = fee > 0 ? Math.round(fee / 10000).toLocaleString("ko-KR") + "만원" : "—";
+      qs("#kpi-fee-sub").textContent = `${(feeRows.data || []).length} 건 · 총 게시금액 ${gross > 0 ? Math.round(gross/10000).toLocaleString("ko-KR") + "만원" : "—"}`;
+
+      qs("#kpi-premium").textContent = premium.count ?? 0;
+      qs("#kpi-share").textContent = share.count ?? 0;
+      qs("#kpi-open").textContent = openJobs.count ?? 0;
     } catch (err) {
       EM.toast("KPI 로드 실패: " + err.message, "err");
     }
@@ -261,26 +275,41 @@
         .order("created_at", { ascending: false });
       if (error) throw error;
       if (!data || !data.length) { tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">공고가 없습니다.</td></tr>`; return; }
-      tb.innerHTML = data.map((j) => `
+      tb.innerHTML = data.map((j) => {
+        const amount = j.matched_amount || j.budget_amount || j.budget || 0;
+        const pct = Number(j.platform_fee_percent) || 5;
+        const fee = j.platform_fee_amount != null ? Number(j.platform_fee_amount) : Math.floor(Number(amount) * pct / 100);
+        const matched = j.match_status === 'matched';
+        return `
         <tr class="hover:bg-slate-50">
-          <td class="px-4 py-3 font-medium">${escape(j.title)}</td>
+          <td class="px-4 py-3 font-medium">
+            <div>${escape(j.title)}</div>
+            <div class="text-xs text-slate-400 mt-0.5">${escape(j.organization || "—")}</div>
+          </td>
           <td class="px-4 py-3 text-sm">${escape(j.category || "—")}</td>
-          <td class="px-4 py-3 text-sm font-semibold">${escape(KRW(j.budget))}</td>
+          <td class="px-4 py-3 text-sm font-semibold">${escape(KRW(amount))}</td>
+          <td class="px-4 py-3 text-sm">
+            ${amount ? `<div class="font-semibold text-indigo-700">${escape(KRW(fee))}</div><div class="text-[10px] text-slate-400">${pct}% 적용</div>` : '<span class="text-slate-400 text-xs">—</span>'}
+          </td>
           <td class="px-4 py-3">
             <button data-toggle-premium data-id="${escape(j.id)}" class="${j.is_premium ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-yellow-900' : 'bg-slate-100 text-slate-600'} text-xs font-bold px-2.5 py-1 rounded-full">
               ${j.is_premium ? '⭐ PREMIUM' : '일반'}
             </button>
           </td>
-          <td class="px-4 py-3"><span class="text-xs font-semibold px-2 py-0.5 rounded-full ${j.status === 'open' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'}">${escape(j.status)}</span></td>
+          <td class="px-4 py-3">
+            ${matched
+              ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">✓ 매칭 완료</span><div class="text-[10px] text-slate-400 mt-0.5">${fmtDate(j.matched_at)}</div>`
+              : `<button data-match-complete="${escape(j.id)}" data-amount="${amount}" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700">매칭 완료 처리</button>`}
+          </td>
           <td class="px-4 py-3 text-xs text-slate-500">${fmtDate(j.created_at)}</td>
-          <td class="px-4 py-3 text-right">
+          <td class="px-4 py-3 text-right whitespace-nowrap">
             <button data-toggle-status data-id="${escape(j.id)}" data-current="${escape(j.status)}" class="text-xs font-semibold text-slate-600 hover:text-slate-900 mr-2">
               ${j.status === 'open' ? '닫기' : '열기'}
             </button>
             <button data-delete-job="${escape(j.id)}" class="text-xs text-red-600 hover:text-red-800 font-semibold">삭제</button>
           </td>
-        </tr>
-      `).join("");
+        </tr>`;
+      }).join("");
     } catch (err) {
       tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-red-600">오류: ${escape(err.message)}</td></tr>`;
     }
@@ -311,6 +340,35 @@
         EM.toast(`공고 ${nextStatus === 'open' ? '열기' : '닫기'}`, "ok");
         loadJobs();
       } catch (err) { EM.toast("실패: " + err.message, "err"); }
+      return;
+    }
+
+    const matchBtn = e.target.closest("[data-match-complete]");
+    if (matchBtn) {
+      const id = matchBtn.getAttribute("data-match-complete");
+      const amountHint = Number(matchBtn.getAttribute("data-amount")) || 0;
+      const raw = prompt(
+        "매칭 확정 금액(원)을 입력하세요. 엔터만 치면 게시 금액으로 자동 적용됩니다.",
+        amountHint ? String(amountHint) : ""
+      );
+      if (raw === null) return;
+      const amount = Number(String(raw).replace(/[^0-9]/g, "")) || amountHint || 0;
+      if (amount <= 0) { EM.toast("금액을 확인해주세요.", "warn"); return; }
+      const pct = 5;
+      const fee = Math.floor(amount * pct / 100);
+      if (!confirm(`매칭 금액 ${amount.toLocaleString("ko-KR")}원 중 알선 수수료(${pct}%) ${fee.toLocaleString("ko-KR")}원을 차감합니다. 진행할까요?`)) return;
+      try {
+        const { error } = await supabase.from("job_postings").update({
+          match_status: "matched",
+          matched_at: new Date().toISOString(),
+          matched_amount: amount,
+          platform_fee_percent: pct,
+          platform_fee_amount: fee,
+        }).eq("id", id);
+        if (error) throw error;
+        EM.toast(`매칭 완료 · 수수료 ${fee.toLocaleString("ko-KR")}원 적립`, "ok");
+        loadJobs(); loadKpis();
+      } catch (err) { EM.toast("처리 실패: " + err.message, "err"); }
       return;
     }
 

@@ -80,9 +80,31 @@
             <div class="mt-1 text-xs text-slate-400">status = pending</div>
           </div>
           <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-            <div class="text-xs font-semibold text-slate-500">완료 매칭 (수익)</div>
+            <div class="text-xs font-semibold text-slate-500">매칭 문의 완료</div>
             <div class="mt-1 text-3xl font-extrabold text-emerald-600" id="kpi-revenue">—</div>
             <div class="mt-1 text-xs text-slate-400" id="kpi-revenue-sub">— 건 완료</div>
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
+            <div class="text-xs font-semibold text-indigo-700">공고 매칭 성사 (5% 수수료)</div>
+            <div class="mt-1 text-3xl font-extrabold text-indigo-900" id="kpi-fee-revenue">—</div>
+            <div class="mt-1 text-xs text-indigo-700" id="kpi-fee-sub">— 건 · 총 게시금액 —</div>
+          </div>
+          <div class="p-5 bg-white rounded-2xl border border-slate-100">
+            <div class="text-xs font-semibold text-slate-500">프리미엄 공고</div>
+            <div class="mt-1 text-3xl font-extrabold text-amber-600" id="kpi-premium">—</div>
+            <div class="mt-1 text-xs text-slate-400">is_premium = true</div>
+          </div>
+          <div class="p-5 bg-white rounded-2xl border border-slate-100">
+            <div class="text-xs font-semibold text-slate-500">품앗이 공고</div>
+            <div class="mt-1 text-3xl font-extrabold text-yellow-700" id="kpi-share">—</div>
+            <div class="mt-1 text-xs text-slate-400">revenue_share_percent &gt; 0</div>
+          </div>
+          <div class="p-5 bg-white rounded-2xl border border-slate-100">
+            <div class="text-xs font-semibold text-slate-500">열린 공고</div>
+            <div class="mt-1 text-3xl font-extrabold text-slate-900" id="kpi-open">—</div>
+            <div class="mt-1 text-xs text-slate-400">status=open · match_status=open</div>
           </div>
         </div>
       </section>
@@ -173,8 +195,9 @@
                     <th class="px-4 py-3 text-left font-semibold">제목</th>
                     <th class="px-4 py-3 text-left font-semibold">분야</th>
                     <th class="px-4 py-3 text-left font-semibold">예산</th>
+                    <th class="px-4 py-3 text-left font-semibold">수수료 5%</th>
                     <th class="px-4 py-3 text-left font-semibold">프리미엄</th>
-                    <th class="px-4 py-3 text-left font-semibold">상태</th>
+                    <th class="px-4 py-3 text-left font-semibold">매칭</th>
                     <th class="px-4 py-3 text-left font-semibold">등록일</th>
                     <th class="px-4 py-3"></th>
                   </tr>

@@ -68,6 +68,16 @@
     } catch (err) { console.warn(err); }
   }
 
+  // --- 플랫폼 수수료 계산 (5% 또는 platform_fee_percent) ---
+  function feeLineFor(j) {
+    const amount = j.matched_amount || j.budget_amount || j.budget || 0;
+    const pct = Number(j.platform_fee_percent) || 5;
+    const fee = j.platform_fee_amount != null
+      ? Number(j.platform_fee_amount)
+      : Math.floor(Number(amount) * pct / 100);
+    return { amount: Number(amount), pct, fee, payout: Math.max(0, Number(amount) - fee) };
+  }
+
   // ---------- Categories ----------
   function renderCategories() {
     qs("#cat-grid").innerHTML = CATEGORIES.map((c) => `
@@ -148,14 +158,19 @@
       const imgs = Array.isArray(j.body_images) ? j.body_images : [];
       const premium = j.is_premium
         ? '<span class="chip bg-gradient-to-r from-yellow-400 to-orange-400 text-yellow-900">⭐ PREMIUM</span>' : '';
-      const urgent = j.is_urgent
-        ? '<span class="chip bg-red-100 text-red-700">긴급</span>'
-        : '<span class="chip bg-emerald-50 text-emerald-700">모집 중</span>';
+      const matched = j.match_status === 'matched';
+      const urgent = matched
+        ? '<span class="chip bg-slate-100 text-slate-700">✓ 매칭 완료</span>'
+        : (j.is_urgent
+            ? '<span class="chip bg-red-100 text-red-700">긴급</span>'
+            : '<span class="chip bg-emerald-50 text-emerald-700">모집 중</span>');
       const share  = Number(j.revenue_share_percent) > 0
         ? `<span class="chip bg-yellow-50 text-yellow-800 border border-yellow-200" title="품앗이 쉐어">🤝 품앗이 ${j.revenue_share_percent}%${j.posted_by_name ? ` · ${escape(j.posted_by_name)}` : ""}</span>` : "";
       const travel = j.travel_fee_region
         ? `<span class="chip bg-cyan-50 text-cyan-800 border border-cyan-200" title="출장비">✈ ${escape(j.travel_fee_region)} · ${escape(KRW(j.travel_fee_amount))}</span>` : "";
       const budget = `<span class="chip bg-emerald-50 text-emerald-800 border border-emerald-200">💰 ${escape(budgetLabel(j))}</span>`;
+      const feePct = Number(j.platform_fee_percent) || 5;
+      const feeChip = `<span class="chip bg-indigo-50 text-indigo-800 border border-indigo-200" title="공고 매칭 성사 시 플랫폼 알선 수수료">📌 알선 수수료 ${feePct}%</span>`;
       const hero = imgs[0]?.url
         ? `<div class="aspect-[16/9] w-full -mt-6 -mx-6 mb-4 overflow-hidden rounded-t-2xl"><img src="${escape(imgs[0].url)}" class="w-full h-full object-cover" referrerpolicy="no-referrer" loading="lazy"/></div>` : "";
       return `
@@ -167,7 +182,7 @@
           </div>
           <div class="mt-1 text-xs text-slate-500">${escape(j.organization || "기관 미지정")}</div>
           <h3 class="mt-2 font-bold text-lg leading-snug line-clamp-2">${escape(j.title)}</h3>
-          <div class="mt-2 flex flex-wrap gap-1.5">${budget}${share}${travel}</div>
+          <div class="mt-2 flex flex-wrap gap-1.5">${budget}${feeChip}${share}${travel}</div>
           <p class="mt-3 text-sm text-slate-600 line-clamp-3">${escape(j.description || "")}</p>
           <div class="mt-auto pt-4 flex gap-2">
             <button data-detail-id="${escape(j.id)}" class="flex-1 px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">자세히 보기</button>
@@ -225,6 +240,27 @@
         <div><div class="text-xs text-slate-500">대상</div><div class="font-semibold">${escape(job.target_audience || "—")}</div></div>
         <div><div class="text-xs text-slate-500">출장비</div><div class="font-semibold">${escape(job.travel_fee_region || "미선택")} · ${escape(KRW(job.travel_fee_amount))}</div></div>
       </div>
+
+      ${(() => {
+        const f = feeLineFor(job);
+        if (!f.amount) {
+          return `
+          <div class="mt-5 p-4 rounded-xl bg-indigo-50 border border-indigo-100 text-sm">
+            <div class="flex items-center gap-2 font-bold text-indigo-900">📌 공고 알선 수수료 정책</div>
+            <p class="mt-1 text-slate-700">공고가 성사되면 <strong>게시 금액의 ${f.pct}%</strong> 가 Edu-match 플랫폼 알선 수수료로 차감됩니다. 게시 금액이 '협의' 인 경우 매칭 확정 후 계산합니다.</p>
+          </div>`;
+        }
+        return `
+          <div class="mt-5 p-4 rounded-xl bg-indigo-50 border border-indigo-100 text-sm">
+            <div class="flex items-center gap-2 font-bold text-indigo-900">📌 공고 알선 수수료 정책</div>
+            <div class="mt-2 grid grid-cols-3 gap-3">
+              <div><div class="text-xs text-slate-500">게시 금액</div><div class="font-bold">${escape(KRW(f.amount))}</div></div>
+              <div><div class="text-xs text-slate-500">플랫폼 수수료 (${f.pct}%)</div><div class="font-bold text-indigo-700">− ${escape(KRW(f.fee))}</div></div>
+              <div><div class="text-xs text-slate-500">실 지급 예상</div><div class="font-bold text-emerald-700">${escape(KRW(f.payout))}</div></div>
+            </div>
+            ${job.match_status === 'matched' ? `<p class="mt-2 text-xs text-slate-600">✓ 매칭 완료 · ${new Date(job.matched_at).toLocaleDateString("ko-KR")} 정산 반영</p>` : `<p class="mt-2 text-xs text-slate-500">공고 매칭이 확정되는 시점에 자동 정산됩니다.</p>`}
+          </div>`;
+      })()}
 
       <div class="mt-6">
         <h3 class="font-bold">개요</h3>
