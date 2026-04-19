@@ -126,13 +126,24 @@ function jobCardHtml(job, cats) {
   const shareChip = Number(job.revenue_share_percent) > 0
     ? `<span class="job-card__share" title="강사 등록 공고 · 등록자 쉐어">🤝 강사 등록 · ${escapeHtml(job.revenue_share_percent)}% 쉐어${job.posted_by_name ? ` (${escapeHtml(job.posted_by_name)})` : ""}</span>`
     : "";
-  const chipRow = (travelChip || shareChip)
-    ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin: 8px 0 12px;">${shareChip}${travelChip}</div>`
-    : "";
+  const budgetLabel = (() => {
+    if (job.budget_type === "per_hour" && job.budget_amount) return `시간당 ${formatWon(job.budget_amount)}`;
+    if (job.budget_type === "per_course" && job.budget_amount) return `과정당 ${formatWon(job.budget_amount)}`;
+    if (job.budget_type === "negotiable") return "예산 협의";
+    return job.budget || "협의";
+  })();
+  const budgetChip = `<span class="job-card__budget" title="예산 / 단가">💰 ${escapeHtml(budgetLabel)}</span>`;
+  const chipRow = `<div style="display:flex; gap:6px; flex-wrap:wrap; margin: 8px 0 12px;">${budgetChip}${shareChip}${travelChip}</div>`;
 
-  const minPriceLink = job.min_price_ref_url
-    ? `<div style="margin-top:8px; font-size:12px; color: var(--text-soft);">최소 단가 참고: <a href="${escapeHtml(job.min_price_ref_url)}" target="_blank" rel="noopener" style="color:#9ae6ff;">솜씨당Biz 동일 서비스 →</a></div>`
-    : "";
+  // 단가 참고 링크: 공식 HRD-Net 로 기본 연결, 공고에 별도 URL 이 있으면 함께 노출
+  const refUrl = job.min_price_ref_url && job.min_price_ref_url !== "https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3"
+    ? job.min_price_ref_url
+    : "https://www.hrd.go.kr";
+  const minPriceLink = `
+    <div style="margin-top:8px; font-size:12px; color: var(--text-soft);">
+      단가 참고: <a href="${escapeHtml(refUrl)}" target="_blank" rel="noopener" style="color:#9ae6ff;">고용노동부 HRD-Net →</a>
+      · <a href="https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000242033" target="_blank" rel="noopener" style="color:#9ae6ff;">「직업능력개발훈련 실시기준 등에 관한 고시」 →</a>
+    </div>`;
 
   const bodyHtml = job.body_content
     ? `<div class="job-card__body">${tinyMarkdown(job.body_content)}</div>
@@ -168,7 +179,7 @@ function jobCardHtml(job, cats) {
         </div>
         <div class="job-card__detail">
           <span class="job-card__detail-label">예산</span>
-          <span>${escapeHtml(job.budget || "협의")}</span>
+          <span>${escapeHtml(budgetLabel)}</span>
         </div>
         <div class="job-card__detail">
           <span class="job-card__detail-label">출장비</span>

@@ -153,11 +153,21 @@
               <input id="j-target" name="target_audience" type="text" required placeholder="직원 30명 (팀별 분반)" />
             </div>
             <div class="form-field">
-              <label for="j-budget">예산 · 단가</label>
-              <input id="j-budget" name="budget" type="text" required placeholder="예) 시간당 80,000원 · 과정 600만원" />
+              <label for="j-budget-amount">예산 · 단가</label>
+              <div class="budget-picker">
+                <select id="j-budget-type" name="budget_type" required>
+                  <option value="per_hour" selected>시간당</option>
+                  <option value="per_course">과정당</option>
+                  <option value="negotiable">협의</option>
+                </select>
+                <input id="j-budget-amount" name="budget_amount" type="number" min="0" step="1000" placeholder="예) 80000" />
+                <span class="budget-picker__unit">원</span>
+              </div>
               <small style="display:block; margin-top:6px; color: var(--text-soft); font-size:12px;">
-                최소 단가 참고:
-                <a href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener" style="color:#9ae6ff;">솜씨당Biz 동일 서비스 조회 →</a>
+                단가 참고 (공신력 있는 출처):
+                <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" style="color:#9ae6ff;">고용노동부 HRD-Net (직업훈련 포털) →</a>
+                ·
+                <a href="https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000242033" target="_blank" rel="noopener" style="color:#9ae6ff;">「직업능력개발훈련 실시기준 등에 관한 고시」 →</a>
               </small>
             </div>
             <div class="form-field">

@@ -1546,3 +1546,29 @@ main, .nav, .footer__inner { position: relative; z-index: 1; }
   border: 1px solid rgba(255,255,255,0.08);
 }
 .job-card__gallery a img { width:100%; height:100%; object-fit: cover; display:block; }
+
+/* 예산 · 단가 picker */
+.budget-picker {
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.budget-picker select, .budget-picker input {
+  width: 100%;
+}
+.budget-picker__unit {
+  color: var(--text-soft);
+  font-size: 14px;
+  padding-right: 6px;
+}
+.budget-picker.is-negotiable input { opacity: 0.45; pointer-events: none; }
+
+/* Job card budget chip */
+.job-card__budget {
+  display: inline-flex; gap: 6px; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(180, 255, 200, 0.08);
+  border: 1px solid rgba(180, 255, 200, 0.25);
+  color: #b8f0c8; font-size: 12px; font-weight: 700;
+}

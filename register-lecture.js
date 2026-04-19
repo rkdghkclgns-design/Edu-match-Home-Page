@@ -25,6 +25,25 @@
     shareBlock.style.display = shareCheckbox.checked ? "" : "none";
   });
 
+  // 예산 타입 토글
+  const budgetType = document.getElementById("j-budget-type");
+  const budgetAmount = document.getElementById("j-budget-amount");
+  const budgetPicker = document.querySelector(".budget-picker");
+  function syncBudgetUI() {
+    const isNeg = budgetType.value === "negotiable";
+    budgetPicker.classList.toggle("is-negotiable", isNeg);
+    if (isNeg) budgetAmount.value = "";
+    budgetAmount.required = !isNeg;
+  }
+  budgetType?.addEventListener("change", syncBudgetUI);
+  syncBudgetUI();
+
+  function formatBudget(type, amount) {
+    if (type === "negotiable" || !amount) return "협의";
+    const won = Number(amount).toLocaleString("ko-KR") + "원";
+    return type === "per_hour" ? `시간당 ${won}` : `과정당 ${won}`;
+  }
+
   function show(text, type) {
     msg.textContent = text;
     msg.className = "auth-message is-shown auth-message--" + type;
@@ -133,9 +152,16 @@
       ["j-desc",    "강의 상세 설명",   20],
       ["j-period",  "강의 기간",         2],
       ["j-target",  "수강 대상 · 규모",  2],
-      ["j-budget",  "예산 · 단가",       2],
     ]);
     if (err) { show(err, "error"); return; }
+
+    const btype = budgetType.value;
+    const bamount = Number(budgetAmount.value) || 0;
+    if (btype !== "negotiable" && bamount <= 0) {
+      show("예산 금액을 입력하거나 '협의' 로 설정해주세요.", "error");
+      budgetAmount.focus();
+      return;
+    }
 
     // 업로드 중인 이미지 확인
     if (pendingImages.some((i) => i.status === "uploading")) {
@@ -185,7 +211,9 @@
       format: document.getElementById("j-format").value,
       period: document.getElementById("j-period").value.trim(),
       target_audience: document.getElementById("j-target").value.trim(),
-      budget: document.getElementById("j-budget").value.trim(),
+      budget: formatBudget(btype, bamount),
+      budget_type: btype,
+      budget_amount: btype === "negotiable" ? null : bamount,
       tags: document.getElementById("j-tags").value.split(",").map((s) => s.trim()).filter(Boolean),
       is_urgent: document.getElementById("j-urgent").checked,
       status: "open",
@@ -195,7 +223,7 @@
       posted_by_email: isShared ? shareEmail : null,
       travel_fee_region: travel.region,
       travel_fee_amount: travel.amount,
-      min_price_ref_url: "https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3",
+      min_price_ref_url: "https://www.hrd.go.kr",
     };
 
     show("등록 중…", "success");
