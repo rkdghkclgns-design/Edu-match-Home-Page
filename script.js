@@ -199,7 +199,7 @@ function jobCardHtml(job, cats) {
   `;
 }
 
-const MATCH_INQUIRY_URL = "https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3";
+let __instructorsCache = [];
 
 function instructorCardHtml(ins) {
   const avatarColor = ins.avatar_color || "a";
@@ -235,7 +235,10 @@ function instructorCardHtml(ins) {
       <div class="instructor-card__tags">${tags}</div>
       <div class="instructor-card__footer">
         <span class="instructor-card__exp">경력 ${escapeHtml(ins.experience_years || 0)}년</span>
-        <a class="instructor-card__link" href="${MATCH_INQUIRY_URL}" target="_blank" rel="noopener">매칭 문의 →</a>
+        <div class="instructor-card__ctas">
+          <button type="button" class="instructor-card__btn instructor-card__btn--ghost" data-instructor-detail data-id="${escapeHtml(ins.id || "")}">상세정보 보기</button>
+          <button type="button" class="instructor-card__btn instructor-card__btn--primary" data-instructor-inquiry data-id="${escapeHtml(ins.id || "")}">매칭 문의 →</button>
+        </div>
       </div>
     </article>
   `;
@@ -336,11 +339,13 @@ async function hydrateInstructors(em) {
     const { data, error } = await em.supabase
       .from(em.TABLES.instructors)
       .select("*")
+      .eq("is_approved", true)
       .order("is_featured", { ascending: false })
       .order("rating", { ascending: false })
-      .limit(8);
+      .limit(12);
     if (error) throw error;
     if (!data || data.length === 0) return;
+    __instructorsCache = data;
     grid.innerHTML = data.map(instructorCardHtml).join("");
     applyReveal(grid);
   } catch (err) {
@@ -550,4 +555,210 @@ if (document.readyState === "loading") {
     `;
     open();
   });
+})();
+
+// =========================================================
+// 강사 상세 모달 + 매칭 문의 (기초정보 → mailto + em_applications)
+// =========================================================
+(function setupInstructorModals() {
+  const detailModal = document.getElementById("em-ins-modal");
+  const detailBody = document.getElementById("em-ins-body");
+  const matchModal = document.getElementById("em-match-modal");
+  const matchCtx   = document.getElementById("em-match-context");
+  const matchMsg   = document.getElementById("em-match-msg");
+  const matchForm  = document.getElementById("em-match-form");
+  if (!detailModal || !matchModal || !matchForm) return;
+
+  let targetInstructor = null;
+
+  function openDetail() { detailModal.classList.add("is-open"); }
+  function closeDetail() { detailModal.classList.remove("is-open"); detailBody.innerHTML = ""; }
+  function openMatch()  { matchModal.classList.add("is-open"); }
+  function closeMatch() { matchModal.classList.remove("is-open"); matchForm.reset(); matchMsg.textContent = ""; matchMsg.className = "em-modal__msg"; }
+
+  [detailModal, matchModal].forEach((m) => {
+    m.addEventListener("click", (e) => {
+      if (e.target === m || e.target.closest("[data-modal-close]")) {
+        m === detailModal ? closeDetail() : closeMatch();
+      }
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (detailModal.classList.contains("is-open")) closeDetail();
+    if (matchModal.classList.contains("is-open")) closeMatch();
+  });
+
+  document.body.addEventListener("click", async (e) => {
+    const detailBtn = e.target.closest("[data-instructor-detail]");
+    const inquiryBtn = e.target.closest("[data-instructor-inquiry]");
+    if (!detailBtn && !inquiryBtn) return;
+    const id = (detailBtn || inquiryBtn).getAttribute("data-id");
+    const ins = (typeof __instructorsCache !== "undefined" ? __instructorsCache : []).find((i) => i.id === id);
+    if (!ins) return;
+
+    if (detailBtn) {
+      await renderInstructorDetail(ins);
+      openDetail();
+      return;
+    }
+    targetInstructor = ins;
+    matchCtx.textContent = "대상 강사: " + ins.name + " · 입력한 내용이 " + (ins.contact_email || "(이메일 미등록)") + " 로 전달됩니다.";
+    openMatch();
+  });
+
+  async function renderInstructorDetail(ins) {
+    const em = window.EduMatch;
+    const catLabel = (em && em.SERVICE_CATEGORIES || []).find((c) => c.key === ins.category);
+    const catLabelStr = catLabel ? catLabel.label : (ins.category || "");
+    const tags = (ins.expertise || []).map((t) => "<span>" + escapeHtml(t) + "</span>").join("");
+    const avatarImg = ins.avatar_url
+      ? '<img src="' + escapeHtml(ins.avatar_url) + '" alt="' + escapeHtml(ins.name) + '" referrerpolicy="no-referrer" />'
+      : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;">' + escapeHtml((ins.name || "?").charAt(0)) + '</div>';
+
+    let postedJobs = [];
+    if (em && em.supabase) {
+      try {
+        const emailFilter = ins.contact_email || "__none__";
+        const { data } = await em.supabase
+          .from(em.TABLES.jobs)
+          .select("*")
+          .or("posted_by_instructor_id.eq." + ins.id + ",posted_by_email.eq." + emailFilter)
+          .order("created_at", { ascending: false });
+        postedJobs = data || [];
+      } catch (err) { /* ignore */ }
+    }
+
+    const postedHtml = postedJobs.length > 0
+      ? postedJobs.map((j) => {
+          let budgetLabel;
+          if (j.budget_type === "per_hour" && j.budget_amount) budgetLabel = "시간당 " + formatWon(j.budget_amount);
+          else if (j.budget_type === "per_course" && j.budget_amount) budgetLabel = "과정당 " + formatWon(j.budget_amount);
+          else if (j.budget_type === "negotiable") budgetLabel = "예산 협의";
+          else budgetLabel = j.budget || "협의";
+          const travel = j.travel_fee_region ? "✈ " + j.travel_fee_region + " · " + formatWon(j.travel_fee_amount) : "";
+          const share  = Number(j.revenue_share_percent) > 0 ? "🤝 " + j.revenue_share_percent + "% 쉐어" : "";
+          const badge  = j.is_urgent ? '<span class="job-badge job-badge--urgent">긴급</span>' : '<span class="job-badge">모집 중</span>';
+          return (
+            '<article class="mini-job-card">' +
+              '<div class="mini-job-card__row1">' +
+                '<span>' + escapeHtml(j.organization || "—") + '</span>' +
+                '<span>' + badge + '</span>' +
+              '</div>' +
+              '<h4 class="mini-job-card__title">' + escapeHtml(j.title) + '</h4>' +
+              '<p style="margin:0;font-size:13px;color:var(--text-soft);line-height:1.6;">' + escapeHtml(j.description || "") + '</p>' +
+              '<div class="mini-job-card__meta">' +
+                '<span>💰 ' + escapeHtml(budgetLabel) + '</span>' +
+                (travel ? '<span>' + escapeHtml(travel) + '</span>' : "") +
+                (share  ? '<span>' + escapeHtml(share)  + '</span>' : "") +
+                '<span>· ' + escapeHtml(j.period || "—") + '</span>' +
+              '</div>' +
+            '</article>'
+          );
+        }).join("")
+      : '<p class="admin-empty" style="text-align:center;padding:20px;color:var(--text-soft);">해당 강사가 등록한 공고가 없습니다.</p>';
+
+    detailBody.innerHTML =
+      '<div class="instructor-hero">' +
+        '<div class="instructor-hero__avatar">' + avatarImg + '</div>' +
+        '<div class="instructor-hero__meta">' +
+          '<h2 id="em-ins-title" class="instructor-hero__name">' + escapeHtml(ins.name) + '</h2>' +
+          '<p class="instructor-hero__title">' + escapeHtml(ins.title || "") + '</p>' +
+          '<div class="instructor-hero__rating">★ ' + escapeHtml(ins.rating != null ? ins.rating : "—") + ' · 리뷰 ' + escapeHtml(ins.review_count != null ? ins.review_count : 0) + ' · 경력 ' + escapeHtml(ins.experience_years != null ? ins.experience_years : 0) + '년</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="detail-section">' +
+        '<h4>프로필</h4>' +
+        '<p style="line-height:1.7;">' + escapeHtml(ins.bio || "—") + '</p>' +
+        '<div class="job-card__details" style="margin-top:10px;">' +
+          (catLabelStr ? '<div class="job-card__detail"><span class="job-card__detail-label">분야</span><span>' + escapeHtml(catLabelStr) + '</span></div>' : "") +
+          '<div class="job-card__detail"><span class="job-card__detail-label">승인 상태</span><span>' + (ins.is_approved ? "✔ 승인" : "⏳ 대기") + '</span></div>' +
+          '<div class="job-card__detail"><span class="job-card__detail-label">연락처</span><span>' + escapeHtml(ins.contact_email || "—") + '</span></div>' +
+        '</div>' +
+      '</div>' +
+      (tags ? '<div class="detail-section"><h4>전문 키워드</h4><div class="job-card__tags">' + tags + '</div></div>' : "") +
+      '<div class="detail-section">' +
+        '<h4>이 강사가 등록한 공고 (' + postedJobs.length + '건)</h4>' +
+        postedHtml +
+      '</div>' +
+      '<div class="detail-section" style="margin-top:20px;display:flex;gap:8px;">' +
+        '<button type="button" class="btn btn--primary" data-start-inquiry data-id="' + escapeHtml(ins.id || "") + '">매칭 문의하기 →</button>' +
+        '<button type="button" class="btn btn--ghost" data-modal-close>닫기</button>' +
+      '</div>';
+  }
+
+  detailBody && detailBody.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-start-inquiry]");
+    if (!b) return;
+    const id = b.getAttribute("data-id");
+    const ins = (typeof __instructorsCache !== "undefined" ? __instructorsCache : []).find((i) => i.id === id);
+    if (!ins) return;
+    targetInstructor = ins;
+    matchCtx.textContent = "대상 강사: " + ins.name + " · 입력한 내용이 " + (ins.contact_email || "(이메일 미등록)") + " 로 전달됩니다.";
+    closeDetail();
+    openMatch();
+  });
+
+  matchForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!targetInstructor) return;
+    const em = window.EduMatch;
+    const name  = document.getElementById("em-m-name").value.trim();
+    const email = document.getElementById("em-m-email").value.trim();
+    const org   = document.getElementById("em-m-org").value.trim();
+    const phone = document.getElementById("em-m-phone").value.trim();
+    const topic = document.getElementById("em-m-topic").value.trim();
+    const sched = document.getElementById("em-m-schedule").value.trim();
+    const body  = document.getElementById("em-m-message").value.trim();
+
+    if (name.length < 2) return showMatch("의뢰자 성함을 입력해주세요.", "err");
+    if (!/.+@.+\..+/.test(email)) return showMatch("회신용 이메일을 정확히 입력해주세요.", "err");
+    if (topic.length < 2)  return showMatch("교육 주제를 입력해주세요.", "err");
+    if (body.length  < 10) return showMatch("요청 내용을 10자 이상 입력해주세요.", "err");
+    if (!targetInstructor.contact_email) return showMatch("대상 강사 이메일이 등록되어 있지 않습니다.", "err");
+
+    showMatch("접수 중…", "ok");
+
+    if (em && em.supabase) {
+      try {
+        await em.supabase.from(em.TABLES.applications).insert({
+          instructor_id: targetInstructor.id,
+          applicant_name: name,
+          applicant_email: email,
+          message: [
+            "[교육 주제] " + topic,
+            sched ? "[희망 일정] " + sched : "",
+            org ? "[소속] " + org : "",
+            phone ? "[연락처] " + phone : "",
+            "",
+            body,
+          ].filter(Boolean).join("\n"),
+          status: "pending",
+        });
+      } catch (err) {
+        console.warn("application insert failed:", err);
+      }
+    }
+
+    const subject = "[Edu-match 매칭 문의] " + topic;
+    const emailBody =
+      "안녕하세요 " + targetInstructor.name + " 강사님,\n\n" +
+      "Edu-match 를 통해 매칭 문의드립니다.\n\n" +
+      "• 의뢰자: " + name + (org ? " (" + org + ")" : "") + "\n" +
+      "• 회신 이메일: " + email + "\n" +
+      "• 연락처: " + (phone || "-") + "\n" +
+      "• 교육 주제: " + topic + "\n" +
+      "• 희망 일정: " + (sched || "-") + "\n\n" +
+      body + "\n\n" +
+      "감사합니다.";
+    const mailto = "mailto:" + encodeURIComponent(targetInstructor.contact_email) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(emailBody);
+    showMatch("강사 이메일 창을 엽니다. 본인 이메일 앱에서 발송을 완료해주세요.", "ok");
+    window.location.href = mailto;
+    setTimeout(closeMatch, 1500);
+  });
+
+  function showMatch(text, type) {
+    matchMsg.textContent = text;
+    matchMsg.className = "em-modal__msg " + (type === "ok" ? "em-modal__msg--ok" : "em-modal__msg--err");
+  }
 })();

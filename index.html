@@ -669,6 +669,57 @@
       </div>
     </footer>
 
+    <!-- 강사 상세 모달 -->
+    <div id="em-ins-modal" class="em-modal em-modal--wide" role="dialog" aria-modal="true" aria-labelledby="em-ins-title">
+      <div class="em-modal__card em-modal__card--wide">
+        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
+        <div id="em-ins-body"></div>
+      </div>
+    </div>
+
+    <!-- 매칭 문의 모달 -->
+    <div id="em-match-modal" class="em-modal" role="dialog" aria-modal="true" aria-labelledby="em-match-title">
+      <div class="em-modal__card">
+        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
+        <h2 id="em-match-title" class="em-modal__title">매칭 문의</h2>
+        <p class="em-modal__sub" id="em-match-context">기초 정보를 입력하시면 강사 이메일로 바로 전달됩니다.</p>
+        <form id="em-match-form" class="auth-form" novalidate>
+          <div class="form-field">
+            <label for="em-m-name">의뢰자 성함</label>
+            <input id="em-m-name" type="text" required />
+          </div>
+          <div class="form-field">
+            <label for="em-m-email">이메일 (회신용)</label>
+            <input id="em-m-email" type="email" required />
+          </div>
+          <div class="admin-form-row">
+            <div class="form-field">
+              <label for="em-m-org">소속 기관 · 기업</label>
+              <input id="em-m-org" type="text" />
+            </div>
+            <div class="form-field">
+              <label for="em-m-phone">연락처</label>
+              <input id="em-m-phone" type="tel" placeholder="010-0000-0000" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="em-m-topic">교육 주제 · 분야</label>
+            <input id="em-m-topic" type="text" required placeholder="예) 생성형 AI 임직원 교육" />
+          </div>
+          <div class="form-field">
+            <label for="em-m-schedule">희망 일정</label>
+            <input id="em-m-schedule" type="text" placeholder="예) 2026.06 ~ 2026.08" />
+          </div>
+          <div class="form-field">
+            <label for="em-m-message">요청 내용</label>
+            <textarea id="em-m-message" required placeholder="대상 · 규모 · 예산 · 진행 형태 · 기대 산출물 등을 기재해주세요."></textarea>
+          </div>
+          <button type="submit" class="auth-submit">강사에게 이메일 전송 →</button>
+          <div id="em-match-msg" class="em-modal__msg"></div>
+        </form>
+      </div>
+    </div>
+
     <!-- 공고 상세 모달 -->
     <div id="em-detail-modal" class="em-modal em-modal--wide" role="dialog" aria-modal="true" aria-labelledby="em-detail-title">
       <div class="em-modal__card em-modal__card--wide">
