@@ -66,7 +66,26 @@
           });
         if (profileError) console.warn("profile insert error:", profileError);
 
-        showMessage(msg, "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다…", "success");
+        // 강사 가입의 경우 em_instructors 에 승인 대기 상태로 등록
+        if (role === "instructor" && em.TABLES?.instructors) {
+          const { error: insErr } = await supabase
+            .from(em.TABLES.instructors)
+            .insert({
+              user_id: user ? user.id : null,
+              name,
+              title: "강사 회원 (심사 대기)",
+              bio: "관리자 승인 대기 중입니다.",
+              category,
+              is_approved: false,
+              is_featured: false,
+            });
+          if (insErr) console.warn("instructor insert error:", insErr);
+        }
+
+        const successMsg = role === "instructor"
+          ? "강사 회원가입이 접수되었습니다. 관리자 승인 후 자료실 이용이 가능합니다."
+          : "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다…";
+        showMessage(msg, successMsg, "success");
         signupForm.reset();
         setTimeout(() => (window.location.href = "./login.html"), 1800);
       } catch (err) {

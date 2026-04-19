@@ -93,7 +93,7 @@ function jobCardHtml(job, cats) {
     ? '<span class="job-badge job-badge--urgent">긴급</span>'
     : '<span class="job-badge">모집 중</span>';
   return `
-    <article class="job-card ${urgent ? "job-card--urgent" : ""}">
+    <article class="job-card ${urgent ? "job-card--urgent" : ""}" data-job-id="${escapeHtml(job.id || "")}">
       <div class="job-card__header">
         <span class="job-card__org">${escapeHtml(job.organization)}</span>
         ${badge}
@@ -140,7 +140,7 @@ function instructorCardHtml(ins) {
     .join("");
   const feature = ins.is_featured ? "instructor-card--feature" : "";
   return `
-    <article class="instructor-card ${feature}">
+    <article class="instructor-card ${feature}" data-instructor-id="${escapeHtml(ins.id || "")}">
       <div class="instructor-card__header">
         <div class="instructor-card__avatar avatar--${escapeHtml(avatarColor)}">
           <span>${escapeHtml(initial)}</span>
@@ -217,3 +217,80 @@ if (document.readyState === "loading") {
 } else {
   bootEduMatchFeeds();
 }
+
+// =========================================================
+// 매칭 문의 모달
+// =========================================================
+(function setupInquiryModal() {
+  const modal = document.getElementById("em-modal");
+  if (!modal) return;
+  const contextEl = document.getElementById("em-modal-context");
+  const titleEl = document.getElementById("em-modal-title");
+  const msgEl = document.getElementById("em-inq-msg");
+  const form = document.getElementById("em-inquiry-form");
+  let currentRef = { instructorId: null, jobId: null, label: "" };
+
+  function openModal(ref) {
+    currentRef = ref || {};
+    titleEl.textContent = ref.jobId ? "공고 지원하기" : "매칭 문의";
+    contextEl.textContent = ref.label || "원하시는 강사 또는 공고에 대한 문의 내역을 남겨주세요.";
+    msgEl.textContent = "";
+    msgEl.className = "em-modal__msg";
+    modal.classList.add("is-open");
+  }
+  function closeModal() {
+    modal.classList.remove("is-open");
+    form.reset();
+  }
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal || e.target.closest("[data-modal-close]")) closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+
+  document.body.addEventListener("click", (e) => {
+    const hit = e.target.closest("[data-inquiry],.instructor-card__link,.job-card__cta");
+    if (!hit) return;
+    e.preventDefault();
+    const card = hit.closest(".instructor-card") || hit.closest(".job-card");
+    const name = card?.querySelector(".instructor-card__name, .job-card__title")?.textContent?.trim() || "";
+    const org = card?.querySelector(".job-card__org")?.textContent?.trim();
+    const ref = {
+      instructorId: card?.dataset?.instructorId || null,
+      jobId: card?.dataset?.jobId || null,
+      label: org ? `${org} · ${name}` : name ? `강사: ${name}` : "",
+    };
+    openModal(ref);
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const em = window.EduMatch;
+    if (!em?.supabase) {
+      msgEl.textContent = "Supabase 설정이 필요합니다.";
+      msgEl.className = "em-modal__msg em-modal__msg--err";
+      return;
+    }
+    const payload = {
+      applicant_name: document.getElementById("em-inq-name").value.trim(),
+      applicant_email: document.getElementById("em-inq-email").value.trim(),
+      message: document.getElementById("em-inq-message").value.trim(),
+      instructor_id: currentRef.instructorId || null,
+      job_id: currentRef.jobId || null,
+      status: "pending",
+    };
+    msgEl.textContent = "제출 중…";
+    msgEl.className = "em-modal__msg em-modal__msg--ok";
+    const { error } = await em.supabase.from(em.TABLES.applications).insert(payload);
+    if (error) {
+      msgEl.textContent = "제출 실패: " + error.message;
+      msgEl.className = "em-modal__msg em-modal__msg--err";
+      return;
+    }
+    msgEl.textContent = "접수되었습니다. 담당 매니저가 24시간 내 연락드립니다.";
+    msgEl.className = "em-modal__msg em-modal__msg--ok";
+    setTimeout(closeModal, 1400);
+  });
+})();

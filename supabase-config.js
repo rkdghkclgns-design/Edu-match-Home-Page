@@ -14,6 +14,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_09z4u2K4XVU5fUl2e532Fg_kqct0zez";
 // - em-admin-auth: 관리자 ID/PW 검증 + HMAC 세션 토큰 발급/검증 (크리덴셜은 서버 비밀에만 존재)
 const GEMINI_PROXY_URL = `${SUPABASE_URL}/functions/v1/gemini-proxy`;
 const ADMIN_AUTH_URL = `${SUPABASE_URL}/functions/v1/em-admin-auth`;
+const DEEP_RESEARCH_URL = `${SUPABASE_URL}/functions/v1/em-deep-research`;
 const ADMIN_TOKEN_KEY = "edumatch_admin_token";
 
 // Supabase 클라이언트 (CDN 로드 후 window.supabase 사용)
@@ -27,6 +28,9 @@ const EM_TABLES = {
   jobs: "em_job_postings",
   applications: "em_applications",
   profiles: "em_profiles",
+  materials: "em_lecture_materials",
+  pblRequests: "em_pbl_requests",
+  pblMaterials: "em_pbl_materials",
 };
 
 // 강의/서비스 카테고리
@@ -166,6 +170,7 @@ window.EduMatch = {
   SUPABASE_ANON_KEY,
   GEMINI_PROXY_URL,
   ADMIN_AUTH_URL,
+  DEEP_RESEARCH_URL,
   TABLES: EM_TABLES,
   SERVICE_CATEGORIES,
   categoryLabel,

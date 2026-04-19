@@ -439,9 +439,241 @@
     loadJobs();
   });
 
+  // ---------- 강사 승인 대기열 ----------
+  async function loadApprovals() {
+    const tbody = document.getElementById("approvals-tbody");
+    if (!tbody) return;
+    if (!mustSupabase()) { tbody.innerHTML = emptyRow(6, "Supabase 설정 필요"); return; }
+    tbody.innerHTML = emptyRow(6, "불러오는 중…");
+    const { data, error } = await supabase
+      .from(TABLES.instructors)
+      .select("*")
+      .eq("is_approved", false)
+      .order("created_at", { ascending: false });
+    if (error) { tbody.innerHTML = emptyRow(6, "오류: " + error.message); return; }
+    if (!data || data.length === 0) { tbody.innerHTML = emptyRow(6, "승인 대기 강사가 없습니다."); return; }
+    tbody.innerHTML = data.map((i) => `
+      <tr>
+        <td>${safeText(i.name)}</td>
+        <td>${safeText(i.title)}</td>
+        <td>${safeText(em.categoryLabel ? em.categoryLabel(i.category) : i.category)}</td>
+        <td>${safeText(i.experience_years)}년</td>
+        <td>${fmtDate(i.created_at)}</td>
+        <td>
+          <button class="admin-action admin-action--primary" data-action="approve-instructor" data-id="${i.id}">승인</button>
+          <button class="admin-action" data-action="reject-instructor" data-id="${i.id}">거절</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  // ---------- 강의자료 승인 ----------
+  async function loadMaterialsAdmin() {
+    const tbody = document.getElementById("materials-tbody");
+    if (!tbody) return;
+    if (!mustSupabase()) { tbody.innerHTML = emptyRow(7, "Supabase 설정 필요"); return; }
+    tbody.innerHTML = emptyRow(7, "불러오는 중…");
+    const { data, error } = await supabase
+      .from(TABLES.materials)
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) { tbody.innerHTML = emptyRow(7, "오류: " + error.message); return; }
+    if (!data || data.length === 0) { tbody.innerHTML = emptyRow(7, "등록된 자료가 없습니다."); return; }
+    tbody.innerHTML = data.map((m) => `
+      <tr>
+        <td>${safeText(m.title)}</td>
+        <td>${safeText(em.categoryLabel ? em.categoryLabel(m.category) : m.category)}</td>
+        <td>${safeText(m.uploaded_by_name || m.uploaded_by_email)}</td>
+        <td>${m.material_url ? `<a href="${safeText(m.material_url)}" target="_blank" rel="noopener">열기</a>` : "—"}</td>
+        <td>${m.is_approved ? "✔ 승인" : "⏳ 대기"}</td>
+        <td>${fmtDate(m.created_at)}</td>
+        <td>
+          ${m.is_approved
+            ? `<button class="admin-action" data-action="unapprove-material" data-id="${m.id}">승인 해제</button>`
+            : `<button class="admin-action admin-action--primary" data-action="approve-material" data-id="${m.id}">승인</button>`}
+          <button class="admin-action" data-action="delete-material" data-id="${m.id}">삭제</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  // ---------- PBL 의뢰 ----------
+  async function loadPbl() {
+    const tbody = document.getElementById("pbl-tbody");
+    if (!tbody) return;
+    if (!mustSupabase()) { tbody.innerHTML = emptyRow(7, "Supabase 설정 필요"); return; }
+    tbody.innerHTML = emptyRow(7, "불러오는 중…");
+    const { data, error } = await supabase
+      .from(TABLES.pblRequests)
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) { tbody.innerHTML = emptyRow(7, "오류: " + error.message); return; }
+    if (!data || data.length === 0) { tbody.innerHTML = emptyRow(7, "등록된 의뢰가 없습니다."); return; }
+    tbody.innerHTML = data.map((p) => `
+      <tr>
+        <td>${safeText(p.requester_name)}<br/><span class="admin-header__meta">${safeText(p.requester_email)}</span></td>
+        <td>${safeText(p.organization)}</td>
+        <td>${safeText(p.topic)}<br/><span class="admin-header__meta">${safeText(p.domain)}</span></td>
+        <td>${safeText(p.audience_size)}명 / ${safeText(p.duration_hours)}h</td>
+        <td>
+          <select data-action="pbl-status" data-id="${p.id}" class="admin-action">
+            ${["pending","reviewing","drafted","delivered","closed"].map((s) =>
+              `<option value="${s}" ${p.status===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+        </td>
+        <td>${fmtDate(p.created_at)}</td>
+        <td>
+          <button class="admin-action" data-action="pbl-detail" data-id="${p.id}">상세</button>
+          <button class="admin-action" data-action="delete-pbl" data-id="${p.id}">삭제</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  async function renderPblDetail(id) {
+    const root = document.getElementById("pbl-detail");
+    if (!root) return;
+    const { data: req } = await supabase.from(TABLES.pblRequests).select("*").eq("id", id).maybeSingle();
+    const { data: mats } = await supabase.from(TABLES.pblMaterials).select("*").eq("request_id", id).order("created_at", { ascending: true });
+    if (!req) { root.innerHTML = `<p class="admin-empty">의뢰를 찾을 수 없습니다.</p>`; return; }
+    root.innerHTML = `
+      <article class="job-card">
+        <div class="job-card__header">
+          <span class="job-card__org">${safeText(req.organization || "—")}</span>
+          <span class="job-badge">${safeText(req.status)}</span>
+        </div>
+        <h3 class="job-card__title">${safeText(req.topic)}</h3>
+        <p class="job-card__desc"><strong>학습목표:</strong> ${safeText(req.objectives || "—")}</p>
+        <div class="job-card__details">
+          <div class="job-card__detail"><span class="job-card__detail-label">의뢰자</span><span>${safeText(req.requester_name)} · ${safeText(req.requester_email)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">연락처</span><span>${safeText(req.requester_phone || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">분야</span><span>${safeText(req.domain)} · ${safeText(req.target_level)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">규모</span><span>${safeText(req.audience_size)}명 / ${safeText(req.duration_hours)}h / ${safeText(req.deliverable_format)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">비고</span><span>${safeText(req.notes || "—")}</span></div>
+        </div>
+        <div style="margin-top:14px;">
+          <strong>첨부 자료 (${(mats||[]).length}건)</strong>
+          <ul style="margin:8px 0 0; padding-left: 18px;">
+            ${(mats||[]).map((m) => `<li>${safeText(m.name)} — ${m.url ? `<a href="${safeText(m.url)}" target="_blank" rel="noopener">${safeText(m.url)}</a>` : "(링크 없음)"}</li>`).join("") || "<li>첨부 자료 없음</li>"}
+          </ul>
+        </div>
+      </article>
+    `;
+  }
+
+  // 승인 / 상태변경 이벤트 위임
+  document.body.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const action = btn.getAttribute("data-action");
+    const id = btn.getAttribute("data-id");
+    if (!id || !mustSupabase()) return;
+
+    if (action === "approve-instructor") {
+      const { error } = await supabase.from(TABLES.instructors).update({ is_approved: true }).eq("id", id);
+      if (error) return alert("승인 실패: " + error.message);
+      loadApprovals(); loadInstructors();
+    } else if (action === "reject-instructor") {
+      if (!confirm("강사 등록을 거절하고 삭제할까요?")) return;
+      const { error } = await supabase.from(TABLES.instructors).delete().eq("id", id);
+      if (error) return alert("거절 실패: " + error.message);
+      loadApprovals(); loadInstructors();
+    } else if (action === "approve-material") {
+      const { error } = await supabase.from(TABLES.materials).update({ is_approved: true }).eq("id", id);
+      if (error) return alert("승인 실패: " + error.message);
+      loadMaterialsAdmin();
+    } else if (action === "unapprove-material") {
+      const { error } = await supabase.from(TABLES.materials).update({ is_approved: false }).eq("id", id);
+      if (error) return alert("승인 해제 실패: " + error.message);
+      loadMaterialsAdmin();
+    } else if (action === "delete-material") {
+      if (!confirm("자료를 삭제할까요?")) return;
+      const { error } = await supabase.from(TABLES.materials).delete().eq("id", id);
+      if (error) return alert("삭제 실패: " + error.message);
+      loadMaterialsAdmin();
+    } else if (action === "delete-pbl") {
+      if (!confirm("PBL 의뢰를 삭제할까요?")) return;
+      const { error } = await supabase.from(TABLES.pblRequests).delete().eq("id", id);
+      if (error) return alert("삭제 실패: " + error.message);
+      loadPbl();
+    } else if (action === "pbl-detail") {
+      renderPblDetail(id);
+    }
+  });
+
+  document.body.addEventListener("change", async (e) => {
+    const sel = e.target.closest("[data-action='pbl-status']");
+    if (!sel) return;
+    const id = sel.getAttribute("data-id");
+    const status = sel.value;
+    const { error } = await supabase.from(TABLES.pblRequests).update({ status }).eq("id", id);
+    if (error) return alert("상태 변경 실패: " + error.message);
+  });
+
+  document.getElementById("refresh-approvals")?.addEventListener("click", loadApprovals);
+  document.getElementById("refresh-materials")?.addEventListener("click", loadMaterialsAdmin);
+  document.getElementById("refresh-pbl")?.addEventListener("click", loadPbl);
+
+  // ---------- 딥리서치 ----------
+  const drForm = document.getElementById("deep-research-form");
+  if (drForm) {
+    drForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("dr-message");
+      const result = document.getElementById("dr-result");
+      const submit = document.getElementById("dr-submit");
+      const topic = document.getElementById("dr-topic").value.trim() || "한국 기업 교육 · 강사 모집 공고";
+      const count = Math.min(12, Math.max(3, Number(document.getElementById("dr-count").value) || 8));
+      const categories = document.getElementById("dr-cats").value.split(",").map((s) => s.trim()).filter(Boolean);
+      const saveMode = document.getElementById("dr-mode").value;
+      submit.disabled = true;
+      showFormMessage(msg, "Google Search 그라운딩 + Gemini 로 리서치 중… (20~40초 소요)", "success");
+      try {
+        const resp = await fetch(em.DEEP_RESEARCH_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: em.SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${em.SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ topic, count, categories, saveMode }),
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+        showFormMessage(msg, `${data.count}건 저장 완료 · 그라운딩 출처 ${data.groundingAttributions}개 활용.`, "success");
+        if (Array.isArray(data.jobs)) {
+          result.innerHTML = data.jobs.map((j) => `
+            <article class="job-card ${j.is_urgent ? "job-card--urgent" : ""}">
+              <div class="job-card__header">
+                <span class="job-card__org">${safeText(j.organization)}</span>
+                <span class="job-badge">${j.is_urgent ? "긴급" : "모집 중"}</span>
+              </div>
+              <h3 class="job-card__title">${safeText(j.title)}</h3>
+              <p class="job-card__desc">${safeText(j.description)}</p>
+              <div class="job-card__details">
+                <div class="job-card__detail"><span class="job-card__detail-label">기간</span><span>${safeText(j.period)}</span></div>
+                <div class="job-card__detail"><span class="job-card__detail-label">형태</span><span>${safeText(j.format)}</span></div>
+                <div class="job-card__detail"><span class="job-card__detail-label">대상</span><span>${safeText(j.target_audience)}</span></div>
+                <div class="job-card__detail"><span class="job-card__detail-label">예산</span><span>${safeText(j.budget)}</span></div>
+              </div>
+              <div class="job-card__tags">${(j.tags || []).map((t) => `<span>${safeText(t)}</span>`).join("")}</div>
+            </article>`).join("");
+        }
+        loadJobs();
+      } catch (err) {
+        showFormMessage(msg, "딥리서치 실패: " + (err.message || err), "error");
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  }
+
   // ---------- 초기 로드 ----------
   loadUsers();
   loadInstructors();
   loadJobs();
   loadApplications();
+  loadApprovals();
+  loadMaterialsAdmin();
+  loadPbl();
 })();

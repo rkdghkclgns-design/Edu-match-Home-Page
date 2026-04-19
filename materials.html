@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070d" />
+    <title>강의자료실 — Edu-match</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a href="./index.html" class="nav__logo" aria-label="홈">
+        <span class="nav__logo-mark">Edu-match</span>
+        <span class="nav__logo-sub">materials</span>
+      </a>
+      <nav class="nav__links" aria-label="주요 섹션">
+        <a href="./index.html#instructors">강사진</a>
+        <a href="./index.html#jobs">강의 공고</a>
+        <a href="./pbl-request.html">PBL 의뢰</a>
+      </nav>
+      <div class="nav__auth">
+        <span class="nav__auth-link" id="user-email">비로그인</span>
+        <a href="./login.html" class="nav__cta" id="login-link">로그인</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="section">
+        <div class="section__head">
+          <span class="section__tag">Instructor Resources</span>
+          <h2 class="section__title">
+            승인 강사 전용<br />
+            <span class="grad-text">강의자료 모음집</span>
+          </h2>
+          <p class="section__sub">강사 회원가입 후 관리자 승인이 완료된 강사만 열람 가능합니다. 자료 업로드 후 관리자 승인을 거쳐 공개됩니다.</p>
+        </div>
+
+        <!-- Gate: 비로그인 또는 미승인 -->
+        <div id="gate" class="gate-card" style="display:none">
+          <h2 id="gate-title">강사 인증이 필요합니다</h2>
+          <p id="gate-msg">로그인 후, 강사 회원이며 관리자 승인이 완료된 경우에만 자료실에 접근할 수 있습니다.</p>
+          <div style="margin-top: 20px; display:flex; gap:10px; justify-content:center;">
+            <a href="./login.html" class="btn btn--primary">로그인</a>
+            <a href="./signup.html" class="btn btn--ghost">강사 회원가입</a>
+          </div>
+        </div>
+
+        <!-- Materials content -->
+        <div id="materials-root" style="display:none">
+          <div style="display:flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button class="admin-action admin-action--primary" id="show-upload">자료 업로드</button>
+            <button class="admin-action" id="logout-btn">로그아웃</button>
+            <span class="admin-header__meta" style="margin-left:auto;" id="materials-count">—</span>
+          </div>
+
+          <form id="upload-form" class="auth-form" style="display:none; max-width: 820px; margin-bottom: 24px;">
+            <div class="admin-form-row">
+              <div class="form-field">
+                <label for="m-title">자료 제목</label>
+                <input id="m-title" name="title" type="text" required />
+              </div>
+              <div class="form-field">
+                <label for="m-category">카테고리</label>
+                <select id="m-category" name="category">
+                  <option value="corporate-lecture">기업출강 워크샵</option>
+                  <option value="teambuilding">팀빌딩 프로그램</option>
+                  <option value="craft-experience">공방체험</option>
+                  <option value="diy-kit">DIY키트</option>
+                  <option value="it-ai" selected>IT · AI 교육</option>
+                  <option value="leadership">리더십 · 조직개발</option>
+                  <option value="design">디자인 · UX</option>
+                  <option value="data">데이터 분석</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="m-desc">설명</label>
+              <textarea id="m-desc" name="description" required></textarea>
+            </div>
+            <div class="admin-form-row">
+              <div class="form-field">
+                <label for="m-url">자료 URL (Google Drive / Dropbox / Notion 등)</label>
+                <input id="m-url" name="material_url" type="url" required placeholder="https://..." />
+              </div>
+              <div class="form-field">
+                <label for="m-tags">태그 (쉼표 구분)</label>
+                <input id="m-tags" name="tags" type="text" placeholder="AI, 실습, 워크북" />
+              </div>
+            </div>
+            <button type="submit" class="auth-submit">업로드 (관리자 승인 대기)</button>
+            <div id="upload-msg" class="auth-message"></div>
+          </form>
+
+          <div class="jobs-grid" id="materials-grid">
+            <!-- cards -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>© <span id="year">2026</span> Edu-match Platform.</span>
+        <span class="footer__tag">Authorized Instructors Only</span>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+    <script src="./materials.js" defer></script>
+  </body>
+</html>

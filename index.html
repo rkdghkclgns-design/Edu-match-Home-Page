@@ -30,7 +30,8 @@
         <a href="#categories">서비스 분야</a>
         <a href="#instructors">강사진</a>
         <a href="#jobs">강의 공고</a>
-        <a href="#how">매칭 방식</a>
+        <a href="./materials.html">강의자료실</a>
+        <a href="./pbl-request.html">PBL 의뢰</a>
       </nav>
       <div class="nav__auth">
         <a href="./login.html" class="nav__auth-link">로그인</a>
@@ -631,6 +632,31 @@
         <span class="footer__tag">Connecting Experts · Empowering Education</span>
       </div>
     </footer>
+
+    <!-- 매칭/지원 모달 -->
+    <div id="em-modal" class="em-modal" role="dialog" aria-modal="true" aria-labelledby="em-modal-title">
+      <div class="em-modal__card">
+        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
+        <h2 id="em-modal-title" class="em-modal__title">매칭 문의</h2>
+        <p class="em-modal__sub" id="em-modal-context">원하시는 강사 또는 공고에 대한 문의 내역을 남겨주세요.</p>
+        <form id="em-inquiry-form" class="auth-form" novalidate>
+          <div class="form-field">
+            <label for="em-inq-name">이름</label>
+            <input id="em-inq-name" name="name" type="text" required />
+          </div>
+          <div class="form-field">
+            <label for="em-inq-email">이메일</label>
+            <input id="em-inq-email" name="email" type="email" required />
+          </div>
+          <div class="form-field">
+            <label for="em-inq-message">문의 내용</label>
+            <textarea id="em-inq-message" name="message" required placeholder="교육 목적, 일정, 예산 범위를 알려주세요."></textarea>
+          </div>
+          <button type="submit" class="auth-submit">문의 제출</button>
+          <div id="em-inq-msg" class="em-modal__msg"></div>
+        </form>
+      </div>
+    </div>
 
     <script src="./script.js" defer></script>
   </body>

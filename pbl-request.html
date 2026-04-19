@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070d" />
+    <title>PBL 문서 초안 의뢰 — Edu-match</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a href="./index.html" class="nav__logo" aria-label="홈">
+        <span class="nav__logo-mark">Edu-match</span>
+        <span class="nav__logo-sub">PBL</span>
+      </a>
+      <nav class="nav__links" aria-label="주요 섹션">
+        <a href="./index.html#instructors">강사진</a>
+        <a href="./index.html#jobs">강의 공고</a>
+        <a href="./materials.html">강의자료실</a>
+      </nav>
+      <div class="nav__auth">
+        <a href="./login.html" class="nav__auth-link">로그인</a>
+        <a href="./signup.html" class="nav__cta">회원가입</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="section pbl-hero">
+        <div class="section__head">
+          <span class="section__tag">PBL Draft Service</span>
+          <h2 class="section__title">
+            실무 기반 PBL<br />
+            <span class="grad-text">문서 초안 제작 의뢰</span>
+          </h2>
+          <p class="section__sub">
+            NCS · 직무 · 산업 분야별 PBL(Problem-Based Learning) 커리큘럼 및 과제 문서 초안을 의뢰하세요.
+            Edu-match 전문 교강사 네트워크 + AI 리서치를 결합해 1주일 내 1차 드래프트를 제공합니다.
+          </p>
+        </div>
+
+        <form id="pbl-form" class="pbl-form" novalidate>
+          <h3 style="margin:0 0 18px; font-weight:700;">① 의뢰자 정보</h3>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="r-name">담당자 성함</label>
+              <input id="r-name" name="requester_name" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="r-email">이메일</label>
+              <input id="r-email" name="requester_email" type="email" required />
+            </div>
+            <div class="form-field">
+              <label for="r-phone">연락처</label>
+              <input id="r-phone" name="requester_phone" type="tel" placeholder="010-0000-0000" />
+            </div>
+            <div class="form-field">
+              <label for="r-org">기관/기업명</label>
+              <input id="r-org" name="organization" type="text" />
+            </div>
+          </div>
+
+          <h3 style="margin:24px 0 18px; font-weight:700;">② PBL 학습 개요</h3>
+          <div class="form-field">
+            <label for="p-topic">학습 주제</label>
+            <input id="p-topic" name="topic" type="text" required placeholder="예) 생성형 AI 기반 고객센터 운영 자동화" />
+          </div>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="p-domain">직무/산업 분야</label>
+              <input id="p-domain" name="domain" type="text" placeholder="IT·AI / 데이터 / 리더십 / 제조 등" />
+            </div>
+            <div class="form-field">
+              <label for="p-level">학습자 수준</label>
+              <select id="p-level" name="target_level">
+                <option value="입문">입문</option>
+                <option value="중급" selected>중급</option>
+                <option value="고급">고급</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="p-size">학습자 수 (명)</label>
+              <input id="p-size" name="audience_size" type="number" min="0" value="30" />
+            </div>
+            <div class="form-field">
+              <label for="p-hours">총 학습 시간 (h)</label>
+              <input id="p-hours" name="duration_hours" type="number" min="0" value="16" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="p-obj">학습 목표 / 성취 기준</label>
+            <textarea id="p-obj" name="objectives" required placeholder="예) RAG 기반 상담 도우미 설계, 품질평가 지표 정의 등"></textarea>
+          </div>
+          <div class="pbl-form__grid">
+            <div class="form-field">
+              <label for="p-format">산출물 형식</label>
+              <select id="p-format" name="deliverable_format">
+                <option value="pdf" selected>PDF</option>
+                <option value="docx">Word (DOCX)</option>
+                <option value="pptx">PPTX</option>
+                <option value="hwp">HWP</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="p-notes">기타 요청사항</label>
+              <input id="p-notes" name="notes" type="text" placeholder="보안 등 유의사항, 벤치마킹 포인트 등" />
+            </div>
+          </div>
+
+          <h3 style="margin:24px 0 10px; font-weight:700;">③ 참고 자료 취합</h3>
+          <p class="admin-header__meta" style="margin:0 0 12px;">
+            작업에 필요한 참고자료(내부 자료·사전 설문·레퍼런스 URL 등)를 최대한 첨부해주세요.
+            Google Drive / Dropbox / Notion / SharePoint 등의 <strong>공유 링크</strong> 를 입력하시면 됩니다.
+          </p>
+          <div id="materials-list" class="pbl-materials"></div>
+          <button type="button" class="pbl-material-add" id="add-material">+ 참고자료 항목 추가</button>
+
+          <div style="margin-top: 24px;">
+            <button type="submit" class="auth-submit">PBL 의뢰 제출</button>
+            <div id="pbl-msg" class="auth-message"></div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>© <span id="year">2026</span> Edu-match Platform.</span>
+        <span class="footer__tag">Problem-Based Learning · Instructional Design</span>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+    <script src="./pbl-request.js" defer></script>
+  </body>
+</html>
