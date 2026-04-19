@@ -2,757 +2,343 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#07070d" />
-    <meta name="description" content="기업출강 워크샵·팀빌딩·공방체험·DIY키트·전문 교강사 매칭 플랫폼 Edu-match. 기업·기관의 교육 니즈에 최적화된 프로그램과 강사를 빠르게 찾아드립니다." />
-    <title>Edu-match — 기업출강 · 팀빌딩 · 교강사 매칭 플랫폼</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edu-match — 강사를 위한 강의 공고 허브</title>
+    <meta name="description" content="기업·공공기관·대학의 최신 강의 공고를 강사가 직접 탐색·지원하는 매칭 플랫폼. Pro 멤버십으로 우선 노출·프리미엄 공고 열람." />
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50:"#eef2ff",100:"#e0e7ff",200:"#c7d2fe",300:"#a5b4fc",
+                400:"#818cf8",500:"#6366f1",600:"#4f46e5",700:"#4338ca",
+                800:"#3730a3",900:"#312e81",
+              },
+              accent: { 500:"#06b6d4", 600:"#0891b2" },
+            },
+            fontFamily: {
+              sans: ['Pretendard','ui-sans-serif','system-ui','-apple-system'],
+            },
+          },
+        },
+      };
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js" defer></script>
+    <script src="./supabase-client.js" defer></script>
   </head>
-  <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+  <body class="bg-white text-slate-900 antialiased">
 
     <!-- NAV -->
-    <header class="nav">
-      <a href="#top" class="nav__logo" aria-label="홈">
-        <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">platform</span>
-      </a>
-      <nav class="nav__links" aria-label="주요 섹션">
-        <a href="#jobs">강의 공고</a>
-        <a href="#how">지원 가이드</a>
-        <a href="./materials.html">자료실 (강사)</a>
-        <a href="./register-lecture.html">강의 등록 (의뢰자)</a>
-        <a href="./pbl-request.html">PBL 의뢰</a>
-        <a href="./slide-request.html">슬라이드 의뢰</a>
-      </nav>
-      <div class="nav__auth">
-        <a href="./login.html" class="nav__auth-link">로그인</a>
-        <a href="./signup.html" class="nav__cta">회원가입</a>
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="#top" class="flex items-baseline gap-2">
+          <span class="text-xl font-extrabold tracking-tight text-brand-600">Edu-match</span>
+          <span class="text-xs font-medium text-slate-400">platform</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm text-slate-600">
+          <a href="#jobs" class="hover:text-slate-900">강의 공고</a>
+          <a href="#pricing" class="hover:text-slate-900">요금제</a>
+          <a href="#how" class="hover:text-slate-900">매칭 흐름</a>
+          <a href="./admin-dashboard.html" class="hover:text-slate-900">관리자</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button id="nav-auth-btn" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-brand-600">로그인</button>
+          <a href="#contact-match" class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition">매칭 문의</a>
+        </div>
       </div>
     </header>
 
     <main id="top">
 
       <!-- HERO -->
-      <section class="hero">
-        <div class="hero__eyebrow">
-          <span class="dot dot--violet"></span>
-          Lecturer-First Platform · 공고 선택 · 자료실 · 문서 의뢰
-        </div>
-        <h1 class="hero__title">
-          <span class="hero__line">강사를 위한</span>
-          <span class="hero__line hero__line--grad">강의 공고 허브, Edu-match</span>
-        </h1>
-        <p class="hero__lede">
-          전국 기업·공공기관·대학의 최신 강의 공고를 한눈에 확인하고, 관심 공고에 바로 지원하세요. 강사 전용 자료실, PBL · 슬라이드 문서 초안 의뢰까지 강사 활동 전반을 지원합니다.
-          <br/>강의를 의뢰하실 기관·기업 담당자는 <a href="./register-lecture.html" style="color:#a2f1ff; text-decoration: underline;">여기서 공고를 등록</a>해주세요.
-        </p>
-        <div class="hero__ctas">
-          <a class="btn btn--primary" href="#jobs">
-            공고 탐색 · 바로 지원
-            <span class="btn__arrow" aria-hidden="true">→</span>
-          </a>
-          <a class="btn btn--ghost" href="./signup.html">강사 회원가입</a>
-        </div>
-
-        <dl class="hero__metrics">
-          <div>
-            <dt>활동 강사</dt>
-            <dd><span data-counter="340">0</span><span class="hero__metric-unit">명</span></dd>
+      <section class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-cyan-50"></div>
+        <div class="relative max-w-6xl mx-auto px-5 py-20 lg:py-28">
+          <div class="max-w-2xl">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+              강사 중심 매칭 플랫폼 · Pro 멤버십 오픈
+            </span>
+            <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold tracking-tight">
+              전문 강사를 위한<br/>
+              <span class="bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-transparent">강의 공고 허브</span>
+            </h1>
+            <p class="mt-5 text-lg text-slate-600 leading-relaxed">
+              기업·공공기관·대학의 최신 공고를 직접 탐색하고 지원하세요. Pro 멤버로 전환하면 <strong>프리미엄 공고 우선 노출</strong>, <strong>지원 일 제한 해제</strong>, <strong>전용 매칭 매니저</strong> 지원을 받습니다.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href="#jobs" class="inline-flex items-center px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition shadow-sm">공고 탐색 →</a>
+              <a href="#pricing" class="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 hover:border-slate-300 transition">Pro 멤버십 보기</a>
+            </div>
+            <dl class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-xl">
+              <div><dt class="text-xs text-slate-500">활동 강사</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-lecturers">—</dd></div>
+              <div><dt class="text-xs text-slate-500">Pro 강사</dt><dd class="text-2xl font-bold text-brand-600 mt-1" id="kpi-pros">—</dd></div>
+              <div><dt class="text-xs text-slate-500">공개 공고</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-jobs">—</dd></div>
+              <div><dt class="text-xs text-slate-500">매칭 완료</dt><dd class="text-2xl font-bold text-accent-500 mt-1" id="kpi-matches">—</dd></div>
+            </dl>
           </div>
-          <div>
-            <dt>월 평균 신규 공고</dt>
-            <dd><span data-counter="128">0</span><span class="hero__metric-unit">건</span></dd>
-          </div>
-          <div>
-            <dt>평균 지원-계약 소요</dt>
-            <dd><span data-counter="6">0</span><span class="hero__metric-unit">일</span></dd>
-          </div>
-          <div>
-            <dt>강사 만족도</dt>
-            <dd><span data-counter="97">0</span><span class="hero__metric-unit">/100</span></dd>
-          </div>
-        </dl>
-
-        <div class="hero__marquee" aria-hidden="true">
-          <div class="hero__marquee-track">
-            <span>Python</span><span>•</span><span>ChatGPT</span><span>•</span>
-            <span>데이터 분석</span><span>•</span><span>UX 디자인</span><span>•</span>
-            <span>리더십</span><span>•</span><span>마케팅</span><span>•</span>
-            <span>클라우드</span><span>•</span><span>보안</span><span>•</span>
-            <span>스타트업</span><span>•</span><span>직무 역량</span><span>•</span>
-            <span>Python</span><span>•</span><span>ChatGPT</span><span>•</span>
-            <span>데이터 분석</span><span>•</span><span>UX 디자인</span><span>•</span>
-            <span>리더십</span><span>•</span><span>마케팅</span><span>•</span>
-            <span>클라우드</span><span>•</span><span>보안</span><span>•</span>
-            <span>스타트업</span><span>•</span><span>직무 역량</span><span>•</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ABOUT -->
-      <section id="about" class="section">
-        <div class="section__head">
-          <span class="section__tag">01 &nbsp;· &nbsp;For Instructors</span>
-          <h2 class="section__title">
-            공고 선택은 강사가,<br />
-            <span class="grad-text">공고 등록은 의뢰자가</span>
-          </h2>
-          <p class="section__sub">Edu-match 는 강사 주도형 매칭 플랫폼입니다. 매니저 개입 없이 강사가 직접 공고를 살펴보고 지원합니다.</p>
-        </div>
-
-        <div class="about">
-          <p class="about__lead">
-            이 공간은 <strong>강사를 위한 허브</strong> 입니다. 활동 중인 전문 강사는 기업·공공기관·대학이 등록한 강의 공고를 실시간으로 열람하고, 관심 공고에 프로필과 제안서를 붙여 바로 지원할 수 있습니다.
-            강의를 필요로 하는 의뢰자는 <a href="./register-lecture.html">강의 등록</a> 페이지에서 공고를 공개하고, PBL·슬라이드 초안이 필요하면 전용 의뢰 창구를 이용하세요.
-          </p>
-          <ul class="about__facts">
-            <li>
-              <span class="about__facts-key">서비스 유형</span>
-              <span class="about__facts-val">워크샵 · 교강사 매칭</span>
-            </li>
-            <li>
-              <span class="about__facts-key">매칭 소요 시간</span>
-              <span class="about__facts-val">평균 48시간</span>
-            </li>
-            <li>
-              <span class="about__facts-key">주요 분야</span>
-              <span class="about__facts-val">기업출강 · 팀빌딩 · 공방 · IT</span>
-            </li>
-            <li>
-              <span class="about__facts-key">강사 검증</span>
-              <span class="about__facts-val">경력 · 이력 · 평점 3중 심사</span>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- CATEGORIES (솜씨당Biz 반영) -->
-      <section id="categories" class="section">
-        <div class="section__head">
-          <span class="section__tag">02 &nbsp;· &nbsp;Categories</span>
-          <h2 class="section__title">
-            기업 교육부터 공방·DIY까지<br />
-            <span class="grad-text">8개 서비스 분야</span>
-          </h2>
-          <p class="section__sub">기업출강 워크샵·팀빌딩 프로그램·공방체험·DIY키트 등 다양한 현장 교육을 한 곳에서 비교하고 매칭받으세요.</p>
-        </div>
-
-        <div class="categories-grid">
-          <article class="category-card">
-            <div class="category-card__icon">🏢</div>
-            <h3 class="category-card__title">기업출강 워크샵</h3>
-            <p class="category-card__desc">임직원 대상 전문 강사 출강. 직무·비즈니스·트렌드 교육.</p>
-            <span class="category-card__count">120+ 프로그램</span>
-          </article>
-
-          <article class="category-card category-card--highlight">
-            <div class="category-card__icon">🤝</div>
-            <h3 class="category-card__title">팀빌딩 프로그램</h3>
-            <p class="category-card__desc">조직 결속·협업 강화. 체험형 액티비티와 워크숍 결합.</p>
-            <span class="category-card__count">85+ 프로그램</span>
-          </article>
-
-          <article class="category-card">
-            <div class="category-card__icon">🎨</div>
-            <h3 class="category-card__title">공방체험</h3>
-            <p class="category-card__desc">도예·가죽·캔들·플라워 등 오감 자극 실습 클래스.</p>
-            <span class="category-card__count">60+ 프로그램</span>
-          </article>
-
-          <article class="category-card">
-            <div class="category-card__icon">📦</div>
-            <h3 class="category-card__title">DIY키트</h3>
-            <p class="category-card__desc">재택·원격 팀에게 배송되는 체험 패키지. 온라인 라이브 병행.</p>
-            <span class="category-card__count">40+ 키트</span>
-          </article>
-
-          <article class="category-card">
-            <div class="category-card__icon">💻</div>
-            <h3 class="category-card__title">IT · AI 교육</h3>
-            <p class="category-card__desc">ChatGPT·데이터 분석·클라우드 등 실무형 기술 교육.</p>
-            <span class="category-card__count">95+ 과정</span>
-          </article>
-
-          <article class="category-card">
-            <div class="category-card__icon">👥</div>
-            <h3 class="category-card__title">리더십 · 조직개발</h3>
-            <p class="category-card__desc">팀장·관리자 리더십, 성과관리, 코칭 워크숍.</p>
-            <span class="category-card__count">50+ 과정</span>
-          </article>
-
-          <article class="category-card">
-            <div class="category-card__icon">🎯</div>
-            <h3 class="category-card__title">디자인 · UX</h3>
-            <p class="category-card__desc">디자인 씽킹·Figma·서비스 기획 실무 집중 과정.</p>
-            <span class="category-card__count">35+ 과정</span>
-          </article>
-
-          <article class="category-card">
-            <div class="category-card__icon">📊</div>
-            <h3 class="category-card__title">데이터 분석</h3>
-            <p class="category-card__desc">SQL·Tableau·A/B 테스트 기반 데이터 드리븐 교육.</p>
-            <span class="category-card__count">30+ 과정</span>
-          </article>
-        </div>
-      </section>
-
-      <!-- HOW IT WORKS -->
-      <section id="how" class="section">
-        <div class="section__head">
-          <span class="section__tag">03 &nbsp;· &nbsp;Instructor Guide</span>
-          <h2 class="section__title">
-            강사가 직접 선택하는<br />
-            <span class="grad-text">3단계 지원 프로세스</span>
-          </h2>
-          <p class="section__sub">공고 탐색 → 바로 지원 → 계약·강의 완료. 매니저 개입 없이 강사가 주도합니다.</p>
-        </div>
-
-        <div class="pillars">
-          <article class="pillar">
-            <div class="pillar__icon pillar__icon--violet" aria-hidden="true">
-              <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="24" r="10"/>
-                <path d="M40 40l-6-6"/>
-                <path d="M20 24h8M24 20v8"/>
-              </svg>
-            </div>
-            <h3 class="pillar__title">① 공고 탐색</h3>
-            <p class="pillar__desc">의뢰 기관이 올린 최신 강의 공고를 카테고리·형태·예산별로 필터링해서 확인합니다.</p>
-            <ul class="pillar__list">
-              <li>IT · 데이터 · 리더십 · 디자인 · 공방 등 8개 분야</li>
-              <li>오프라인 / 온라인 / 하이브리드 필터</li>
-              <li>긴급 공고 배지 · 실시간 갱신</li>
-              <li>딥리서치 기반 시장 공고도 함께 노출</li>
-            </ul>
-          </article>
-
-          <article class="pillar">
-            <div class="pillar__icon pillar__icon--cyan" aria-hidden="true">
-              <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 26l6 6 14-16"/>
-                <rect x="6" y="8" width="36" height="32" rx="6"/>
-              </svg>
-            </div>
-            <h3 class="pillar__title">② 공고 지원</h3>
-            <p class="pillar__desc">원하는 공고에 즉시 지원서를 제출합니다. 프로필·제안 메시지·가능 일정이 자동 첨부됩니다.</p>
-            <ul class="pillar__list">
-              <li>카드의 <strong>지원하기</strong> 버튼 한 번으로 완료</li>
-              <li>프로필 / 이력 / 강의자료 자동 첨부</li>
-              <li>의뢰 담당자 채널로 즉시 전달</li>
-              <li>마이페이지에서 지원 현황 추적</li>
-            </ul>
-          </article>
-
-          <article class="pillar">
-            <div class="pillar__icon pillar__icon--lime" aria-hidden="true">
-              <svg viewBox="0 0 48 48" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 34l8-8 6 6 10-12"/>
-                <rect x="6" y="6" width="36" height="36" rx="6"/>
-              </svg>
-            </div>
-            <h3 class="pillar__title">③ 계약 · 강의 · 리뷰</h3>
-            <p class="pillar__desc">의뢰자와 일정을 확정하고 강의 완료 후 리뷰가 누적되어 다음 공고 매칭에 반영됩니다.</p>
-            <ul class="pillar__list">
-              <li>표준 강의 계약서 자동 생성</li>
-              <li>PBL · 슬라이드 초안 의뢰 창구 연계</li>
-              <li>강사 자료실에 교재 등록 · 재사용</li>
-              <li>리뷰 · 재의뢰율이 프로필에 누적</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <!-- INSTRUCTORS -->
-      <section id="instructors" class="section">
-        <div class="section__head">
-          <span class="section__tag">04 &nbsp;· &nbsp;Peer Network</span>
-          <h2 class="section__title">
-            함께 활동하는<br />
-            <span class="grad-text">동료 강사 네트워크</span>
-          </h2>
-          <p class="section__sub">분야별 활동 강사 프로필을 확인하고 협업 기회를 넓혀보세요. 공동 강의·분반 매칭 시 참고됩니다.</p>
-        </div>
-
-        <div class="instructors-grid">
-
-          <article class="instructor-card instructor-card--feature">
-            <div class="instructor-card__header">
-              <div class="instructor-card__avatar avatar--a">
-                <span>김</span>
-              </div>
-              <div class="instructor-card__meta">
-                <span class="instructor-card__badge instructor-card__badge--hot">인기</span>
-                <div class="instructor-card__rating">★ 4.9 <span>(리뷰 142)</span></div>
-              </div>
-            </div>
-            <h3 class="instructor-card__name">김지현</h3>
-            <p class="instructor-card__title">AI · 머신러닝 전문 강사</p>
-            <p class="instructor-card__bio">前 네이버 AI Lab 연구원 · 카이스트 AI 대학원 출신. GPT 프롬프트 엔지니어링, 파이썬 머신러닝, LLM 실무 교육 전문.</p>
-            <div class="instructor-card__tags">
-              <span>Python</span><span>머신러닝</span><span>LLM</span><span>프롬프트</span>
-            </div>
-            <div class="instructor-card__footer">
-              <span class="instructor-card__exp">경력 8년</span>
-              <a class="instructor-card__link" href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener">매칭 문의 →</a>
-            </div>
-          </article>
-
-          <article class="instructor-card">
-            <div class="instructor-card__header">
-              <div class="instructor-card__avatar avatar--b">
-                <span>박</span>
-              </div>
-              <div class="instructor-card__meta">
-                <span class="instructor-card__badge">전문</span>
-                <div class="instructor-card__rating">★ 4.8 <span>(리뷰 98)</span></div>
-              </div>
-            </div>
-            <h3 class="instructor-card__name">박성민</h3>
-            <p class="instructor-card__title">클라우드 · DevOps 강사</p>
-            <p class="instructor-card__bio">AWS 공인 아키텍트 · 삼성SDS 출신. 클라우드 전환, 쿠버네티스, CI/CD 파이프라인 구축 실습 교육.</p>
-            <div class="instructor-card__tags">
-              <span>AWS</span><span>Docker</span><span>Kubernetes</span>
-            </div>
-            <div class="instructor-card__footer">
-              <span class="instructor-card__exp">경력 11년</span>
-              <a class="instructor-card__link" href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener">매칭 문의 →</a>
-            </div>
-          </article>
-
-          <article class="instructor-card">
-            <div class="instructor-card__header">
-              <div class="instructor-card__avatar avatar--c">
-                <span>이</span>
-              </div>
-              <div class="instructor-card__meta">
-                <span class="instructor-card__badge">신규</span>
-                <div class="instructor-card__rating">★ 4.9 <span>(리뷰 34)</span></div>
-              </div>
-            </div>
-            <h3 class="instructor-card__name">이수아</h3>
-            <p class="instructor-card__title">UX 디자인 · 서비스 기획 강사</p>
-            <p class="instructor-card__bio">라인 · 카카오 UX 리서처 출신. 사용자 인터뷰, 와이어프레임, Figma 실무, 서비스 기획 프로세스 전문.</p>
-            <div class="instructor-card__tags">
-              <span>Figma</span><span>UX 리서치</span><span>서비스 기획</span>
-            </div>
-            <div class="instructor-card__footer">
-              <span class="instructor-card__exp">경력 7년</span>
-              <a class="instructor-card__link" href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener">매칭 문의 →</a>
-            </div>
-          </article>
-
-          <article class="instructor-card">
-            <div class="instructor-card__header">
-              <div class="instructor-card__avatar avatar--d">
-                <span>최</span>
-              </div>
-              <div class="instructor-card__meta">
-                <span class="instructor-card__badge">전문</span>
-                <div class="instructor-card__rating">★ 4.7 <span>(리뷰 76)</span></div>
-              </div>
-            </div>
-            <h3 class="instructor-card__name">최동욱</h3>
-            <p class="instructor-card__title">디지털 마케팅 · 콘텐츠 전략 강사</p>
-            <p class="instructor-card__bio">현대자동차 디지털팀 · 오길비 출신. SEO, 퍼포먼스 마케팅, 브랜드 콘텐츠 전략 실무 중심 교육.</p>
-            <div class="instructor-card__tags">
-              <span>퍼포먼스 마케팅</span><span>SEO</span><span>브랜딩</span>
-            </div>
-            <div class="instructor-card__footer">
-              <span class="instructor-card__exp">경력 9년</span>
-              <a class="instructor-card__link" href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener">매칭 문의 →</a>
-            </div>
-          </article>
-
-          <article class="instructor-card">
-            <div class="instructor-card__header">
-              <div class="instructor-card__avatar avatar--e">
-                <span>정</span>
-              </div>
-              <div class="instructor-card__meta">
-                <span class="instructor-card__badge">전문</span>
-                <div class="instructor-card__rating">★ 4.8 <span>(리뷰 55)</span></div>
-              </div>
-            </div>
-            <h3 class="instructor-card__name">정유진</h3>
-            <p class="instructor-card__title">리더십 · 조직 역량 개발 강사</p>
-            <p class="instructor-card__bio">맥킨지 · 딜로이트 컨설팅 출신. 팀장급 리더십, 성과 관리, 코칭 기반 조직 개발 워크숍 전문.</p>
-            <div class="instructor-card__tags">
-              <span>리더십</span><span>성과 관리</span><span>코칭</span>
-            </div>
-            <div class="instructor-card__footer">
-              <span class="instructor-card__exp">경력 13년</span>
-              <a class="instructor-card__link" href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener">매칭 문의 →</a>
-            </div>
-          </article>
-
-          <article class="instructor-card">
-            <div class="instructor-card__header">
-              <div class="instructor-card__avatar avatar--f">
-                <span>한</span>
-              </div>
-              <div class="instructor-card__meta">
-                <span class="instructor-card__badge instructor-card__badge--hot">인기</span>
-                <div class="instructor-card__rating">★ 5.0 <span>(리뷰 89)</span></div>
-              </div>
-            </div>
-            <h3 class="instructor-card__name">한서준</h3>
-            <p class="instructor-card__title">데이터 분석 · 비즈니스 인텔리전스 강사</p>
-            <p class="instructor-card__bio">쿠팡 · 토스 데이터팀 출신. SQL, 태블로, 파이썬 분석, A/B 테스트, 대시보드 설계 실전 교육.</p>
-            <div class="instructor-card__tags">
-              <span>SQL</span><span>Tableau</span><span>A/B 테스트</span>
-            </div>
-            <div class="instructor-card__footer">
-              <span class="instructor-card__exp">경력 10년</span>
-              <a class="instructor-card__link" href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener">매칭 문의 →</a>
-            </div>
-          </article>
-
-        </div>
-
-        <div class="instructors-more">
-          <a href="#contact" class="btn btn--ghost">
-            전체 강사진 보기
-            <span class="btn__arrow" aria-hidden="true">→</span>
-          </a>
         </div>
       </section>
 
       <!-- JOBS -->
-      <section id="jobs" class="section">
-        <div class="section__head">
-          <span class="section__tag">05 &nbsp;· &nbsp;Open Positions</span>
-          <h2 class="section__title">
-            지금 지원 가능한<br />
-            <span class="grad-text">강의 공고</span>
-          </h2>
-          <p class="section__sub">관심 공고의 <strong>지원하기</strong> 버튼을 눌러 바로 지원서를 제출하세요. 의뢰 담당자가 직접 검토합니다.</p>
-        </div>
-
-        <!-- 공고 검색/필터 -->
-        <div class="jobs-filter">
-          <div class="jobs-filter__row">
-            <input id="jf-q" type="search" placeholder="제목 · 기관 · 설명 · 태그 검색" autocomplete="off" />
-            <select id="jf-category">
-              <option value="">전체 분야</option>
-              <option value="corporate-lecture">기업출강 워크샵</option>
-              <option value="teambuilding">팀빌딩 프로그램</option>
-              <option value="craft-experience">공방체험</option>
-              <option value="diy-kit">DIY키트</option>
-              <option value="it-ai">IT · AI 교육</option>
-              <option value="leadership">리더십 · 조직개발</option>
-              <option value="design">디자인 · UX</option>
-              <option value="data">데이터 분석</option>
-            </select>
-            <select id="jf-format">
-              <option value="">전체 형태</option>
-              <option value="offline">오프라인</option>
-              <option value="online">온라인</option>
-              <option value="hybrid">하이브리드</option>
-            </select>
-            <select id="jf-budget">
-              <option value="">전체 단가</option>
-              <option value="per_hour">시간당</option>
-              <option value="per_course">과정당</option>
-              <option value="negotiable">협의</option>
-            </select>
-            <select id="jf-sort">
-              <option value="recent">최신순</option>
-              <option value="urgent">긴급 우선</option>
-              <option value="budget-high">예산 높은 순</option>
-              <option value="budget-low">예산 낮은 순</option>
-            </select>
-            <label class="jf-check"><input id="jf-urgent" type="checkbox" /><span>긴급만</span></label>
-            <button type="button" class="jf-reset" id="jf-reset">초기화</button>
-          </div>
-          <div class="jobs-filter__meta" id="jf-count">공고를 불러오는 중…</div>
-        </div>
-
-        <div class="jobs-grid">
-
-          <article class="job-card job-card--urgent">
-            <div class="job-card__header">
-              <span class="job-card__org">삼성전자 DX 부문 HRD</span>
-              <span class="job-badge job-badge--urgent">긴급</span>
-            </div>
-            <h3 class="job-card__title">생성형 AI 임직원 교육 강사 모집</h3>
-            <p class="job-card__desc">전 임직원 대상 ChatGPT·Copilot 실무 활용 교육. 부서별 맞춤 커리큘럼 조율 가능.</p>
-            <div class="job-card__details">
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">기간</span>
-                <span>2026.05 ~ 2026.07 (3개월)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">형태</span>
-                <span>오프라인 출강 (수원·서울)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">대상</span>
-                <span>직원 300명 (팀별 분반)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">예산</span>
-                <span>강사비 협의</span>
-              </div>
-            </div>
-            <div class="job-card__tags">
-              <span>생성형 AI</span><span>ChatGPT</span><span>MS Copilot</span><span>기업 교육</span>
-            </div>
-            <a class="job-card__cta btn btn--primary" href="#contact">지원하기 →</a>
-          </article>
-
-          <article class="job-card">
-            <div class="job-card__header">
-              <span class="job-card__org">한국산업인력공단</span>
-              <span class="job-badge">모집 중</span>
-            </div>
-            <h3 class="job-card__title">파이썬 데이터 분석 훈련 교사</h3>
-            <p class="job-card__desc">국비 지원 직업훈련 과정 강사 모집. 비전공자 대상 파이썬 기초 ~ 데이터 시각화.</p>
-            <div class="job-card__details">
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">기간</span>
-                <span>2026.06 ~ 2026.09 (16주)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">형태</span>
-                <span>오프라인 (서울 강남)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">대상</span>
-                <span>취업 준비생 20명</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">예산</span>
-                <span>시간당 50,000 ~ 80,000원</span>
-              </div>
-            </div>
-            <div class="job-card__tags">
-              <span>Python</span><span>데이터 분석</span><span>시각화</span>
-            </div>
-            <a class="job-card__cta btn btn--ghost" href="#contact">지원하기 →</a>
-          </article>
-
-          <article class="job-card">
-            <div class="job-card__header">
-              <span class="job-card__org">연세대학교 미래교육원</span>
-              <span class="job-badge">모집 중</span>
-            </div>
-            <h3 class="job-card__title">UX/UI 디자인 특강 강사</h3>
-            <p class="job-card__desc">경영·인문 전공 대학원생 대상 디자인 씽킹 & Figma 실습 집중 과정. 현장 중심 포트폴리오 지도.</p>
-            <div class="job-card__details">
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">기간</span>
-                <span>2026.05 (2일 집중)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">형태</span>
-                <span>오프라인 (신촌 캠퍼스)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">대상</span>
-                <span>대학원생 30명</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">예산</span>
-                <span>일 40만 원 (협의 가능)</span>
-              </div>
-            </div>
-            <div class="job-card__tags">
-              <span>UX</span><span>Figma</span><span>디자인 씽킹</span>
-            </div>
-            <a class="job-card__cta btn btn--ghost" href="#contact">지원하기 →</a>
-          </article>
-
-          <article class="job-card">
-            <div class="job-card__header">
-              <span class="job-card__org">중소벤처기업부 스마트공장 지원단</span>
-              <span class="job-badge">모집 중</span>
-            </div>
-            <h3 class="job-card__title">스마트 팩토리 · IoT 현장 교육 강사</h3>
-            <p class="job-card__desc">제조업 중소기업 임직원 대상 스마트 팩토리 개념·사례·도입 전략 교육. 현장 방문 강의 포함.</p>
-            <div class="job-card__details">
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">기간</span>
-                <span>2026.06 ~ 12 (수시)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">형태</span>
-                <span>출장 강의 (전국)</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">대상</span>
-                <span>기업 임직원 10~30명</span>
-              </div>
-              <div class="job-card__detail">
-                <span class="job-card__detail-label">예산</span>
-                <span>건당 협의</span>
-              </div>
-            </div>
-            <div class="job-card__tags">
-              <span>스마트 팩토리</span><span>IoT</span><span>제조 혁신</span>
-            </div>
-            <a class="job-card__cta btn btn--ghost" href="#contact">지원하기 →</a>
-          </article>
-
-        </div>
-
-        <div class="instructors-more">
-          <a href="#contact" class="btn btn--ghost">
-            전체 공고 보기
-            <span class="btn__arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
-      </section>
-
-      <!-- TRUSTED BY -->
-      <section class="section section--tight">
-        <p class="logos__label">Partner Organizations</p>
-        <ul class="logos">
-          <li>삼성전자</li>
-          <li>LG CNS</li>
-          <li>카카오</li>
-          <li>한국산업인력공단</li>
-          <li>연세대학교</li>
-          <li>KAIST</li>
-          <li>중소벤처기업부</li>
-          <li>서울시50플러스재단</li>
-        </ul>
-      </section>
-
-      <!-- CONTACT / CTA -->
-      <section id="contact" class="section contact">
-        <div class="contact__card">
+      <section id="jobs" class="max-w-6xl mx-auto px-5 py-20">
+        <div class="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <span class="section__tag">06 &nbsp;· &nbsp;Get Started</span>
-            <h2 class="section__title contact__title">
-              강사 · 의뢰자<br />
-              <span class="grad-text">두 가지 경로로 시작하세요.</span>
-            </h2>
-            <p class="contact__desc">
-              강사는 회원가입 후 공고에 즉시 지원할 수 있고, 의뢰자는 로그인 없이 강의 공고·PBL·슬라이드 제작을 의뢰할 수 있습니다.
-            </p>
+            <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Open Positions</span>
+            <h2 class="mt-2 text-3xl font-extrabold">지금 지원 가능한 공고</h2>
+            <p class="mt-2 text-slate-600">관심 공고에 <strong>지원하기</strong>, 의뢰자에게는 <strong>매칭 문의</strong> 버튼으로 연결됩니다.</p>
           </div>
-          <div class="contact__actions">
-            <a class="btn btn--primary btn--lg" href="./signup.html">
-              강사로 시작하기 (회원가입)
-              <span class="btn__arrow" aria-hidden="true">→</span>
-            </a>
-            <div class="contact__dual">
-              <a class="btn btn--ghost" href="./register-lecture.html">강의 공고 등록 (의뢰자)</a>
-              <a class="btn btn--ghost" href="./pbl-request.html">PBL 문서 의뢰</a>
+          <input id="jobs-search" type="search" placeholder="제목 · 카테고리 검색" class="w-72 max-w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-300 focus:border-brand-400 text-sm outline-none" />
+        </div>
+        <div id="jobs-grid" class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div class="text-slate-400 text-sm">공고를 불러오는 중…</div>
+        </div>
+      </section>
+
+      <!-- PRICING -->
+      <section id="pricing" class="bg-slate-50 border-y border-slate-100">
+        <div class="max-w-6xl mx-auto px-5 py-20">
+          <div class="text-center max-w-2xl mx-auto">
+            <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Pricing</span>
+            <h2 class="mt-2 text-3xl font-extrabold">강사에게 맞는 요금제를 선택하세요</h2>
+            <p class="mt-3 text-slate-600">Basic 은 무료로 시작, Pro 는 더 많은 공고와 우선 노출을 제공합니다.</p>
+          </div>
+
+          <div class="mt-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <!-- Basic -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex flex-col">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold">Basic</h3>
+                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600">무료</span>
+              </div>
+              <div class="mt-4">
+                <span class="text-4xl font-extrabold">₩0</span>
+                <span class="text-slate-500">/월</span>
+              </div>
+              <p class="mt-2 text-sm text-slate-600">공고 탐색과 기본 지원을 시작해보세요.</p>
+              <ul class="mt-6 space-y-3 text-sm text-slate-700 flex-grow">
+                <li class="flex gap-2"><span class="text-brand-500">✓</span> 전체 공개 공고 열람</li>
+                <li class="flex gap-2"><span class="text-brand-500">✓</span> 월 10건 지원 가능</li>
+                <li class="flex gap-2"><span class="text-brand-500">✓</span> 기본 프로필 등록</li>
+                <li class="flex gap-2 text-slate-400"><span>×</span> 프리미엄 공고 열람</li>
+                <li class="flex gap-2 text-slate-400"><span>×</span> 우선 노출</li>
+              </ul>
+              <button class="mt-8 w-full py-3 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">현재 플랜</button>
             </div>
-            <div class="contact__dual">
-              <a class="btn btn--ghost" href="./slide-request.html">강의 슬라이드 의뢰</a>
-              <a class="btn btn--ghost" href="./materials.html">강사 자료실</a>
+            <!-- Pro -->
+            <div class="relative bg-gradient-to-br from-brand-600 to-accent-600 rounded-2xl p-8 border-2 border-brand-500 shadow-lg text-white flex flex-col">
+              <div class="absolute -top-3 left-6">
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-400 text-brand-900 text-xs font-bold shadow">⭐ RECOMMENDED</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold">Pro</h3>
+                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/20 backdrop-blur">프리미엄</span>
+              </div>
+              <div class="mt-4">
+                <span class="text-4xl font-extrabold">₩29,000</span>
+                <span class="opacity-80">/월</span>
+              </div>
+              <p class="mt-2 text-sm opacity-90">공고 우선 노출 · 프리미엄 공고 독점 접근.</p>
+              <ul class="mt-6 space-y-3 text-sm flex-grow">
+                <li class="flex gap-2"><span>✓</span> Basic 의 모든 혜택</li>
+                <li class="flex gap-2"><span>✓</span> <strong>프리미엄 공고 전체 열람</strong></li>
+                <li class="flex gap-2"><span>✓</span> 지원 횟수 무제한</li>
+                <li class="flex gap-2"><span>✓</span> 프로필에 <strong>Pro 배지</strong> 노출</li>
+                <li class="flex gap-2"><span>✓</span> 전용 매칭 매니저 배정</li>
+              </ul>
+              <button id="btn-upgrade-pro" class="mt-8 w-full py-3 text-sm font-bold text-brand-900 bg-white hover:bg-slate-100 rounded-lg transition">Pro 구독하기</button>
             </div>
-            <div class="contact__links">
-              <a href="mailto:match@edumatch.kr">문의: match@edumatch.kr</a>
-            </div>
+          </div>
+          <p class="mt-6 text-center text-xs text-slate-500">* 결제는 데모용 모의 처리입니다. 실제 결제 연동은 PG 사 연결 시 활성화됩니다.</p>
+        </div>
+      </section>
+
+      <!-- HOW -->
+      <section id="how" class="max-w-6xl mx-auto px-5 py-20">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">How it works</span>
+          <h2 class="mt-2 text-3xl font-extrabold">3단계 매칭 프로세스</h2>
+        </div>
+        <div class="mt-12 grid md:grid-cols-3 gap-6">
+          <div class="p-6 rounded-2xl border border-slate-100 bg-white shadow-sm">
+            <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-bold">①</div>
+            <h3 class="mt-4 font-bold">공고 탐색</h3>
+            <p class="mt-2 text-sm text-slate-600">의뢰 기관이 등록한 최신 공고를 카테고리·예산·형태로 탐색합니다.</p>
+          </div>
+          <div class="p-6 rounded-2xl border border-slate-100 bg-white shadow-sm">
+            <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-bold">②</div>
+            <h3 class="mt-4 font-bold">지원 · 매칭</h3>
+            <p class="mt-2 text-sm text-slate-600">이력서 + 제안서로 바로 지원, 의뢰 담당자가 직접 검토합니다.</p>
+          </div>
+          <div class="p-6 rounded-2xl border border-slate-100 bg-white shadow-sm">
+            <div class="w-10 h-10 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-bold">③</div>
+            <h3 class="mt-4 font-bold">계약 · 실행</h3>
+            <p class="mt-2 text-sm text-slate-600">일정 확정, 표준 계약서 생성, 강의 완료 후 리뷰가 누적됩니다.</p>
           </div>
         </div>
       </section>
 
+      <!-- CONTACT CTA -->
+      <section id="contact-match" class="bg-gradient-to-br from-brand-600 to-accent-600 text-white">
+        <div class="max-w-6xl mx-auto px-5 py-16 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 class="text-3xl font-extrabold">강의를 의뢰하시나요?</h2>
+            <p class="mt-2 opacity-90">강의 주제·일정·예산을 알려주시면 Edu-match 매니저가 최적 강사를 48시간 내 매칭합니다.</p>
+          </div>
+          <div class="flex gap-3">
+            <button id="btn-open-match" class="px-6 py-3 bg-white text-brand-700 font-bold rounded-lg hover:bg-slate-100 transition">매칭 문의하기</button>
+            <a href="./register-lecture.html" class="px-6 py-3 bg-white/10 border border-white/30 font-bold rounded-lg hover:bg-white/20 transition">직접 공고 등록</a>
+          </div>
+        </div>
+      </section>
+
+      <footer class="max-w-6xl mx-auto px-5 py-12 text-center text-sm text-slate-500">
+        <p>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</p>
+        <p class="mt-1">강사를 위한 강의 공고 매칭 허브 · <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" class="hover:text-brand-600">고용노동부 HRD-Net</a></p>
+      </footer>
     </main>
 
-    <footer class="footer">
-      <div class="footer__inner">
-        <span>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</span>
-        <span class="footer__tag">Connecting Experts · Empowering Education</span>
-      </div>
-    </footer>
+    <!-- ============ Modals ============ -->
 
-    <!-- 강사 상세 모달 -->
-    <div id="em-ins-modal" class="em-modal em-modal--wide" role="dialog" aria-modal="true" aria-labelledby="em-ins-title">
-      <div class="em-modal__card em-modal__card--wide">
-        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
-        <div id="em-ins-body"></div>
-      </div>
-    </div>
-
-    <!-- 매칭 문의 모달 -->
-    <div id="em-match-modal" class="em-modal" role="dialog" aria-modal="true" aria-labelledby="em-match-title">
-      <div class="em-modal__card">
-        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
-        <h2 id="em-match-title" class="em-modal__title">매칭 문의</h2>
-        <p class="em-modal__sub" id="em-match-context">기초 정보를 입력하시면 강사 이메일로 바로 전달됩니다.</p>
-        <form id="em-match-form" class="auth-form" novalidate>
-          <div class="form-field">
-            <label for="em-m-name">의뢰자 성함</label>
-            <input id="em-m-name" type="text" required />
+    <!-- Auth modal -->
+    <div id="modal-auth" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold" id="auth-title">로그인</h3>
+          <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
+        </div>
+        <div class="mt-4 flex rounded-lg bg-slate-100 p-1 text-sm font-semibold">
+          <button type="button" data-auth-tab="signin" class="flex-1 py-2 rounded-md bg-white shadow-sm">로그인</button>
+          <button type="button" data-auth-tab="signup" class="flex-1 py-2 rounded-md text-slate-600">회원가입</button>
+        </div>
+        <form id="auth-form" class="mt-5 space-y-4">
+          <div class="hidden" data-auth-only="signup">
+            <label class="block text-sm font-medium text-slate-700">이름</label>
+            <input name="full_name" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none" />
           </div>
-          <div class="form-field">
-            <label for="em-m-email">이메일 (회신용)</label>
-            <input id="em-m-email" type="email" required />
+          <div class="hidden" data-auth-only="signup">
+            <label class="block text-sm font-medium text-slate-700">가입 유형</label>
+            <select name="role" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none">
+              <option value="lecturer">강사 회원</option>
+              <option value="client">의뢰자 회원</option>
+            </select>
           </div>
-          <div class="admin-form-row">
-            <div class="form-field">
-              <label for="em-m-org">소속 기관 · 기업</label>
-              <input id="em-m-org" type="text" />
-            </div>
-            <div class="form-field">
-              <label for="em-m-phone">연락처</label>
-              <input id="em-m-phone" type="tel" placeholder="010-0000-0000" />
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">이메일</label>
+            <input name="email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none" />
           </div>
-          <div class="form-field">
-            <label for="em-m-topic">교육 주제 · 분야</label>
-            <input id="em-m-topic" type="text" required placeholder="예) 생성형 AI 임직원 교육" />
+          <div>
+            <label class="block text-sm font-medium text-slate-700">비밀번호 (6자 이상)</label>
+            <input name="password" type="password" minlength="6" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 focus:border-brand-400 outline-none" />
           </div>
-          <div class="form-field">
-            <label for="em-m-schedule">희망 일정</label>
-            <input id="em-m-schedule" type="text" placeholder="예) 2026.06 ~ 2026.08" />
-          </div>
-          <div class="form-field">
-            <label for="em-m-message">요청 내용</label>
-            <textarea id="em-m-message" required placeholder="대상 · 규모 · 예산 · 진행 형태 · 기대 산출물 등을 기재해주세요."></textarea>
-          </div>
-          <button type="submit" class="auth-submit">강사에게 이메일 전송 →</button>
-          <div id="em-match-msg" class="em-modal__msg"></div>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition" id="auth-submit">로그인</button>
         </form>
       </div>
     </div>
 
-    <!-- 공고 상세 모달 -->
-    <div id="em-detail-modal" class="em-modal em-modal--wide" role="dialog" aria-modal="true" aria-labelledby="em-detail-title">
-      <div class="em-modal__card em-modal__card--wide">
-        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
-        <div id="em-detail-body"></div>
-      </div>
-    </div>
-
-    <!-- 매칭/지원 모달 -->
-    <div id="em-modal" class="em-modal" role="dialog" aria-modal="true" aria-labelledby="em-modal-title">
-      <div class="em-modal__card">
-        <button class="em-modal__close" type="button" aria-label="닫기" data-modal-close>×</button>
-        <h2 id="em-modal-title" class="em-modal__title">공고 지원하기</h2>
-        <p class="em-modal__sub" id="em-modal-context">지원하실 공고 정보를 확인하고 지원서를 작성해주세요.</p>
-        <form id="em-inquiry-form" class="auth-form" novalidate>
-          <div class="form-field">
-            <label for="em-inq-name">강사 성함</label>
-            <input id="em-inq-name" name="name" type="text" required />
+    <!-- Matching request modal -->
+    <div id="modal-match" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold">매칭 문의</h3>
+          <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
+        </div>
+        <p class="mt-1 text-sm text-slate-500">강의 주제·규모·예산을 알려주시면 매니저가 회신드립니다.</p>
+        <form id="match-form" class="mt-5 space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">담당자 성함</label>
+              <input name="client_name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">회사 · 기관</label>
+              <input name="company" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">이메일</label>
+              <input name="email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">연락처</label>
+              <input name="phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">분야</label>
+              <select name="category" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none">
+                <option>IT · AI 교육</option>
+                <option>데이터 분석</option>
+                <option>디자인 · UX</option>
+                <option>리더십</option>
+                <option>팀빌딩</option>
+                <option>기업출강</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">예산 (원)</label>
+              <input name="budget" type="number" min="0" step="100000" placeholder="예) 15000000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
           </div>
-          <div class="form-field">
-            <label for="em-inq-email">이메일</label>
-            <input id="em-inq-email" name="email" type="email" required />
+          <div>
+            <label class="block text-sm font-medium text-slate-700">요청 내용</label>
+            <textarea name="message" rows="4" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none"></textarea>
           </div>
-          <div class="form-field">
-            <label for="em-inq-message">지원 동기 · 가능 일정 · 제안 내용</label>
-            <textarea id="em-inq-message" name="message" required placeholder="본인 전문 분야, 유사 강의 이력, 제시 가능한 일정·단가를 간단히 기재해주세요."></textarea>
-          </div>
-          <button type="submit" class="auth-submit">지원서 제출</button>
-          <div id="em-inq-msg" class="em-modal__msg"></div>
+          <label class="flex items-start gap-2 text-xs text-slate-600">
+            <input name="consent" type="checkbox" required class="mt-0.5" />
+            <span>개인정보(성함·이메일·연락처) 수집 및 매칭 목적 활용에 동의합니다.</span>
+          </label>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition">문의 제출</button>
         </form>
       </div>
     </div>
 
-    <script src="./script.js" defer></script>
+    <!-- Application modal -->
+    <div id="modal-apply" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold">공고 지원하기</h3>
+          <button type="button" data-close class="text-slate-400 hover:text-slate-700 text-xl">×</button>
+        </div>
+        <p class="mt-1 text-sm text-slate-500" id="apply-job-title">—</p>
+        <form id="apply-form" class="mt-5 space-y-4">
+          <input id="apply-job-id" type="hidden" />
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">강사 성함</label>
+              <input name="applicant_name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">이메일</label>
+              <input name="applicant_email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">이력서 (PDF · DOCX · JPG / 10MB 이하)</label>
+            <input name="resume" type="file" accept=".pdf,.doc,.docx,image/*" class="mt-1 w-full text-sm" />
+            <p class="mt-1 text-xs text-slate-500">업로드된 파일은 Supabase Storage <code class="px-1.5 py-0.5 bg-slate-100 rounded">resumes</code> 버킷에 저장됩니다.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">제안서 (지원 동기 · 커리큘럼 · 가능 일정)</label>
+            <textarea name="proposal" rows="5" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-300 outline-none"></textarea>
+          </div>
+          <label class="flex items-start gap-2 text-xs text-slate-600">
+            <input name="consent" type="checkbox" required class="mt-0.5" />
+            <span>개인정보(성함·이메일·이력서) 수집 및 해당 공고 검토 목적 활용에 동의합니다.</span>
+          </label>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition">지원서 제출</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+    <script src="./app-landing.js" defer></script>
   </body>
 </html>
