@@ -67,7 +67,29 @@
             </div>
           </div>
 
-          <h3 style="margin:24px 0 18px; font-weight:700;">② 강의 · 공고 상세</h3>
+          <h3 style="margin:24px 0 18px; font-weight:700;">② 강사 쉐어 옵션</h3>
+          <label style="display:flex; gap:10px; align-items:flex-start; background: rgba(154,230,255,0.06); border:1px solid rgba(154,230,255,0.2); border-radius:12px; padding:14px;">
+            <input type="checkbox" id="j-share" name="is_shared" style="margin-top:4px;" />
+            <div>
+              <div style="font-weight:700; margin-bottom:4px;">강사가 등록 · 다른 강사가 진행하는 공고입니다 (10% 쉐어)</div>
+              <div style="font-size:12px; color: var(--text-soft); line-height:1.6;">
+                본인이 Edu-match 강사 회원으로 등록하고 다른 강사가 대행 진행할 때 체크하세요.
+                <strong>총 강의료의 10%</strong> 가 등록자에게 자동 쉐어됩니다.
+              </div>
+            </div>
+          </label>
+          <div class="pbl-form__grid" id="share-block" style="display:none; margin-top:12px;">
+            <div class="form-field">
+              <label for="j-share-name">등록자(강사) 성함</label>
+              <input id="j-share-name" type="text" />
+            </div>
+            <div class="form-field">
+              <label for="j-share-email">등록자 이메일</label>
+              <input id="j-share-email" type="email" />
+            </div>
+          </div>
+
+          <h3 style="margin:24px 0 18px; font-weight:700;">③ 강의 · 공고 상세</h3>
           <div class="form-field">
             <label for="j-title">공고 제목</label>
             <input id="j-title" name="title" type="text" required placeholder="예) 생성형 AI 임직원 교육 강사 모집" />
@@ -108,14 +130,33 @@
             </div>
             <div class="form-field">
               <label for="j-budget">예산 · 단가</label>
-              <input id="j-budget" name="budget" type="text" required placeholder="강사비 협의 · 시간당 8만 원 등" />
+              <input id="j-budget" name="budget" type="text" required placeholder="예) 시간당 80,000원 · 과정 600만원" />
+              <small style="display:block; margin-top:6px; color: var(--text-soft); font-size:12px;">
+                최소 단가 참고:
+                <a href="https://sssdbiz.co.kr/search?serviceId=550a5eef-073f-4152-adbf-cdc92f2f0aa3" target="_blank" rel="noopener" style="color:#9ae6ff;">솜씨당Biz 동일 서비스 조회 →</a>
+              </small>
             </div>
             <div class="form-field">
               <label for="j-tags">태그 (쉼표 구분)</label>
               <input id="j-tags" name="tags" type="text" placeholder="생성형 AI, 실습, 임직원" />
             </div>
           </div>
-          <label style="display:flex; gap:8px; align-items:center; font-size:13px; color: var(--text-soft); margin-top: 8px;">
+
+          <h3 style="margin:24px 0 10px; font-weight:700;">④ 출장비 안내</h3>
+          <p class="admin-header__meta" style="margin:0 0 10px;">강의 장소 지역을 선택하면 강사에게 표시될 출장비가 자동 반영됩니다.</p>
+          <div class="travel-fee-grid">
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="미선택" data-amount="0" checked /><span>미선택</span><em>무료</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="서울" data-amount="0" /><span>서울</span><em>무료</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="경기외곽" data-amount="50000" /><span>경기외곽</span><em>50,000원</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="충청/세종" data-amount="80000" /><span>충청/세종</span><em>80,000원</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="대전/강원" data-amount="100000" /><span>대전/강원</span><em>100,000원</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="경북/전북" data-amount="150000" /><span>경북/전북</span><em>150,000원</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="경남/전남" data-amount="200000" /><span>경남/전남</span><em>200,000원</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="대구/울산/부산" data-amount="200000" /><span>대구/울산/부산</span><em>200,000원</em></label>
+            <label class="tf-row"><input type="radio" name="travel_fee_region" value="제주" data-amount="350000" /><span>제주</span><em>350,000원</em></label>
+          </div>
+
+          <label style="display:flex; gap:8px; align-items:center; font-size:13px; color: var(--text-soft); margin-top: 18px;">
             <input type="checkbox" id="j-urgent" name="is_urgent" />
             긴급 공고로 표시 (48시간 내 강사 매칭 희망)
           </label>

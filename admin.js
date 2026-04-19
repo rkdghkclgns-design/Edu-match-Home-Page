@@ -530,12 +530,39 @@
     `).join("");
   }
 
+  function kdtFieldRow(label, value) {
+    if (!value || !String(value).trim()) return "";
+    return `<div class="job-card__detail"><span class="job-card__detail-label">${safeText(label)}</span><span style="white-space: pre-wrap;">${safeText(value)}</span></div>`;
+  }
+
+  function kdtSectionHtml(title, entries) {
+    const rows = entries.map(([k, v]) => kdtFieldRow(k, v)).filter(Boolean).join("");
+    if (!rows) return "";
+    return `
+      <details style="margin-top: 10px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding: 10px 14px;" open>
+        <summary style="font-weight:700; cursor:pointer;">${safeText(title)}</summary>
+        <div class="job-card__details" style="margin-top:10px;">${rows}</div>
+      </details>
+    `;
+  }
+
   async function renderPblDetail(id) {
     const root = document.getElementById("pbl-detail");
     if (!root) return;
     const { data: req } = await supabase.from(TABLES.pblRequests).select("*").eq("id", id).maybeSingle();
     const { data: mats } = await supabase.from(TABLES.pblMaterials).select("*").eq("request_id", id).order("created_at", { ascending: true });
     if (!req) { root.innerHTML = `<p class="admin-empty">의뢰를 찾을 수 없습니다.</p>`; return; }
+    const plan = req.kdt_plan || {};
+    const o = plan.overview || {};
+    const c = plan.capability || {};
+    const ed = c.enterprise_demand || {};
+    const tc = c.training_content || {};
+    const tm = c.trainee_management || {};
+    const inf = plan.infrastructure || {};
+    const mp = inf.manpower || {};
+    const rs = inf.resources || {};
+    const ap = plan.appendix || {};
+
     root.innerHTML = `
       <article class="job-card">
         <div class="job-card__header">
@@ -543,14 +570,54 @@
           <span class="job-badge">${safeText(req.status)}</span>
         </div>
         <h3 class="job-card__title">${safeText(req.topic)}</h3>
-        <p class="job-card__desc"><strong>학습목표:</strong> ${safeText(req.objectives || "—")}</p>
+        <p class="job-card__desc"><strong>훈련목표:</strong> ${safeText(req.objectives || "—")}</p>
         <div class="job-card__details">
           <div class="job-card__detail"><span class="job-card__detail-label">의뢰자</span><span>${safeText(req.requester_name)} · ${safeText(req.requester_email)}</span></div>
           <div class="job-card__detail"><span class="job-card__detail-label">연락처</span><span>${safeText(req.requester_phone || "—")}</span></div>
-          <div class="job-card__detail"><span class="job-card__detail-label">분야</span><span>${safeText(req.domain)} · ${safeText(req.target_level)}</span></div>
-          <div class="job-card__detail"><span class="job-card__detail-label">규모</span><span>${safeText(req.audience_size)}명 / ${safeText(req.duration_hours)}h / ${safeText(req.deliverable_format)}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">아카데미/훈련유형</span><span>${safeText(req.academy_type || "—")} · ${safeText(req.training_type || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">훈련과정명</span><span>${safeText(req.training_course_name || "—")} ${req.course_code ? `(${safeText(req.course_code)})` : ""}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">분야·수준</span><span>${safeText(req.domain || "—")} · ${safeText(req.target_level || "—")}</span></div>
+          <div class="job-card__detail"><span class="job-card__detail-label">규모·시간</span><span>총 ${safeText(req.total_trainees)}명 · 회차당 ${safeText(req.audience_size)}명 · ${safeText(req.duration_hours)}h · ${safeText(req.deliverable_format)}</span></div>
           <div class="job-card__detail"><span class="job-card__detail-label">비고</span><span>${safeText(req.notes || "—")}</span></div>
         </div>
+
+        ${kdtSectionHtml("Ⅰ. 사업 개요", [
+          ["가. 참여 목적", o.purpose],
+          ["나. 추진 방향 및 목표", o.direction],
+          ["다. 최근 2개년간 훈련 운영 성과", o.past_results],
+          ["라. 훈련 운영 결과 분석", o.analysis],
+        ])}
+        ${kdtSectionHtml("Ⅱ-1. 참여기업 수요", [
+          ["① 참여기업 구성", ed.composition],
+          ["② 참여기업 관리 체계", ed.management],
+          ["③ 참여기업 수요조사", ed.survey],
+        ])}
+        ${kdtSectionHtml("Ⅱ-2. 훈련내용", [
+          ["① 정규교과 내용 및 구성", tc.regular_curriculum],
+          ["② 프로젝트 학습 내용", tc.project_learning],
+          ["③ 훈련 관리 계획", tc.management_plan],
+        ])}
+        ${kdtSectionHtml("Ⅱ-3. 훈련생 관리", [
+          ["① 훈련생 선발 계획", tm.selection],
+          ["② 훈련생 취업지원 계획", tm.career_support],
+        ])}
+        ${kdtSectionHtml("Ⅲ-1. 투입인력", [
+          ["① 정규교과 훈련교·강사 확보", mp.regular_instructors],
+          ["② 프로젝트 학습 훈련교·강사 및 멘토", mp.project_instructors],
+          ["③ 훈련 투입인력 활용 및 관리", mp.management],
+          ["주강사 총인원", mp.main_instructor_count],
+          ["보조강사 총인원", mp.assistant_instructor_count],
+        ])}
+        ${kdtSectionHtml("Ⅲ-2. 투입자원", [
+          ["① 훈련시설 및 장비 확보", rs.facility_equipment],
+          ["② 훈련시설 및 장비 활용 계획", rs.utilization],
+        ])}
+        ${kdtSectionHtml("붙임", [
+          ["자율성과지표", ap.autonomy_metric],
+          ["사업참여기관 적절성", ap.partner_appropriateness],
+          ["비대면 실시간 과정 유의사항", ap.online_realtime_guidance],
+        ])}
+
         <div style="margin-top:14px;">
           <strong>첨부 자료 (${(mats||[]).length}건)</strong>
           <ul style="margin:8px 0 0; padding-left: 18px;">

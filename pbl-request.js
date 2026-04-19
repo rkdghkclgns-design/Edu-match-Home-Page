@@ -1,8 +1,5 @@
 // =========================================================
-// Edu-match — PBL 문서 초안 의뢰
-// =========================================================
-// - em_pbl_requests 에 의뢰 insert
-// - em_pbl_materials 에 참고자료 항목들 bulk insert
+// Edu-match — PBL 훈련운영계획서 의뢰 (KDT 표준 양식 반영)
 // =========================================================
 
 (function () {
@@ -23,15 +20,14 @@
     const row = document.createElement("div");
     row.className = "pbl-material-row";
     row.innerHTML = `
-      <input type="text" placeholder="자료명 (예: 사전 설문 요약)" value="${prefill.name || ""}" data-field="name" />
-      <input type="url" placeholder="공유 URL (Drive/Dropbox/Notion/SharePoint 등)" value="${prefill.url || ""}" data-field="url" />
+      <input type="text" placeholder="자료명 (예: 사전 설문, 참여기업 리스트)" value="${prefill.name || ""}" data-field="name" />
+      <input type="url" placeholder="공유 URL" value="${prefill.url || ""}" data-field="url" />
       <button type="button" class="remove" aria-label="삭제">×</button>
     `;
     row.querySelector(".remove").addEventListener("click", () => row.remove());
     list.appendChild(row);
   }
 
-  // 기본 2줄
   addRow();
   addRow();
   addBtn.addEventListener("click", () => addRow());
@@ -41,22 +37,83 @@
     msg.className = "auth-message is-shown auth-message--" + type;
   }
 
+  function val(id) {
+    const el = document.getElementById(id);
+    return el ? (el.value || "").toString().trim() : "";
+  }
+
+  function num(id) {
+    return Number(val(id)) || 0;
+  }
+
+  function buildKdtPlan() {
+    return {
+      overview: {
+        purpose: val("p-purpose"),
+        direction: val("p-direction"),
+        past_results: val("p-results"),
+        analysis: val("p-analysis"),
+      },
+      capability: {
+        enterprise_demand: {
+          composition: val("e-compose"),
+          management: val("e-manage"),
+          survey: val("e-survey"),
+        },
+        training_content: {
+          regular_curriculum: val("t-regular"),
+          project_learning: val("t-project"),
+          management_plan: val("t-mgmt"),
+        },
+        trainee_management: {
+          selection: val("s-select"),
+          career_support: val("s-career"),
+        },
+      },
+      infrastructure: {
+        manpower: {
+          regular_instructors: val("i-regular"),
+          project_instructors: val("i-project"),
+          management: val("i-mgmt"),
+          main_instructor_count: num("i-main-total"),
+          assistant_instructor_count: num("i-sub-total"),
+        },
+        resources: {
+          facility_equipment: val("r-facility"),
+          utilization: val("r-util"),
+        },
+      },
+      appendix: {
+        autonomy_metric: val("x-metric"),
+        partner_appropriateness: val("x-partner"),
+        online_realtime_guidance: val("x-online"),
+      },
+      format_reference: "KDT 훈련운영계획서(선도제외) 표준 양식 기반",
+    };
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const payload = {
-      requester_name: document.getElementById("r-name").value.trim(),
-      requester_email: document.getElementById("r-email").value.trim(),
-      requester_phone: document.getElementById("r-phone").value.trim(),
-      organization: document.getElementById("r-org").value.trim(),
-      topic: document.getElementById("p-topic").value.trim(),
-      domain: document.getElementById("p-domain").value.trim(),
-      target_level: document.getElementById("p-level").value,
-      audience_size: Number(document.getElementById("p-size").value) || 0,
-      duration_hours: Number(document.getElementById("p-hours").value) || 0,
-      objectives: document.getElementById("p-obj").value.trim(),
-      deliverable_format: document.getElementById("p-format").value,
-      notes: document.getElementById("p-notes").value.trim(),
+      requester_name: val("r-name"),
+      requester_email: val("r-email"),
+      requester_phone: val("r-phone"),
+      organization: val("r-org"),
+      topic: val("p-topic"),
+      domain: val("p-domain"),
+      target_level: val("p-level"),
+      audience_size: num("p-size"),
+      duration_hours: num("p-hours"),
+      objectives: val("p-obj"),
+      deliverable_format: val("p-format"),
+      notes: val("p-notes"),
       status: "pending",
+      academy_type: val("kdt-academy"),
+      training_type: val("kdt-type"),
+      training_course_name: val("kdt-course"),
+      course_code: val("kdt-code"),
+      total_trainees: num("kdt-total"),
+      kdt_plan: buildKdtPlan(),
     };
 
     showMsg("제출 중…", "success");
@@ -70,7 +127,6 @@
       return;
     }
 
-    // 첨부자료 bulk insert
     const rows = Array.from(list.querySelectorAll(".pbl-material-row"))
       .map((row) => ({
         request_id: inserted.id,
@@ -88,7 +144,7 @@
     }
 
     showMsg(
-      `의뢰가 접수되었습니다. (의뢰번호: ${inserted.id.slice(0, 8)}) · 1주일 내 담당 매니저가 회신드립니다.`,
+      `훈련운영계획서 초안 의뢰가 접수되었습니다. (의뢰번호: ${inserted.id.slice(0, 8)}) · 1~2주 내 담당 매니저가 회신드립니다.`,
       "success",
     );
     form.reset();

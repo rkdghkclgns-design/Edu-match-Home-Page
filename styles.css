@@ -1382,3 +1382,101 @@ main, .nav, .footer__inner { position: relative; z-index: 1; }
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
   pointer-events: none;
 }
+
+/* Travel fee radio grid */
+.travel-fee-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+@media (max-width: 720px) { .travel-fee-grid { grid-template-columns: 1fr; } }
+.tf-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(16,16,24,0.6);
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color .15s ease, background .15s ease;
+}
+.tf-row:hover { border-color: rgba(154,230,255,0.35); background: rgba(154,230,255,0.05); }
+.tf-row em { font-style: normal; color: var(--text-soft); font-weight: 600; }
+.tf-row input[type="radio"]:checked ~ em { color: #9ae6ff; }
+.tf-row:has(input[type="radio"]:checked) {
+  border-color: rgba(154,230,255,0.6);
+  background: rgba(154,230,255,0.08);
+}
+
+/* Job card travel fee + share badge */
+.job-card__travel {
+  display: inline-flex; gap: 6px; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(154,230,255,0.08);
+  border: 1px solid rgba(154,230,255,0.25);
+  color: #9ae6ff; font-size: 12px; font-weight: 600;
+}
+.job-card__share {
+  display: inline-flex; gap: 6px; align-items: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(255,216,120,0.1);
+  border: 1px solid rgba(255,216,120,0.35);
+  color: #ffd878; font-size: 12px; font-weight: 600;
+}
+
+/* KDT 훈련운영계획서 섹션 */
+.kdt-details {
+  margin: 16px 0;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  background: rgba(16,16,24,0.55);
+  padding: 0;
+  overflow: hidden;
+}
+.kdt-details > summary {
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  color: var(--text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kdt-details > summary::marker { content: ""; }
+.kdt-details > summary::-webkit-details-marker { display: none; }
+.kdt-details > summary::before {
+  content: "▸";
+  font-size: 11px;
+  color: var(--text-soft);
+  transition: transform .15s ease;
+}
+.kdt-details[open] > summary::before { transform: rotate(90deg); }
+.kdt-details[open] > summary {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(154,230,255,0.04);
+}
+.kdt-details .kdt-hint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.kdt-details .form-field,
+.kdt-details .pbl-form__grid {
+  padding: 0 18px;
+}
+.kdt-details .form-field { padding-top: 12px; padding-bottom: 12px; }
+.kdt-details > .form-field:last-child,
+.kdt-details > .pbl-form__grid:last-child { padding-bottom: 18px; }
+.kdt-h4 {
+  margin: 16px 18px 4px;
+  font-size: 13px;
+  color: #9ae6ff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}

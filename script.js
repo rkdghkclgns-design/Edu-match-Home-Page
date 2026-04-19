@@ -82,6 +82,11 @@ function escapeHtml(value) {
   }[c]));
 }
 
+function formatWon(n) {
+  if (!n || Number(n) <= 0) return "무료";
+  return Number(n).toLocaleString("ko-KR") + "원";
+}
+
 function jobCardHtml(job, cats) {
   const urgent = job.is_urgent;
   const catLabel = cats.find((c) => c.key === job.category)?.label || job.category || "";
@@ -92,6 +97,21 @@ function jobCardHtml(job, cats) {
   const badge = urgent
     ? '<span class="job-badge job-badge--urgent">긴급</span>'
     : '<span class="job-badge">모집 중</span>';
+
+  const travelChip = job.travel_fee_region
+    ? `<span class="job-card__travel" title="강의 장소 기준 출장비">✈ ${escapeHtml(job.travel_fee_region)} · ${escapeHtml(formatWon(job.travel_fee_amount))}</span>`
+    : "";
+  const shareChip = Number(job.revenue_share_percent) > 0
+    ? `<span class="job-card__share" title="강사 등록 공고 · 등록자 쉐어">🤝 강사 등록 · ${escapeHtml(job.revenue_share_percent)}% 쉐어${job.posted_by_name ? ` (${escapeHtml(job.posted_by_name)})` : ""}</span>`
+    : "";
+  const chipRow = (travelChip || shareChip)
+    ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin: 8px 0 12px;">${shareChip}${travelChip}</div>`
+    : "";
+
+  const minPriceLink = job.min_price_ref_url
+    ? `<div style="margin-top:8px; font-size:12px; color: var(--text-soft);">최소 단가 참고: <a href="${escapeHtml(job.min_price_ref_url)}" target="_blank" rel="noopener" style="color:#9ae6ff;">솜씨당Biz 동일 서비스 →</a></div>`
+    : "";
+
   return `
     <article class="job-card ${urgent ? "job-card--urgent" : ""}" data-job-id="${escapeHtml(job.id || "")}">
       <div class="job-card__header">
@@ -99,6 +119,7 @@ function jobCardHtml(job, cats) {
         ${badge}
       </div>
       <h3 class="job-card__title">${escapeHtml(job.title)}</h3>
+      ${chipRow}
       <p class="job-card__desc">${escapeHtml(job.description || "")}</p>
       <div class="job-card__details">
         <div class="job-card__detail">
@@ -117,9 +138,14 @@ function jobCardHtml(job, cats) {
           <span class="job-card__detail-label">예산</span>
           <span>${escapeHtml(job.budget || "협의")}</span>
         </div>
+        <div class="job-card__detail">
+          <span class="job-card__detail-label">출장비</span>
+          <span>${escapeHtml(job.travel_fee_region || "미선택")} · ${escapeHtml(formatWon(job.travel_fee_amount))}</span>
+        </div>
         ${catLabel ? `<div class="job-card__detail"><span class="job-card__detail-label">분야</span><span>${escapeHtml(catLabel)}</span></div>` : ""}
       </div>
       <div class="job-card__tags">${tags}</div>
+      ${minPriceLink}
       <a class="job-card__cta btn ${urgent ? "btn--primary" : "btn--ghost"}" href="#contact">지원하기 →</a>
     </article>
   `;

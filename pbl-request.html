@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#07070d" />
-    <title>PBL 문서 초안 의뢰 — Edu-match</title>
+    <title>PBL 훈련운영계획서 의뢰 — Edu-match</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     <link rel="stylesheet" href="./styles.css" />
@@ -19,12 +19,13 @@
     <header class="nav">
       <a href="./index.html" class="nav__logo" aria-label="홈">
         <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">PBL</span>
+        <span class="nav__logo-sub">PBL · KDT</span>
       </a>
       <nav class="nav__links" aria-label="주요 섹션">
-        <a href="./index.html#instructors">강사진</a>
         <a href="./index.html#jobs">강의 공고</a>
-        <a href="./materials.html">강의자료실</a>
+        <a href="./register-lecture.html">강의 등록</a>
+        <a href="./slide-request.html">슬라이드 의뢰</a>
+        <a href="./materials.html">자료실</a>
       </nav>
       <div class="nav__auth">
         <a href="./login.html" class="nav__auth-link">로그인</a>
@@ -35,95 +36,150 @@
     <main>
       <section class="section pbl-hero">
         <div class="section__head">
-          <span class="section__tag">PBL Draft Service</span>
+          <span class="section__tag">KDT 훈련운영계획서 양식</span>
           <h2 class="section__title">
-            실무 기반 PBL<br />
-            <span class="grad-text">문서 초안 제작 의뢰</span>
+            PBL 문서 초안<br />
+            <span class="grad-text">훈련운영계획서 의뢰</span>
           </h2>
           <p class="section__sub">
-            NCS · 직무 · 산업 분야별 PBL(Problem-Based Learning) 커리큘럼 및 과제 문서 초안을 의뢰하세요.
-            Edu-match 전문 교강사 네트워크 + AI 리서치를 결합해 1주일 내 1차 드래프트를 제공합니다.
+            K-디지털 트레이닝(KDT) <strong>훈련운영계획서(선도제외)</strong> 표준 양식을 반영한 PBL 초안을 의뢰하세요.
+            기본 정보만 채우셔도 접수 가능하며, 상세 섹션을 미리 작성해두시면 초안 완성도가 높아집니다.
           </p>
         </div>
 
         <form id="pbl-form" class="pbl-form" novalidate>
+          <!-- ========== 기본 정보 ========== -->
           <h3 style="margin:0 0 18px; font-weight:700;">① 의뢰자 정보</h3>
           <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="r-name">담당자 성함</label>
-              <input id="r-name" name="requester_name" type="text" required />
-            </div>
-            <div class="form-field">
-              <label for="r-email">이메일</label>
-              <input id="r-email" name="requester_email" type="email" required />
-            </div>
-            <div class="form-field">
-              <label for="r-phone">연락처</label>
-              <input id="r-phone" name="requester_phone" type="tel" placeholder="010-0000-0000" />
-            </div>
-            <div class="form-field">
-              <label for="r-org">기관/기업명</label>
-              <input id="r-org" name="organization" type="text" />
-            </div>
+            <div class="form-field"><label for="r-name">담당자 성함</label><input id="r-name" type="text" required /></div>
+            <div class="form-field"><label for="r-email">이메일</label><input id="r-email" type="email" required /></div>
+            <div class="form-field"><label for="r-phone">연락처</label><input id="r-phone" type="tel" placeholder="010-0000-0000" /></div>
+            <div class="form-field"><label for="r-org">훈련기관/기업명</label><input id="r-org" type="text" /></div>
           </div>
 
-          <h3 style="margin:24px 0 18px; font-weight:700;">② PBL 학습 개요</h3>
-          <div class="form-field">
-            <label for="p-topic">학습 주제</label>
-            <input id="p-topic" name="topic" type="text" required placeholder="예) 생성형 AI 기반 고객센터 운영 자동화" />
-          </div>
+          <h3 style="margin:24px 0 10px; font-weight:700;">② 훈련 기본 정보 <span style="font-size:12px; font-weight:500; color:var(--text-soft);">(KDT 표지)</span></h3>
           <div class="pbl-form__grid">
             <div class="form-field">
-              <label for="p-domain">직무/산업 분야</label>
-              <input id="p-domain" name="domain" type="text" placeholder="IT·AI / 데이터 / 리더십 / 제조 등" />
+              <label for="kdt-academy">아카데미 유형</label>
+              <select id="kdt-academy" name="academy_type">
+                <option value="">선택</option>
+                <option>디지털신기술</option>
+                <option>벤처·스타트업</option>
+                <option>지역·산업 주도형</option>
+                <option>대학 주도형</option>
+              </select>
             </div>
             <div class="form-field">
+              <label for="kdt-type">훈련 유형</label>
+              <select id="kdt-type" name="training_type">
+                <option value="">선택</option>
+                <option>신기술과정</option>
+                <option>융합과정</option>
+                <option>기타과정</option>
+                <option>심화과정</option>
+                <option>재직자과정</option>
+                <option>사업주과정</option>
+              </select>
+            </div>
+            <div class="form-field"><label for="kdt-course">훈련과정명</label><input id="kdt-course" type="text" placeholder="예) 생성형 AI 게임 기획 PBL 과정" /></div>
+            <div class="form-field"><label for="kdt-code">훈련과정 코드 (선택)</label><input id="kdt-code" type="text" placeholder="AIG00000000000000" /></div>
+            <div class="form-field"><label for="kdt-total">총 양성인원 (명)</label><input id="kdt-total" type="number" min="0" value="30" /></div>
+            <div class="form-field"><label for="p-hours">총 훈련시간 (h)</label><input id="p-hours" type="number" min="0" value="480" /></div>
+          </div>
+
+          <div class="form-field">
+            <label for="p-topic">학습 주제 / 훈련과정 핵심</label>
+            <input id="p-topic" type="text" required placeholder="예) 생성형 AI 활용 프로덕트 기획 및 론칭" />
+          </div>
+          <div class="pbl-form__grid">
+            <div class="form-field"><label for="p-domain">훈련 분야 (NCS · 직무)</label><input id="p-domain" type="text" placeholder="IT·AI / 데이터 / 리더십 등" /></div>
+            <div class="form-field">
               <label for="p-level">학습자 수준</label>
-              <select id="p-level" name="target_level">
+              <select id="p-level">
                 <option value="입문">입문</option>
                 <option value="중급" selected>중급</option>
                 <option value="고급">고급</option>
               </select>
             </div>
-            <div class="form-field">
-              <label for="p-size">학습자 수 (명)</label>
-              <input id="p-size" name="audience_size" type="number" min="0" value="30" />
-            </div>
-            <div class="form-field">
-              <label for="p-hours">총 학습 시간 (h)</label>
-              <input id="p-hours" name="duration_hours" type="number" min="0" value="16" />
-            </div>
-          </div>
-          <div class="form-field">
-            <label for="p-obj">학습 목표 / 성취 기준</label>
-            <textarea id="p-obj" name="objectives" required placeholder="예) RAG 기반 상담 도우미 설계, 품질평가 지표 정의 등"></textarea>
-          </div>
-          <div class="pbl-form__grid">
+            <div class="form-field"><label for="p-size">회차당 학습자 수 (명)</label><input id="p-size" type="number" min="0" value="30" /></div>
             <div class="form-field">
               <label for="p-format">산출물 형식</label>
-              <select id="p-format" name="deliverable_format">
+              <select id="p-format">
                 <option value="pdf" selected>PDF</option>
-                <option value="docx">Word (DOCX)</option>
-                <option value="pptx">PPTX</option>
+                <option value="docx">DOCX (Word)</option>
                 <option value="hwp">HWP</option>
+                <option value="pptx">PPTX</option>
               </select>
             </div>
-            <div class="form-field">
-              <label for="p-notes">기타 요청사항</label>
-              <input id="p-notes" name="notes" type="text" placeholder="보안 등 유의사항, 벤치마킹 포인트 등" />
-            </div>
           </div>
+          <div class="form-field"><label for="p-obj">훈련목표 / 성취기준</label><textarea id="p-obj" required placeholder="수요조사 결과에 기반한 훈련내용·취업가능 직업·취업처 등이 드러나도록 작성"></textarea></div>
 
+          <!-- ========== KDT 섹션 I. 사업 개요 ========== -->
+          <details class="kdt-details">
+            <summary><strong>Ⅰ. 사업 개요</strong> <span class="kdt-hint">참여 목적 · 추진 방향 · 성과</span></summary>
+            <div class="form-field"><label for="p-purpose">가. 참여 목적</label><textarea id="p-purpose"></textarea></div>
+            <div class="form-field"><label for="p-direction">나. 추진 방향 및 목표</label><textarea id="p-direction"></textarea></div>
+            <div class="form-field"><label for="p-results">다. 최근 2개년간 훈련 운영 성과 (요약)</label><textarea id="p-results" placeholder="KDT · KDT 외 지원훈련 구분 · 연간인원/실시/수료/취업 인원 요약"></textarea></div>
+            <div class="form-field"><label for="p-analysis">라. 훈련 운영 결과 분석 · 개선 실적</label><textarea id="p-analysis"></textarea></div>
+          </details>
+
+          <!-- ========== KDT 섹션 II. 훈련운영역량 ========== -->
+          <details class="kdt-details">
+            <summary><strong>Ⅱ. 훈련운영역량</strong> <span class="kdt-hint">참여기업 수요 · 훈련내용 · 훈련생 관리</span></summary>
+
+            <h4 class="kdt-h4">1. 참여기업 수요</h4>
+            <div class="form-field"><label for="e-compose">① 참여기업 구성 (업종 · 전문성 · 채용약정 규모)</label><textarea id="e-compose"></textarea></div>
+            <div class="form-field"><label for="e-manage">② 참여기업 관리 체계 (확보 · 역할분장 · 관리방안)</label><textarea id="e-manage"></textarea></div>
+            <div class="form-field"><label for="e-survey">③ 참여기업 수요조사 (대상 · 방법 · 내용)</label><textarea id="e-survey"></textarea></div>
+
+            <h4 class="kdt-h4">2. 훈련내용</h4>
+            <div class="form-field"><label for="t-regular">① 정규교과 내용 및 구성 (로드맵 · 교과목표)</label><textarea id="t-regular"></textarea></div>
+            <div class="form-field"><label for="t-project">② 프로젝트 학습 내용 및 수행 활동 (주제·결과물·관리)</label><textarea id="t-project"></textarea></div>
+            <div class="form-field"><label for="t-mgmt">③ 훈련 관리 계획 (시기별 운영 · 개선 환류)</label><textarea id="t-mgmt"></textarea></div>
+
+            <h4 class="kdt-h4">3. 훈련생 관리</h4>
+            <div class="form-field"><label for="s-select">① 훈련생 선발 계획 (기준 · 절차 · 방법)</label><textarea id="s-select"></textarea></div>
+            <div class="form-field"><label for="s-career">② 훈련생 취업지원(사후관리) 계획</label><textarea id="s-career"></textarea></div>
+          </details>
+
+          <!-- ========== KDT 섹션 III. 훈련 인프라 ========== -->
+          <details class="kdt-details">
+            <summary><strong>Ⅲ. 훈련 인프라</strong> <span class="kdt-hint">투입인력 · 투입자원</span></summary>
+
+            <h4 class="kdt-h4">1. 투입인력</h4>
+            <div class="form-field"><label for="i-regular">① 정규교과 훈련교·강사 확보</label><textarea id="i-regular" placeholder="국평법 시행령 제27조 충족, 보조강사 포함 확보 계획"></textarea></div>
+            <div class="form-field"><label for="i-project">② 프로젝트 학습 훈련교·강사 및 멘토 확보</label><textarea id="i-project"></textarea></div>
+            <div class="form-field"><label for="i-mgmt">③ 훈련 투입인력 활용 및 관리 계획 (강사풀 확보 포함)</label><textarea id="i-mgmt"></textarea></div>
+            <div class="pbl-form__grid">
+              <div class="form-field"><label for="i-main-total">주강사 총 인원</label><input id="i-main-total" type="number" min="0" value="0" /></div>
+              <div class="form-field"><label for="i-sub-total">보조강사 총 인원</label><input id="i-sub-total" type="number" min="0" value="0" /></div>
+            </div>
+
+            <h4 class="kdt-h4">2. 투입자원</h4>
+            <div class="form-field"><label for="r-facility">① 훈련시설 및 장비 확보</label><textarea id="r-facility"></textarea></div>
+            <div class="form-field"><label for="r-util">② 훈련시설 및 장비 활용 계획</label><textarea id="r-util"></textarea></div>
+          </details>
+
+          <!-- ========== 붙임 ========== -->
+          <details class="kdt-details">
+            <summary><strong>붙임</strong> <span class="kdt-hint">자율성과지표 · 비대면 과정 유의사항</span></summary>
+            <div class="form-field"><label for="x-metric">1. (재직자 도약/사업주 신기술) 자율성과지표 (최소 2개)</label><textarea id="x-metric" placeholder="지표명 · 연차별 달성목표 · 산정식 · 산정자료 · 산정방법"></textarea></div>
+            <div class="form-field"><label for="x-partner">2. (벤처·스타트업/지역산업주도형) 사업참여기관 적절성</label><textarea id="x-partner"></textarea></div>
+            <div class="form-field"><label for="x-online">별첨. 비대면 실시간 과정 유의사항 이행방안</label><textarea id="x-online" placeholder="유의사항 ①~⑤ 에 대한 이행방안 · 조치사항"></textarea></div>
+          </details>
+
+          <!-- ========== 참고자료 ========== -->
           <h3 style="margin:24px 0 10px; font-weight:700;">③ 참고 자료 취합</h3>
           <p class="admin-header__meta" style="margin:0 0 12px;">
-            작업에 필요한 참고자료(내부 자료·사전 설문·레퍼런스 URL 등)를 최대한 첨부해주세요.
-            Google Drive / Dropbox / Notion / SharePoint 등의 <strong>공유 링크</strong> 를 입력하시면 됩니다.
+            참여기업 요구사항, 사전 설문, 벤치마킹 자료, 기관 브랜드 가이드 등 공유 링크를 첨부해주세요.
           </p>
           <div id="materials-list" class="pbl-materials"></div>
           <button type="button" class="pbl-material-add" id="add-material">+ 참고자료 항목 추가</button>
 
+          <div class="form-field" style="margin-top: 16px;"><label for="p-notes">기타 요청사항</label><input id="p-notes" type="text" placeholder="보안 · 기밀 레벨, 참고 유사 과정, 긴급 여부 등" /></div>
+
           <div style="margin-top: 24px;">
-            <button type="submit" class="auth-submit">PBL 의뢰 제출</button>
+            <button type="submit" class="auth-submit">훈련운영계획서 초안 의뢰 제출</button>
             <div id="pbl-msg" class="auth-message"></div>
           </div>
         </form>
@@ -133,7 +189,7 @@
     <footer class="footer">
       <div class="footer__inner">
         <span>© <span id="year">2026</span> Edu-match Platform.</span>
-        <span class="footer__tag">Problem-Based Learning · Instructional Design</span>
+        <span class="footer__tag">KDT 훈련운영계획서 표준 양식 기반</span>
       </div>
     </footer>
 
