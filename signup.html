@@ -2,70 +2,44 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#07070d" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>회원가입 — Edu-match</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { theme: { extend: { colors: { brand:{100:"#e0e7ff",600:"#4f46e5",700:"#4338ca"} } } } };</script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js" defer></script>
-    <script src="./auth.js" defer></script>
+    <script src="./supabase-client.js" defer></script>
   </head>
-  <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+  <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
 
-    <header class="nav">
-      <a href="./index.html" class="nav__logo" aria-label="홈">
-        <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">platform</span>
-      </a>
-      <nav class="nav__links" aria-label="주요 섹션">
-        <a href="./index.html#categories">서비스 분야</a>
-        <a href="./index.html#instructors">강사진</a>
-        <a href="./index.html#jobs">강의 공고</a>
-      </nav>
-      <div class="nav__auth">
-        <a href="./login.html" class="nav__auth-link">로그인</a>
-        <a href="./index.html" class="nav__cta">홈으로</a>
+    <header class="bg-white border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-baseline gap-2"><span class="text-xl font-extrabold text-brand-600">Edu-match</span><span class="text-xs text-slate-400">signup</span></a>
+        <a href="./login.html" class="text-sm text-slate-600 hover:text-slate-900">로그인</a>
       </div>
     </header>
 
-    <main class="auth-wrap">
-      <div class="auth-card">
-        <span class="auth-card__tag">Sign Up</span>
-        <h1 class="auth-card__title">Edu-match 회원가입</h1>
-        <p class="auth-card__sub">Edu-match 는 강사를 위한 공간입니다. 강사 회원으로 가입하면 공고 지원·자료실·문서 의뢰 모두 이용할 수 있습니다. 강의를 의뢰하시는 기관 담당자는 회원가입 없이 <a href="./register-lecture.html">강의 등록</a> 에서 공고를 올리실 수 있습니다.</p>
+    <main class="flex-1 flex items-center justify-center px-5 py-12">
+      <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+        <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Sign Up</span>
+        <h1 class="mt-2 text-2xl font-extrabold">Edu-match 회원가입</h1>
+        <p class="mt-1 text-sm text-slate-500">강사 회원으로 가입하면 공고 지원 · 자료실 · 문서 의뢰 모두 이용할 수 있습니다.</p>
 
-        <form id="signup-form" class="auth-form" novalidate>
-          <div class="form-field">
-            <label for="signup-name">이름</label>
-            <input id="signup-name" name="name" type="text" required placeholder="홍길동" />
-          </div>
-
-          <div class="form-field">
-            <label for="signup-email">이메일</label>
-            <input id="signup-email" name="email" type="email" required placeholder="you@company.com" />
-          </div>
-
-          <div class="form-field">
-            <label for="signup-phone">연락처</label>
-            <input id="signup-phone" name="phone" type="tel" placeholder="010-0000-0000" />
-          </div>
-
-          <div class="form-field">
-            <label for="signup-role">가입 유형</label>
-            <select id="signup-role" name="role" required>
-              <option value="instructor" selected>강사 회원 (공고 지원 · 자료실 · 문서 의뢰)</option>
-              <option value="user">의뢰자 회원 (지원 현황 · 재의뢰 추적)</option>
+        <form id="signup-form" class="mt-6 space-y-4" novalidate>
+          <div><label class="block text-sm font-medium text-slate-700">이름</label><input id="signup-name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div><label class="block text-sm font-medium text-slate-700">이메일</label><input id="signup-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div><label class="block text-sm font-medium text-slate-700">연락처</label><input id="signup-phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">가입 유형</label>
+            <select id="signup-role" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+              <option value="lecturer" selected>강사 회원 (공고 지원 · 자료실 · 문서 의뢰)</option>
+              <option value="client">의뢰자 회원 (지원 현황 · 재의뢰 추적)</option>
             </select>
           </div>
-
-          <div class="form-field">
-            <label for="signup-category">관심 분야</label>
-            <select id="signup-category" name="category">
+          <div>
+            <label class="block text-sm font-medium text-slate-700">관심 분야</label>
+            <select id="signup-category" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
               <option value="">선택 안 함</option>
               <option value="corporate-lecture">기업출강 워크샵</option>
               <option value="teambuilding">팀빌딩 프로그램</option>
@@ -77,36 +51,55 @@
               <option value="data">데이터 분석</option>
             </select>
           </div>
+          <div><label class="block text-sm font-medium text-slate-700">비밀번호 (6자 이상)</label><input id="signup-password" type="password" minlength="6" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div><label class="block text-sm font-medium text-slate-700">비밀번호 확인</label><input id="signup-password2" type="password" minlength="6" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
 
-          <div class="form-field">
-            <label for="signup-password">비밀번호 (6자 이상)</label>
-            <input id="signup-password" name="password" type="password" required minlength="6" />
-          </div>
-
-          <div class="form-field">
-            <label for="signup-password2">비밀번호 확인</label>
-            <input id="signup-password2" name="password2" type="password" required minlength="6" />
-          </div>
-
-          <button type="submit" class="auth-submit">회원가입 완료</button>
-
-          <div id="signup-message" class="auth-message"></div>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">회원가입</button>
+          <div id="signup-message" class="text-sm text-center font-medium"></div>
         </form>
 
-        <div class="auth-divider">─ OR ─</div>
-        <p class="auth-alt">이미 계정이 있으신가요?<a href="./login.html">로그인</a></p>
+        <div class="mt-6 text-center text-sm text-slate-500">
+          이미 계정이 있으신가요? <a href="./login.html" class="font-semibold text-brand-600 hover:text-brand-700">로그인</a>
+        </div>
       </div>
     </main>
 
-    <footer class="footer">
-      <div class="footer__inner">
-        <span>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</span>
-        <span class="footer__tag">Connecting Experts · Empowering Education</span>
-      </div>
-    </footer>
-
+    <footer class="text-center text-sm text-slate-400 py-6">© <span id="year">2026</span> Edu-match</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
     <script>
-      document.getElementById("year").textContent = String(new Date().getFullYear());
+      (function () {
+        const EM = window.EM;
+        const form = document.getElementById("signup-form");
+        const msg = document.getElementById("signup-message");
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("signup-name").value.trim();
+          const email = document.getElementById("signup-email").value.trim();
+          const phone = document.getElementById("signup-phone").value.trim();
+          const role  = document.getElementById("signup-role").value;
+          const category = document.getElementById("signup-category").value;
+          const password = document.getElementById("signup-password").value;
+          const password2 = document.getElementById("signup-password2").value;
+          if (password.length < 6) { msg.textContent = "비밀번호는 6자 이상이어야 합니다."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
+          if (password !== password2) { msg.textContent = "비밀번호가 일치하지 않습니다."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
+          try {
+            await EM.signUp({ email, password, fullName: name, role });
+            // enrich profile with category/phone
+            const { data: { user } } = await EM.client.auth.getUser();
+            if (user) {
+              await EM.client.from("profiles").update({ category }).eq("id", user.id);
+            }
+            msg.textContent = role === "lecturer"
+              ? "강사 회원가입 접수 완료. 관리자 승인 후 자료실 이용이 가능합니다."
+              : "회원가입 완료. 로그인 페이지로 이동합니다.";
+            msg.className = "text-sm text-center font-medium text-emerald-600";
+            setTimeout(() => (location.href = "./login.html"), 1600);
+          } catch (err) {
+            msg.textContent = "회원가입 실패: " + err.message;
+            msg.className = "text-sm text-center font-medium text-red-600";
+          }
+        });
+      })();
     </script>
   </body>
 </html>

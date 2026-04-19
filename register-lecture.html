@@ -2,217 +2,230 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#07070d" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>강의 등록 (의뢰자) — Edu-match</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js" defer></script>
-  </head>
-  <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
 
-    <header class="nav">
-      <a href="./index.html" class="nav__logo" aria-label="홈">
-        <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">register lecture</span>
-      </a>
-      <nav class="nav__links" aria-label="주요 섹션">
-        <a href="./index.html#jobs">강의 공고</a>
-        <a href="./pbl-request.html">PBL 의뢰</a>
-        <a href="./slide-request.html">슬라이드 의뢰</a>
-      </nav>
-      <div class="nav__auth">
-        <a href="./login.html" class="nav__auth-link">로그인</a>
-        <a href="./signup.html" class="nav__cta">회원가입</a>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: {
+        brand:{50:"#eef2ff",100:"#e0e7ff",200:"#c7d2fe",300:"#a5b4fc",400:"#818cf8",500:"#6366f1",600:"#4f46e5",700:"#4338ca",800:"#3730a3",900:"#312e81"},
+        accent:{500:"#06b6d4",600:"#0891b2"},
+      } } } };
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js" defer></script>
+  </head>
+  <body class="bg-white text-slate-900 antialiased">
+
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-baseline gap-2">
+          <span class="text-xl font-extrabold tracking-tight text-brand-600">Edu-match</span>
+          <span class="text-xs font-medium text-slate-400">register lecture</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="./index.html#jobs" class="hover:text-slate-900">공고</a>
+          <a href="./index.html#instructors" class="hover:text-slate-900">강사진</a>
+          <a href="./pbl-request.html" class="hover:text-slate-900">PBL 의뢰</a>
+          <a href="./slide-request.html" class="hover:text-slate-900">슬라이드 의뢰</a>
+          <a href="./materials.html" class="hover:text-slate-900">자료실</a>
+        </nav>
       </div>
     </header>
 
-    <main>
-      <section class="section pbl-hero">
-        <div class="section__head">
-          <span class="section__tag">For Requesters</span>
-          <h2 class="section__title">
-            의뢰자용<br />
-            <span class="grad-text">강의 공고 등록</span>
-          </h2>
-          <p class="section__sub">
-            기업·공공기관·대학 HRD 담당자용 페이지입니다. 공고를 등록하면 즉시 Edu-match 강사진에게 공개되어
-            강사가 직접 지원서를 제출합니다. 로그인 없이 등록 가능합니다.
-          </p>
-        </div>
+    <main class="max-w-3xl mx-auto px-5 py-12">
+      <div class="text-center">
+        <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">For Requesters</span>
+        <h1 class="mt-2 text-3xl font-extrabold">의뢰자용 강의 공고 등록</h1>
+        <p class="mt-3 text-slate-600">
+          기업·공공기관·대학 HRD 담당자용 페이지입니다. 공고를 등록하면 Edu-match 강사진에게 공개되고,
+          매칭이 성사되면 <strong class="text-brand-700">게시 금액의 5%</strong> 가 플랫폼 알선 수수료로 차감됩니다.
+        </p>
+      </div>
 
-        <form id="register-form" class="pbl-form" novalidate>
-          <h3 style="margin:0 0 18px; font-weight:700;">① 기관 · 담당자 정보</h3>
-          <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="r-org">기관명 / 기업명</label>
-              <input id="r-org" name="organization" type="text" required placeholder="예) 삼성전자 DX 부문 HRD" />
+      <form id="register-form" class="mt-10 space-y-6" novalidate>
+        <!-- Section 1 -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">①</span>기관 · 담당자 정보</h2>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">기관명 / 기업명 *</label>
+              <input id="r-org" type="text" required placeholder="예) 삼성전자 DX 부문 HRD" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
             </div>
-            <div class="form-field">
-              <label for="r-contact">담당자 성함</label>
-              <input id="r-contact" name="contact" type="text" required />
+            <div>
+              <label class="block text-sm font-medium text-slate-700">담당자 성함 *</label>
+              <input id="r-contact" type="text" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
             </div>
-            <div class="form-field">
-              <label for="r-email">담당자 이메일</label>
-              <input id="r-email" name="email" type="email" required />
+            <div>
+              <label class="block text-sm font-medium text-slate-700">담당자 이메일 *</label>
+              <input id="r-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
             </div>
-            <div class="form-field">
-              <label for="r-phone">연락처</label>
-              <input id="r-phone" name="phone" type="tel" placeholder="010-0000-0000" />
+            <div>
+              <label class="block text-sm font-medium text-slate-700">연락처</label>
+              <input id="r-phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
             </div>
           </div>
+        </section>
 
-          <h3 style="margin:24px 0 18px; font-weight:700;">② 강사 쉐어 옵션</h3>
-          <label style="display:flex; gap:10px; align-items:flex-start; background: rgba(154,230,255,0.06); border:1px solid rgba(154,230,255,0.2); border-radius:12px; padding:14px;">
-            <input type="checkbox" id="j-share" name="is_shared" style="margin-top:4px;" />
+        <!-- Section 2: Share option -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">②</span>강사 쉐어 옵션</h2>
+          <label class="mt-4 flex gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 cursor-pointer">
+            <input type="checkbox" id="j-share" class="mt-1" />
             <div>
-              <div style="font-weight:700; margin-bottom:4px;">강사가 등록 · 다른 강사가 진행하는 공고입니다 (10% 쉐어)</div>
-              <div style="font-size:12px; color: var(--text-soft); line-height:1.6;">
-                본인이 Edu-match 강사 회원으로 등록하고 다른 강사가 대행 진행할 때 체크하세요.
-                <strong>총 강의료의 10%</strong> 가 등록자에게 자동 쉐어됩니다.
-              </div>
+              <div class="font-bold text-amber-900">🤝 강사가 등록 · 다른 강사가 진행하는 공고입니다 (5% 쉐어)</div>
+              <p class="mt-1 text-sm text-amber-800 leading-relaxed">본인이 Edu-match 강사 회원으로 등록하고 다른 강사가 대행 진행할 때 체크하세요. <strong>총 강의료의 5%</strong> 가 등록자에게 자동 쉐어됩니다.</p>
             </div>
           </label>
-          <div class="pbl-form__grid" id="share-block" style="display:none; margin-top:12px;">
-            <div class="form-field">
-              <label for="j-share-name">등록자(강사) 성함</label>
-              <input id="j-share-name" type="text" />
+          <div id="share-block" class="hidden mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">등록자(강사) 성함</label>
+              <input id="j-share-name" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
             </div>
-            <div class="form-field">
-              <label for="j-share-email">등록자 이메일</label>
-              <input id="j-share-email" type="email" />
+            <div>
+              <label class="block text-sm font-medium text-slate-700">등록자 이메일</label>
+              <input id="j-share-email" type="email" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
             </div>
           </div>
+        </section>
 
-          <h3 style="margin:24px 0 18px; font-weight:700;">③ 강의 · 공고 상세</h3>
-          <div class="form-field">
-            <label for="j-title">공고 제목</label>
-            <input id="j-title" name="title" type="text" required placeholder="예) 생성형 AI 임직원 교육 강사 모집" />
-          </div>
-          <div class="form-field">
-            <label for="j-desc">강의 상세 설명 · 커리큘럼 요청사항</label>
-            <textarea id="j-desc" name="description" required placeholder="강의 목적, 주요 주제, 학습자 배경, 기대 산출물을 상세히 기재해주세요."></textarea>
-          </div>
-
-          <div class="form-field">
-            <label for="j-body">
-              본문 · 상세 내용 <span style="font-weight: 400; color: var(--text-soft); font-size: 12px;">(선택 · 마크다운 지원)</span>
-            </label>
-            <textarea id="j-body" name="body_content" rows="10" placeholder="## 커리큘럼 예시
-- 1주차: 오프닝 · 현황 진단
-- 2주차: 핵심 개념 워크숍
-- 3주차: 실습 · PBL
+        <!-- Section 3: Job details -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">③</span>강의 · 공고 상세</h2>
+          <div class="mt-4 space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">공고 제목 *</label>
+              <input id="j-title" type="text" required placeholder="예) 생성형 AI 임직원 교육 강사 모집" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">강의 상세 설명 * <span class="text-xs text-slate-500 font-normal">(20자 이상)</span></label>
+              <textarea id="j-desc" rows="4" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">본문 · 상세 내용 <span class="text-xs text-slate-500 font-normal">(선택 · 마크다운 지원)</span></label>
+              <textarea id="j-body" rows="8" placeholder="## 커리큘럼 예시
+- 1주차: 오프닝
+- 2주차: 핵심 개념
 
 ## 기대 효과
-강사님이 참고하시면 좋은 본문 내용을 자유롭게 작성하세요.
-
-이미지는 아래 &quot;본문 이미지 첨부&quot; 에서 추가할 수 있고, 제출 시 자동으로 업로드됩니다."></textarea>
-            <small style="display:block; margin-top:6px; color: var(--text-soft); font-size:12px;">
-              마크다운(# 제목, - 목록, **굵게**, [링크](url)) · 줄바꿈 반영됨
-            </small>
-          </div>
-
-          <div class="form-field">
-            <label>본문 이미지 첨부 <span style="font-weight: 400; color: var(--text-soft); font-size: 12px;">(최대 6장 · 8MB/장)</span></label>
-            <input id="j-body-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:block; margin-bottom: 10px;" />
-            <div id="j-body-gallery" class="posting-media-gallery"></div>
-          </div>
-          <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="j-category">카테고리</label>
-              <select id="j-category" name="category" required>
-                <option value="corporate-lecture">기업출강 워크샵</option>
-                <option value="teambuilding">팀빌딩 프로그램</option>
-                <option value="craft-experience">공방체험</option>
-                <option value="diy-kit">DIY키트</option>
-                <option value="it-ai" selected>IT · AI 교육</option>
-                <option value="leadership">리더십 · 조직개발</option>
-                <option value="design">디자인 · UX</option>
-                <option value="data">데이터 분석</option>
-              </select>
+자유롭게 작성하세요." class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400 font-mono"></textarea>
+              <p class="mt-1 text-xs text-slate-500"># 제목, - 리스트, **굵게**, [링크](url) 지원</p>
             </div>
-            <div class="form-field">
-              <label for="j-format">강의 형태</label>
-              <select id="j-format" name="format">
-                <option value="offline">오프라인 출강</option>
-                <option value="online">온라인</option>
-                <option value="hybrid">하이브리드</option>
-              </select>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">본문 이미지 <span class="text-xs text-slate-500 font-normal">(최대 6장 · 8MB/장)</span></label>
+              <input id="j-body-files" type="file" accept="image/*" multiple class="mt-1 w-full text-sm" />
+              <div id="j-body-gallery" class="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2"></div>
             </div>
-            <div class="form-field">
-              <label for="j-period">강의 기간</label>
-              <input id="j-period" name="period" type="text" required placeholder="2026.06 ~ 2026.08 (3개월)" />
-            </div>
-            <div class="form-field">
-              <label for="j-target">수강 대상 · 규모</label>
-              <input id="j-target" name="target_audience" type="text" required placeholder="직원 30명 (팀별 분반)" />
-            </div>
-            <div class="form-field">
-              <label for="j-budget-amount">예산 · 단가</label>
-              <div class="budget-picker">
-                <select id="j-budget-type" name="budget_type" required>
-                  <option value="per_hour" selected>시간당</option>
-                  <option value="per_course">과정당</option>
-                  <option value="negotiable">협의</option>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-slate-700">카테고리</label>
+                <select id="j-category" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400">
+                  <option value="corporate-lecture">기업출강 워크샵</option>
+                  <option value="teambuilding">팀빌딩 프로그램</option>
+                  <option value="craft-experience">공방체험</option>
+                  <option value="diy-kit">DIY키트</option>
+                  <option value="it-ai" selected>IT · AI 교육</option>
+                  <option value="leadership">리더십 · 조직개발</option>
+                  <option value="design">디자인 · UX</option>
+                  <option value="data">데이터 분석</option>
                 </select>
-                <input id="j-budget-amount" name="budget_amount" type="number" min="0" step="1000" placeholder="예) 80000" />
-                <span class="budget-picker__unit">원</span>
               </div>
-              <small style="display:block; margin-top:6px; color: var(--text-soft); font-size:12px;">
-                단가 참고 (공신력 있는 출처):
-                <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" style="color:#9ae6ff;">고용노동부 HRD-Net →</a>
-                ·
-                <a href="https://www.law.go.kr/LSW/admRulSc.do?menuId=1&subMenuId=15&query=%EC%A7%81%EC%97%85%EB%8A%A5%EB%A0%A5%EA%B0%9C%EB%B0%9C%ED%9B%88%EB%A0%A8+%EC%8B%A4%EC%8B%9C%EA%B8%B0%EC%A4%80" target="_blank" rel="noopener" style="color:#9ae6ff;">국가법령정보센터 「직업능력개발훈련 실시기준」 검색 →</a>
-              </small>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">강의 형태</label>
+                <select id="j-format" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400">
+                  <option value="offline">오프라인 출강</option>
+                  <option value="online">온라인</option>
+                  <option value="hybrid">하이브리드</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">강의 기간 *</label>
+                <input id="j-period" type="text" required placeholder="2026.06 ~ 2026.08 (3개월)" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">수강 대상 · 규모 *</label>
+                <input id="j-target" type="text" required placeholder="직원 30명 (팀별 분반)" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">예산 · 단가 *</label>
+                <div class="mt-1 grid grid-cols-3 gap-2">
+                  <select id="j-budget-type" class="col-span-1 rounded-lg border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-brand-300">
+                    <option value="per_hour" selected>시간당</option>
+                    <option value="per_course">과정당</option>
+                    <option value="negotiable">협의</option>
+                  </select>
+                  <input id="j-budget-amount" type="number" min="0" step="1000" placeholder="예) 80000" class="col-span-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+                </div>
+                <small class="mt-1 block text-xs text-slate-500">단가 참고: <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" class="text-brand-600 hover:underline">고용노동부 HRD-Net →</a> · <a href="https://www.law.go.kr/LSW/admRulSc.do?menuId=1&subMenuId=15&query=%EC%A7%81%EC%97%85%EB%8A%A5%EB%A0%A5%EA%B0%9C%EB%B0%9C%ED%9B%88%EB%A0%A8+%EC%8B%A4%EC%8B%9C%EA%B8%B0%EC%A4%80" target="_blank" rel="noopener" class="text-brand-600 hover:underline">국가법령정보센터 →</a></small>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700">태그</label>
+                <input id="j-tags" type="text" placeholder="생성형 AI, 실습, 임직원" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+                <p class="mt-1 text-xs text-slate-500">쉼표 구분</p>
+              </div>
             </div>
-            <div class="form-field">
-              <label for="j-tags">태그 (쉼표 구분)</label>
-              <input id="j-tags" name="tags" type="text" placeholder="생성형 AI, 실습, 임직원" />
-            </div>
           </div>
+        </section>
 
-          <h3 style="margin:24px 0 10px; font-weight:700;">④ 출장비 안내</h3>
-          <p class="admin-header__meta" style="margin:0 0 10px;">강의 장소 지역을 선택하면 강사에게 표시될 출장비가 자동 반영됩니다.</p>
-          <div class="travel-fee-grid">
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="미선택" data-amount="0" checked /><span>미선택</span><em>무료</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="서울" data-amount="0" /><span>서울</span><em>무료</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="경기외곽" data-amount="50000" /><span>경기외곽</span><em>50,000원</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="충청/세종" data-amount="80000" /><span>충청/세종</span><em>80,000원</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="대전/강원" data-amount="100000" /><span>대전/강원</span><em>100,000원</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="경북/전북" data-amount="150000" /><span>경북/전북</span><em>150,000원</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="경남/전남" data-amount="200000" /><span>경남/전남</span><em>200,000원</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="대구/울산/부산" data-amount="200000" /><span>대구/울산/부산</span><em>200,000원</em></label>
-            <label class="tf-row"><input type="radio" name="travel_fee_region" value="제주" data-amount="350000" /><span>제주</span><em>350,000원</em></label>
+        <!-- Section 4: Travel fee -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">④</span>출장비 안내</h2>
+          <p class="mt-2 text-xs text-slate-500">강의 장소 지역을 선택하면 강사에게 표시될 출장비가 자동 반영됩니다.</p>
+          <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2" id="travel-grid">
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="미선택" data-amount="0" checked /><span class="text-sm font-medium">미선택</span></div><span class="text-xs text-slate-500">무료</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="서울" data-amount="0" /><span class="text-sm font-medium">서울</span></div><span class="text-xs text-slate-500">무료</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="경기외곽" data-amount="50000" /><span class="text-sm font-medium">경기외곽</span></div><span class="text-xs text-slate-500">50,000원</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="충청/세종" data-amount="80000" /><span class="text-sm font-medium">충청/세종</span></div><span class="text-xs text-slate-500">80,000원</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="대전/강원" data-amount="100000" /><span class="text-sm font-medium">대전/강원</span></div><span class="text-xs text-slate-500">100,000원</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="경북/전북" data-amount="150000" /><span class="text-sm font-medium">경북/전북</span></div><span class="text-xs text-slate-500">150,000원</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="경남/전남" data-amount="200000" /><span class="text-sm font-medium">경남/전남</span></div><span class="text-xs text-slate-500">200,000원</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="대구/울산/부산" data-amount="200000" /><span class="text-sm font-medium">대구/울산/부산</span></div><span class="text-xs text-slate-500">200,000원</span>
+            </label>
+            <label class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 cursor-pointer hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+              <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="제주" data-amount="350000" /><span class="text-sm font-medium">제주</span></div><span class="text-xs text-slate-500">350,000원</span>
+            </label>
           </div>
+          <label class="mt-4 flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="j-urgent" /> 긴급 공고로 표시 (48시간 내 강사 매칭 희망)</label>
+        </section>
 
-          <label style="display:flex; gap:8px; align-items:center; font-size:13px; color: var(--text-soft); margin-top: 18px;">
-            <input type="checkbox" id="j-urgent" name="is_urgent" />
-            긴급 공고로 표시 (48시간 내 강사 매칭 희망)
-          </label>
-
-          <div style="margin-top: 24px;">
-            <button type="submit" class="auth-submit">공고 등록 · 강사 모집 시작</button>
-            <div id="reg-msg" class="auth-message"></div>
+        <!-- Fee breakdown preview -->
+        <div id="fee-preview" class="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 text-sm">
+          <div class="flex items-center gap-2 font-bold text-indigo-900">📌 공고 알선 수수료 5% 안내</div>
+          <p class="mt-1 text-slate-700">매칭 성사 시 게시 금액의 <strong>5%</strong> 가 Edu-match 플랫폼 수수료로 자동 차감됩니다. 예산 입력 시 예상 차감 금액이 아래에 표시됩니다.</p>
+          <div id="fee-numbers" class="hidden mt-3 grid grid-cols-3 gap-3">
+            <div><div class="text-xs text-slate-500">게시 금액</div><div class="font-bold" id="fee-amount">—</div></div>
+            <div><div class="text-xs text-slate-500">플랫폼 수수료 (5%)</div><div class="font-bold text-indigo-700" id="fee-fee">—</div></div>
+            <div><div class="text-xs text-slate-500">실 지급 예상</div><div class="font-bold text-emerald-700" id="fee-payout">—</div></div>
           </div>
-        </form>
-      </section>
+        </div>
+
+        <button type="submit" class="w-full py-4 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 transition shadow-sm">공고 등록 · 강사 모집 시작</button>
+        <div id="reg-msg" class="text-sm font-medium text-center"></div>
+      </form>
     </main>
 
-    <footer class="footer">
-      <div class="footer__inner">
-        <span>© <span id="year">2026</span> Edu-match Platform.</span>
-        <span class="footer__tag">Request · Post · Match</span>
-      </div>
+    <footer class="max-w-6xl mx-auto px-5 py-10 text-center text-sm text-slate-500">
+      <p>© <span id="year">2026</span> Edu-match Platform</p>
     </footer>
 
-    <script>
-      document.getElementById("year").textContent = String(new Date().getFullYear());
-    </script>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
     <script src="./register-lecture.js" defer></script>
   </body>
 </html>

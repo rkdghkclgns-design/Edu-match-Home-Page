@@ -2,96 +2,71 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#07070d" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>로그인 — Edu-match</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { theme: { extend: { colors: { brand:{100:"#e0e7ff",600:"#4f46e5",700:"#4338ca"} } } } };</script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js" defer></script>
-    <script src="./auth.js" defer></script>
+    <script src="./supabase-client.js" defer></script>
   </head>
-  <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+  <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
 
-    <header class="nav">
-      <a href="./index.html" class="nav__logo" aria-label="홈">
-        <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">platform</span>
-      </a>
-      <nav class="nav__links" aria-label="주요 섹션">
-        <a href="./index.html#categories">서비스 분야</a>
-        <a href="./index.html#instructors">강사진</a>
-        <a href="./index.html#jobs">강의 공고</a>
-      </nav>
-      <div class="nav__auth">
-        <a href="./signup.html" class="nav__auth-link">회원가입</a>
-        <a href="./index.html" class="nav__cta">홈으로</a>
+    <header class="bg-white border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-baseline gap-2"><span class="text-xl font-extrabold text-brand-600">Edu-match</span><span class="text-xs text-slate-400">login</span></a>
+        <a href="./index.html" class="text-sm text-slate-600 hover:text-slate-900">홈으로</a>
       </div>
     </header>
 
-    <main class="auth-wrap">
-      <div class="auth-card">
-        <span class="auth-card__tag">Sign In</span>
-        <h1 class="auth-card__title">Edu-match 로그인</h1>
-        <p class="auth-card__sub">일반 회원 · 강사 · 관리자 통합 로그인 창입니다.</p>
+    <main class="flex-1 flex items-center justify-center px-5 py-12">
+      <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+        <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Sign In</span>
+        <h1 class="mt-2 text-2xl font-extrabold">Edu-match 로그인</h1>
+        <p class="mt-1 text-sm text-slate-500">강사 · 의뢰자 통합 계정입니다.</p>
 
-        <div class="auth-tabs" role="tablist">
-          <button type="button" class="auth-tab is-active" data-tab="user">일반 로그인</button>
-          <button type="button" class="auth-tab" data-tab="admin">관리자 로그인</button>
+        <form id="login-form" class="mt-6 space-y-4" novalidate>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">이메일</label>
+            <input id="login-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">비밀번호</label>
+            <input id="login-password" type="password" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400" />
+          </div>
+          <button type="submit" class="w-full py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">로그인</button>
+          <div id="login-message" class="text-sm text-center font-medium"></div>
+        </form>
+
+        <div class="mt-6 text-center text-sm text-slate-500">
+          계정이 없으신가요? <a href="./signup.html" class="font-semibold text-brand-600 hover:text-brand-700">회원가입</a>
         </div>
-
-        <!-- 일반 로그인 -->
-        <form id="login-form" class="auth-form" data-panel="user" novalidate>
-          <div class="form-field">
-            <label for="login-email">이메일</label>
-            <input id="login-email" name="email" type="email" required placeholder="you@company.com" />
-          </div>
-
-          <div class="form-field">
-            <label for="login-password">비밀번호</label>
-            <input id="login-password" name="password" type="password" required />
-          </div>
-
-          <button type="submit" class="auth-submit">로그인</button>
-
-          <div id="login-message" class="auth-message"></div>
-        </form>
-
-        <!-- 관리자 로그인 -->
-        <form id="admin-login-form" class="auth-form" data-panel="admin" style="display:none" novalidate>
-          <div class="form-field">
-            <label for="admin-id">관리자 ID</label>
-            <input id="admin-id" name="id" type="text" required autocomplete="username" />
-          </div>
-
-          <div class="form-field">
-            <label for="admin-pw">관리자 비밀번호</label>
-            <input id="admin-pw" name="pw" type="password" required autocomplete="current-password" />
-          </div>
-
-          <button type="submit" class="auth-submit">관리자 페이지 진입</button>
-
-          <div id="admin-login-message" class="auth-message"></div>
-        </form>
-
-        <div class="auth-divider">─ OR ─</div>
-        <p class="auth-alt">계정이 없으신가요?<a href="./signup.html">회원가입</a></p>
       </div>
     </main>
 
-    <footer class="footer">
-      <div class="footer__inner">
-        <span>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</span>
-        <span class="footer__tag">Connecting Experts · Empowering Education</span>
-      </div>
-    </footer>
-
+    <footer class="text-center text-sm text-slate-400 py-6">© <span id="year">2026</span> Edu-match</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
     <script>
-      document.getElementById("year").textContent = String(new Date().getFullYear());
+      (function () {
+        const EM = window.EM;
+        const form = document.getElementById("login-form");
+        const msg = document.getElementById("login-message");
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("login-email").value.trim();
+          const password = document.getElementById("login-password").value;
+          try {
+            await EM.signIn({ email, password });
+            msg.textContent = "로그인 성공. 홈으로 이동합니다.";
+            msg.className = "text-sm text-center font-medium text-emerald-600";
+            setTimeout(() => (location.href = "./index.html"), 1000);
+          } catch (err) {
+            msg.textContent = "로그인 실패: " + err.message;
+            msg.className = "text-sm text-center font-medium text-red-600";
+          }
+        });
+      })();
     </script>
   </body>
 </html>

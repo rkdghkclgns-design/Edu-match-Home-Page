@@ -2,200 +2,164 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#07070d" />
-    <title>PBL 훈련운영계획서 의뢰 — Edu-match</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PBL 문서 초안 의뢰 — Edu-match</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: {
+        brand:{50:"#eef2ff",100:"#e0e7ff",500:"#6366f1",600:"#4f46e5",700:"#4338ca"},
+        accent:{500:"#06b6d4"}
+      } } } };
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js" defer></script>
+    <script src="./supabase-client.js" defer></script>
   </head>
-  <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+  <body class="bg-white text-slate-900">
 
-    <header class="nav">
-      <a href="./index.html" class="nav__logo" aria-label="홈">
-        <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">PBL · KDT</span>
-      </a>
-      <nav class="nav__links" aria-label="주요 섹션">
-        <a href="./index.html#jobs">강의 공고</a>
-        <a href="./register-lecture.html">강의 등록</a>
-        <a href="./slide-request.html">슬라이드 의뢰</a>
-        <a href="./materials.html">자료실</a>
-      </nav>
-      <div class="nav__auth">
-        <a href="./login.html" class="nav__auth-link">로그인</a>
-        <a href="./signup.html" class="nav__cta">회원가입</a>
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-baseline gap-2"><span class="text-xl font-extrabold text-brand-600">Edu-match</span><span class="text-xs text-slate-400">PBL · KDT</span></a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="./index.html#jobs" class="hover:text-slate-900">공고</a>
+          <a href="./register-lecture.html" class="hover:text-slate-900">강의 등록</a>
+          <a href="./slide-request.html" class="hover:text-slate-900">슬라이드 의뢰</a>
+          <a href="./materials.html" class="hover:text-slate-900">자료실</a>
+        </nav>
       </div>
     </header>
 
-    <main>
-      <section class="section pbl-hero">
-        <div class="section__head">
-          <span class="section__tag">KDT 훈련운영계획서 양식</span>
-          <h2 class="section__title">
-            PBL 문서 초안<br />
-            <span class="grad-text">훈련운영계획서 의뢰</span>
-          </h2>
-          <p class="section__sub">
-            K-디지털 트레이닝(KDT) <strong>훈련운영계획서(선도제외)</strong> 표준 양식을 반영한 PBL 초안을 의뢰하세요.
-            기본 정보만 채우셔도 접수 가능하며, 상세 섹션을 미리 작성해두시면 초안 완성도가 높아집니다.
-          </p>
-        </div>
+    <main class="max-w-3xl mx-auto px-5 py-12">
+      <div class="text-center">
+        <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">KDT 훈련운영계획서 양식</span>
+        <h1 class="mt-2 text-3xl font-extrabold">PBL 문서 초안 의뢰</h1>
+        <p class="mt-3 text-slate-600">K-디지털 트레이닝 <strong>훈련운영계획서(선도제외)</strong> 표준 양식을 반영한 PBL 초안을 의뢰하세요.</p>
+      </div>
 
-        <form id="pbl-form" class="pbl-form" novalidate>
-          <!-- ========== 기본 정보 ========== -->
-          <h3 style="margin:0 0 18px; font-weight:700;">① 의뢰자 정보</h3>
-          <div class="pbl-form__grid">
-            <div class="form-field"><label for="r-name">담당자 성함</label><input id="r-name" type="text" required /></div>
-            <div class="form-field"><label for="r-email">이메일</label><input id="r-email" type="email" required /></div>
-            <div class="form-field"><label for="r-phone">연락처</label><input id="r-phone" type="tel" placeholder="010-0000-0000" /></div>
-            <div class="form-field"><label for="r-org">훈련기관/기업명</label><input id="r-org" type="text" /></div>
+      <form id="pbl-form" class="mt-10 space-y-6" novalidate>
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">①</span>의뢰자 정보</h2>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700">담당자 성함 *</label><input id="r-name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">이메일 *</label><input id="r-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">연락처</label><input id="r-phone" type="tel" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">훈련기관/기업명</label><input id="r-org" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
           </div>
+        </section>
 
-          <h3 style="margin:24px 0 10px; font-weight:700;">② 훈련 기본 정보 <span style="font-size:12px; font-weight:500; color:var(--text-soft);">(KDT 표지)</span></h3>
-          <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="kdt-academy">아카데미 유형</label>
-              <select id="kdt-academy" name="academy_type">
-                <option value="">선택</option>
-                <option>디지털신기술</option>
-                <option>벤처·스타트업</option>
-                <option>지역·산업 주도형</option>
-                <option>대학 주도형</option>
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">②</span>훈련 기본 정보 <span class="text-xs font-normal text-slate-500">(KDT 표지)</span></h2>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700">아카데미 유형</label>
+              <select id="kdt-academy" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="">선택</option><option>디지털신기술</option><option>벤처·스타트업</option><option>지역·산업 주도형</option><option>대학 주도형</option>
               </select>
             </div>
-            <div class="form-field">
-              <label for="kdt-type">훈련 유형</label>
-              <select id="kdt-type" name="training_type">
-                <option value="">선택</option>
-                <option>신기술과정</option>
-                <option>융합과정</option>
-                <option>기타과정</option>
-                <option>심화과정</option>
-                <option>재직자과정</option>
-                <option>사업주과정</option>
+            <div><label class="block text-sm font-medium text-slate-700">훈련 유형</label>
+              <select id="kdt-type" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="">선택</option><option>신기술과정</option><option>융합과정</option><option>기타과정</option><option>심화과정</option><option>재직자과정</option><option>사업주과정</option>
               </select>
             </div>
-            <div class="form-field"><label for="kdt-course">훈련과정명</label><input id="kdt-course" type="text" placeholder="예) 생성형 AI 게임 기획 PBL 과정" /></div>
-            <div class="form-field"><label for="kdt-code">훈련과정 코드 (선택)</label><input id="kdt-code" type="text" placeholder="AIG00000000000000" /></div>
-            <div class="form-field"><label for="kdt-total">총 양성인원 (명)</label><input id="kdt-total" type="number" min="0" value="30" /></div>
-            <div class="form-field"><label for="p-hours">총 훈련시간 (h)</label><input id="p-hours" type="number" min="0" value="480" /></div>
+            <div><label class="block text-sm font-medium text-slate-700">훈련과정명</label><input id="kdt-course" placeholder="예) 생성형 AI 게임 기획 PBL" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">훈련과정 코드 (선택)</label><input id="kdt-code" placeholder="AIG00000000000000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">총 양성인원 (명)</label><input id="kdt-total" type="number" min="0" value="30" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">총 훈련시간 (h)</label><input id="p-hours" type="number" min="0" value="480" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
           </div>
+          <div class="mt-3"><label class="block text-sm font-medium text-slate-700">학습 주제 / 훈련과정 핵심 *</label><input id="p-topic" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700">훈련 분야 (NCS · 직무)</label><input id="p-domain" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">학습자 수준</label>
+              <select id="p-level" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option>입문</option><option selected>중급</option><option>고급</option>
+              </select></div>
+            <div><label class="block text-sm font-medium text-slate-700">회차당 학습자 수</label><input id="p-size" type="number" min="0" value="30" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">산출물 형식</label>
+              <select id="p-format" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="pdf" selected>PDF</option><option value="docx">DOCX</option><option value="hwp">HWP</option><option value="pptx">PPTX</option>
+              </select></div>
+          </div>
+          <div class="mt-3"><label class="block text-sm font-medium text-slate-700">훈련목표 / 성취기준 *</label><textarea id="p-obj" rows="3" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+        </section>
 
-          <div class="form-field">
-            <label for="p-topic">학습 주제 / 훈련과정 핵심</label>
-            <input id="p-topic" type="text" required placeholder="예) 생성형 AI 활용 프로덕트 기획 및 론칭" />
+        <details class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <summary class="px-6 py-4 cursor-pointer font-bold flex items-center justify-between"><span>Ⅰ. 사업 개요</span><span class="text-xs text-slate-500">참여 목적 · 추진 방향 · 성과</span></summary>
+          <div class="px-6 pb-6 space-y-3 border-t border-slate-100 pt-4">
+            <div><label class="block text-sm font-medium text-slate-700">가. 참여 목적</label><textarea id="p-purpose" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            <div><label class="block text-sm font-medium text-slate-700">나. 추진 방향 및 목표</label><textarea id="p-direction" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            <div><label class="block text-sm font-medium text-slate-700">다. 최근 2개년간 훈련 운영 성과</label><textarea id="p-results" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            <div><label class="block text-sm font-medium text-slate-700">라. 훈련 운영 결과 분석 · 개선 실적</label><textarea id="p-analysis" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
           </div>
-          <div class="pbl-form__grid">
-            <div class="form-field"><label for="p-domain">훈련 분야 (NCS · 직무)</label><input id="p-domain" type="text" placeholder="IT·AI / 데이터 / 리더십 등" /></div>
-            <div class="form-field">
-              <label for="p-level">학습자 수준</label>
-              <select id="p-level">
-                <option value="입문">입문</option>
-                <option value="중급" selected>중급</option>
-                <option value="고급">고급</option>
-              </select>
+        </details>
+
+        <details class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <summary class="px-6 py-4 cursor-pointer font-bold flex items-center justify-between"><span>Ⅱ. 훈련운영역량</span><span class="text-xs text-slate-500">참여기업 · 훈련내용 · 훈련생 관리</span></summary>
+          <div class="px-6 pb-6 space-y-4 border-t border-slate-100 pt-4">
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-brand-600">1. 참여기업 수요</h3>
+              <div><label class="block text-sm font-medium text-slate-700">① 참여기업 구성</label><textarea id="e-compose" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">② 참여기업 관리 체계</label><textarea id="e-manage" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">③ 참여기업 수요조사</label><textarea id="e-survey" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
             </div>
-            <div class="form-field"><label for="p-size">회차당 학습자 수 (명)</label><input id="p-size" type="number" min="0" value="30" /></div>
-            <div class="form-field">
-              <label for="p-format">산출물 형식</label>
-              <select id="p-format">
-                <option value="pdf" selected>PDF</option>
-                <option value="docx">DOCX (Word)</option>
-                <option value="hwp">HWP</option>
-                <option value="pptx">PPTX</option>
-              </select>
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-brand-600">2. 훈련내용</h3>
+              <div><label class="block text-sm font-medium text-slate-700">① 정규교과 내용 및 구성</label><textarea id="t-regular" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">② 프로젝트 학습 내용 · 수행 활동</label><textarea id="t-project" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">③ 훈련 관리 계획</label><textarea id="t-mgmt" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            </div>
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-brand-600">3. 훈련생 관리</h3>
+              <div><label class="block text-sm font-medium text-slate-700">① 훈련생 선발 계획</label><textarea id="s-select" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">② 훈련생 취업지원(사후관리) 계획</label><textarea id="s-career" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
             </div>
           </div>
-          <div class="form-field"><label for="p-obj">훈련목표 / 성취기준</label><textarea id="p-obj" required placeholder="수요조사 결과에 기반한 훈련내용·취업가능 직업·취업처 등이 드러나도록 작성"></textarea></div>
+        </details>
 
-          <!-- ========== KDT 섹션 I. 사업 개요 ========== -->
-          <details class="kdt-details">
-            <summary><strong>Ⅰ. 사업 개요</strong> <span class="kdt-hint">참여 목적 · 추진 방향 · 성과</span></summary>
-            <div class="form-field"><label for="p-purpose">가. 참여 목적</label><textarea id="p-purpose"></textarea></div>
-            <div class="form-field"><label for="p-direction">나. 추진 방향 및 목표</label><textarea id="p-direction"></textarea></div>
-            <div class="form-field"><label for="p-results">다. 최근 2개년간 훈련 운영 성과 (요약)</label><textarea id="p-results" placeholder="KDT · KDT 외 지원훈련 구분 · 연간인원/실시/수료/취업 인원 요약"></textarea></div>
-            <div class="form-field"><label for="p-analysis">라. 훈련 운영 결과 분석 · 개선 실적</label><textarea id="p-analysis"></textarea></div>
-          </details>
-
-          <!-- ========== KDT 섹션 II. 훈련운영역량 ========== -->
-          <details class="kdt-details">
-            <summary><strong>Ⅱ. 훈련운영역량</strong> <span class="kdt-hint">참여기업 수요 · 훈련내용 · 훈련생 관리</span></summary>
-
-            <h4 class="kdt-h4">1. 참여기업 수요</h4>
-            <div class="form-field"><label for="e-compose">① 참여기업 구성 (업종 · 전문성 · 채용약정 규모)</label><textarea id="e-compose"></textarea></div>
-            <div class="form-field"><label for="e-manage">② 참여기업 관리 체계 (확보 · 역할분장 · 관리방안)</label><textarea id="e-manage"></textarea></div>
-            <div class="form-field"><label for="e-survey">③ 참여기업 수요조사 (대상 · 방법 · 내용)</label><textarea id="e-survey"></textarea></div>
-
-            <h4 class="kdt-h4">2. 훈련내용</h4>
-            <div class="form-field"><label for="t-regular">① 정규교과 내용 및 구성 (로드맵 · 교과목표)</label><textarea id="t-regular"></textarea></div>
-            <div class="form-field"><label for="t-project">② 프로젝트 학습 내용 및 수행 활동 (주제·결과물·관리)</label><textarea id="t-project"></textarea></div>
-            <div class="form-field"><label for="t-mgmt">③ 훈련 관리 계획 (시기별 운영 · 개선 환류)</label><textarea id="t-mgmt"></textarea></div>
-
-            <h4 class="kdt-h4">3. 훈련생 관리</h4>
-            <div class="form-field"><label for="s-select">① 훈련생 선발 계획 (기준 · 절차 · 방법)</label><textarea id="s-select"></textarea></div>
-            <div class="form-field"><label for="s-career">② 훈련생 취업지원(사후관리) 계획</label><textarea id="s-career"></textarea></div>
-          </details>
-
-          <!-- ========== KDT 섹션 III. 훈련 인프라 ========== -->
-          <details class="kdt-details">
-            <summary><strong>Ⅲ. 훈련 인프라</strong> <span class="kdt-hint">투입인력 · 투입자원</span></summary>
-
-            <h4 class="kdt-h4">1. 투입인력</h4>
-            <div class="form-field"><label for="i-regular">① 정규교과 훈련교·강사 확보</label><textarea id="i-regular" placeholder="국평법 시행령 제27조 충족, 보조강사 포함 확보 계획"></textarea></div>
-            <div class="form-field"><label for="i-project">② 프로젝트 학습 훈련교·강사 및 멘토 확보</label><textarea id="i-project"></textarea></div>
-            <div class="form-field"><label for="i-mgmt">③ 훈련 투입인력 활용 및 관리 계획 (강사풀 확보 포함)</label><textarea id="i-mgmt"></textarea></div>
-            <div class="pbl-form__grid">
-              <div class="form-field"><label for="i-main-total">주강사 총 인원</label><input id="i-main-total" type="number" min="0" value="0" /></div>
-              <div class="form-field"><label for="i-sub-total">보조강사 총 인원</label><input id="i-sub-total" type="number" min="0" value="0" /></div>
+        <details class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <summary class="px-6 py-4 cursor-pointer font-bold flex items-center justify-between"><span>Ⅲ. 훈련 인프라</span><span class="text-xs text-slate-500">투입인력 · 투입자원</span></summary>
+          <div class="px-6 pb-6 space-y-4 border-t border-slate-100 pt-4">
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-brand-600">1. 투입인력</h3>
+              <div><label class="block text-sm font-medium text-slate-700">① 정규교과 훈련교·강사 확보</label><textarea id="i-regular" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">② 프로젝트 학습 훈련교·강사 · 멘토</label><textarea id="i-project" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">③ 훈련 투입인력 활용 · 관리</label><textarea id="i-mgmt" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-sm font-medium text-slate-700">주강사 총 인원</label><input id="i-main-total" type="number" min="0" value="0" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+                <div><label class="block text-sm font-medium text-slate-700">보조강사 총 인원</label><input id="i-sub-total" type="number" min="0" value="0" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+              </div>
             </div>
-
-            <h4 class="kdt-h4">2. 투입자원</h4>
-            <div class="form-field"><label for="r-facility">① 훈련시설 및 장비 확보</label><textarea id="r-facility"></textarea></div>
-            <div class="form-field"><label for="r-util">② 훈련시설 및 장비 활용 계획</label><textarea id="r-util"></textarea></div>
-          </details>
-
-          <!-- ========== 붙임 ========== -->
-          <details class="kdt-details">
-            <summary><strong>붙임</strong> <span class="kdt-hint">자율성과지표 · 비대면 과정 유의사항</span></summary>
-            <div class="form-field"><label for="x-metric">1. (재직자 도약/사업주 신기술) 자율성과지표 (최소 2개)</label><textarea id="x-metric" placeholder="지표명 · 연차별 달성목표 · 산정식 · 산정자료 · 산정방법"></textarea></div>
-            <div class="form-field"><label for="x-partner">2. (벤처·스타트업/지역산업주도형) 사업참여기관 적절성</label><textarea id="x-partner"></textarea></div>
-            <div class="form-field"><label for="x-online">별첨. 비대면 실시간 과정 유의사항 이행방안</label><textarea id="x-online" placeholder="유의사항 ①~⑤ 에 대한 이행방안 · 조치사항"></textarea></div>
-          </details>
-
-          <!-- ========== 참고자료 ========== -->
-          <h3 style="margin:24px 0 10px; font-weight:700;">③ 참고 자료 취합</h3>
-          <p class="admin-header__meta" style="margin:0 0 12px;">
-            참여기업 요구사항, 사전 설문, 벤치마킹 자료, 기관 브랜드 가이드 등 공유 링크를 첨부해주세요.
-          </p>
-          <div id="materials-list" class="pbl-materials"></div>
-          <button type="button" class="pbl-material-add" id="add-material">+ 참고자료 항목 추가</button>
-
-          <div class="form-field" style="margin-top: 16px;"><label for="p-notes">기타 요청사항</label><input id="p-notes" type="text" placeholder="보안 · 기밀 레벨, 참고 유사 과정, 긴급 여부 등" /></div>
-
-          <div style="margin-top: 24px;">
-            <button type="submit" class="auth-submit">훈련운영계획서 초안 의뢰 제출</button>
-            <div id="pbl-msg" class="auth-message"></div>
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-brand-600">2. 투입자원</h3>
+              <div><label class="block text-sm font-medium text-slate-700">① 훈련시설 · 장비 확보</label><textarea id="r-facility" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+              <div><label class="block text-sm font-medium text-slate-700">② 훈련시설 · 장비 활용 계획</label><textarea id="r-util" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            </div>
           </div>
-        </form>
-      </section>
+        </details>
+
+        <details class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <summary class="px-6 py-4 cursor-pointer font-bold flex items-center justify-between"><span>붙임</span><span class="text-xs text-slate-500">자율성과지표 · 비대면 유의사항</span></summary>
+          <div class="px-6 pb-6 space-y-3 border-t border-slate-100 pt-4">
+            <div><label class="block text-sm font-medium text-slate-700">1. 자율성과지표 (최소 2개)</label><textarea id="x-metric" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            <div><label class="block text-sm font-medium text-slate-700">2. 사업참여기관 적절성</label><textarea id="x-partner" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            <div><label class="block text-sm font-medium text-slate-700">별첨. 비대면 실시간 과정 유의사항 이행방안</label><textarea id="x-online" rows="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+          </div>
+        </details>
+
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">③</span>참고 자료 취합</h2>
+          <p class="mt-2 text-xs text-slate-500">참여기업 요구사항, 사전 설문, 벤치마킹 자료 등 공유 링크를 첨부해주세요.</p>
+          <div id="materials-list" class="mt-3 space-y-2"></div>
+          <button type="button" id="add-material" class="mt-2 w-full py-2.5 text-sm text-slate-600 border border-dashed border-slate-300 rounded-lg hover:border-brand-300 hover:text-brand-600">+ 참고자료 추가</button>
+          <div class="mt-3"><label class="block text-sm font-medium text-slate-700">기타 요청사항</label><input id="p-notes" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+        </section>
+
+        <button type="submit" class="w-full py-4 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 shadow-sm">훈련운영계획서 초안 의뢰 제출</button>
+        <div id="pbl-msg" class="text-sm font-medium text-center"></div>
+      </form>
     </main>
 
-    <footer class="footer">
-      <div class="footer__inner">
-        <span>© <span id="year">2026</span> Edu-match Platform.</span>
-        <span class="footer__tag">KDT 훈련운영계획서 표준 양식 기반</span>
-      </div>
-    </footer>
-
-    <script>
-      document.getElementById("year").textContent = String(new Date().getFullYear());
-    </script>
+    <footer class="max-w-6xl mx-auto px-5 py-10 text-center text-sm text-slate-500">© <span id="year">2026</span> Edu-match Platform</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
     <script src="./pbl-request.js" defer></script>
   </body>
 </html>

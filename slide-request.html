@@ -2,156 +2,92 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#07070d" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>강의 슬라이드 의뢰 — Edu-match</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: {
+        brand:{50:"#eef2ff",100:"#e0e7ff",500:"#6366f1",600:"#4f46e5",700:"#4338ca"}
+      } } } };
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-config.js" defer></script>
+    <script src="./supabase-client.js" defer></script>
   </head>
-  <body>
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--violet" aria-hidden="true"></div>
-    <div class="bg-glow bg-glow--cyan" aria-hidden="true"></div>
+  <body class="bg-white text-slate-900">
 
-    <header class="nav">
-      <a href="./index.html" class="nav__logo" aria-label="홈">
-        <span class="nav__logo-mark">Edu-match</span>
-        <span class="nav__logo-sub">slides</span>
-      </a>
-      <nav class="nav__links" aria-label="주요 섹션">
-        <a href="./index.html#jobs">강의 공고</a>
-        <a href="./register-lecture.html">강의 등록</a>
-        <a href="./pbl-request.html">PBL 의뢰</a>
-        <a href="./materials.html">자료실</a>
-      </nav>
-      <div class="nav__auth">
-        <a href="./login.html" class="nav__auth-link">로그인</a>
-        <a href="./signup.html" class="nav__cta">회원가입</a>
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-baseline gap-2"><span class="text-xl font-extrabold text-brand-600">Edu-match</span><span class="text-xs text-slate-400">slides</span></a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="./index.html#jobs" class="hover:text-slate-900">공고</a>
+          <a href="./register-lecture.html" class="hover:text-slate-900">강의 등록</a>
+          <a href="./pbl-request.html" class="hover:text-slate-900">PBL 의뢰</a>
+          <a href="./materials.html" class="hover:text-slate-900">자료실</a>
+        </nav>
       </div>
     </header>
 
-    <main>
-      <section class="section pbl-hero">
-        <div class="section__head">
-          <span class="section__tag">Slide Draft Service</span>
-          <h2 class="section__title">
-            강의 슬라이드<br />
-            <span class="grad-text">초안 제작 의뢰</span>
-          </h2>
-          <p class="section__sub">
-            임직원 교육·임원 브리핑·현장 연수용 강의 슬라이드 초안을 의뢰하세요.
-            Edu-match 강사 네트워크 + AI 리서치로 1~2주 내 1차 드래프트를 제공합니다.
-          </p>
-        </div>
+    <main class="max-w-3xl mx-auto px-5 py-12">
+      <div class="text-center">
+        <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Slide Draft Service</span>
+        <h1 class="mt-2 text-3xl font-extrabold">강의 슬라이드 초안 제작 의뢰</h1>
+        <p class="mt-3 text-slate-600">임직원 교육 · 임원 브리핑 · 현장 연수용 슬라이드 초안을 1~2주 내 제공합니다.</p>
+      </div>
 
-        <form id="slide-form" class="pbl-form" novalidate>
-          <h3 style="margin:0 0 18px; font-weight:700;">① 의뢰자 정보</h3>
-          <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="sr-name">담당자 성함</label>
-              <input id="sr-name" name="requester_name" type="text" required />
-            </div>
-            <div class="form-field">
-              <label for="sr-email">이메일</label>
-              <input id="sr-email" name="requester_email" type="email" required />
-            </div>
-            <div class="form-field">
-              <label for="sr-phone">연락처</label>
-              <input id="sr-phone" name="requester_phone" type="tel" placeholder="010-0000-0000" />
-            </div>
-            <div class="form-field">
-              <label for="sr-org">기관/기업명</label>
-              <input id="sr-org" name="organization" type="text" />
-            </div>
+      <form id="slide-form" class="mt-10 space-y-6" novalidate>
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">①</span>의뢰자 정보</h2>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div><label class="block text-sm font-medium text-slate-700">담당자 성함 *</label><input id="sr-name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">이메일 *</label><input id="sr-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">연락처</label><input id="sr-phone" type="tel" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div><label class="block text-sm font-medium text-slate-700">기관/기업명</label><input id="sr-org" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
           </div>
+        </section>
 
-          <h3 style="margin:24px 0 18px; font-weight:700;">② 강의 슬라이드 개요</h3>
-          <div class="form-field">
-            <label for="ss-topic">강의 주제</label>
-            <input id="ss-topic" name="topic" type="text" required placeholder="예) MLOps 파이프라인 구축 실무" />
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">②</span>강의 슬라이드 개요</h2>
+          <div class="mt-4 space-y-3">
+            <div><label class="block text-sm font-medium text-slate-700">강의 주제 *</label><input id="ss-topic" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div><label class="block text-sm font-medium text-slate-700">분야</label><input id="ss-domain" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+              <div><label class="block text-sm font-medium text-slate-700">대상 수준</label>
+                <select id="ss-level" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                  <option>입문</option><option selected>중급</option><option>고급</option>
+                </select></div>
+              <div><label class="block text-sm font-medium text-slate-700">수강 인원</label><input id="ss-size" type="number" min="0" value="50" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+              <div><label class="block text-sm font-medium text-slate-700">총 강의 시간 (h)</label><input id="ss-hours" type="number" min="0" value="8" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+              <div><label class="block text-sm font-medium text-slate-700">예상 슬라이드 수</label><input id="ss-slides" type="number" min="0" value="40" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+              <div><label class="block text-sm font-medium text-slate-700">산출물</label>
+                <select id="ss-format" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                  <option value="pptx" selected>PPTX</option><option value="pdf">PDF</option><option value="keynote">Keynote</option><option value="google-slides">Google Slides</option>
+                </select></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div><label class="block text-sm font-medium text-slate-700">스타일 선호</label><input id="ss-style" placeholder="실무형 · 키노트형 · 임원 브리핑 등" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+              <div><label class="block text-sm font-medium text-slate-700">컬러/브랜드 테마</label><input id="ss-color" placeholder="다크 블루 + 네온 바이올렛 등" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+            </div>
+            <div><label class="block text-sm font-medium text-slate-700">강의 목표 · 핵심 메시지 *</label><textarea id="ss-obj" rows="4" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea></div>
+            <div><label class="block text-sm font-medium text-slate-700">기타 요청사항</label><input id="ss-notes" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
           </div>
-          <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="ss-domain">분야</label>
-              <input id="ss-domain" name="domain" type="text" placeholder="IT·AI / 데이터 / 리더십 / 제조 등" />
-            </div>
-            <div class="form-field">
-              <label for="ss-level">대상 수준</label>
-              <select id="ss-level" name="target_level">
-                <option value="입문">입문</option>
-                <option value="중급" selected>중급</option>
-                <option value="고급">고급</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="ss-size">수강 인원 (명)</label>
-              <input id="ss-size" name="audience_size" type="number" min="0" value="50" />
-            </div>
-            <div class="form-field">
-              <label for="ss-hours">총 강의 시간 (h)</label>
-              <input id="ss-hours" name="duration_hours" type="number" min="0" value="8" />
-            </div>
-            <div class="form-field">
-              <label for="ss-slides">예상 슬라이드 수 (장)</label>
-              <input id="ss-slides" name="slide_count" type="number" min="0" value="40" />
-            </div>
-            <div class="form-field">
-              <label for="ss-format">산출물 형식</label>
-              <select id="ss-format" name="deliverable_format">
-                <option value="pptx" selected>PPTX</option>
-                <option value="pdf">PDF</option>
-                <option value="keynote">Keynote</option>
-                <option value="google-slides">Google Slides</option>
-              </select>
-            </div>
-          </div>
-          <div class="pbl-form__grid">
-            <div class="form-field">
-              <label for="ss-style">스타일 선호</label>
-              <input id="ss-style" name="style_preference" type="text" placeholder="실무형 · 다이어그램 중심 / 키노트형 / 임원 브리핑형 등" />
-            </div>
-            <div class="form-field">
-              <label for="ss-color">컬러/브랜드 테마</label>
-              <input id="ss-color" name="color_theme" type="text" placeholder="다크 블루 + 네온 바이올렛 등" />
-            </div>
-          </div>
-          <div class="form-field">
-            <label for="ss-obj">강의 목표 / 핵심 메시지</label>
-            <textarea id="ss-obj" name="objectives" required placeholder="학습자가 가져갈 핵심 메시지 3가지를 기재해주세요."></textarea>
-          </div>
-          <div class="form-field">
-            <label for="ss-notes">기타 요청사항</label>
-            <input id="ss-notes" name="notes" type="text" placeholder="벤치마킹 브랜드, 금기 표현, 기밀 레벨 등" />
-          </div>
+        </section>
 
-          <h3 style="margin:24px 0 10px; font-weight:700;">③ 참고 자료 취합</h3>
-          <p class="admin-header__meta" style="margin:0 0 12px;">
-            브랜드 가이드·기존 사내 템플릿·레퍼런스 슬라이드 등 공유 링크를 첨부해주세요.
-          </p>
-          <div id="slide-materials-list" class="pbl-materials"></div>
-          <button type="button" class="pbl-material-add" id="slide-add-material">+ 참고자료 항목 추가</button>
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">③</span>참고 자료 취합</h2>
+          <p class="mt-2 text-xs text-slate-500">브랜드 가이드·기존 사내 템플릿·레퍼런스 슬라이드 공유 링크를 첨부해주세요.</p>
+          <div id="slide-materials-list" class="mt-3 space-y-2"></div>
+          <button type="button" id="slide-add-material" class="mt-2 w-full py-2.5 text-sm text-slate-600 border border-dashed border-slate-300 rounded-lg hover:border-brand-300 hover:text-brand-600">+ 참고자료 추가</button>
+        </section>
 
-          <div style="margin-top: 24px;">
-            <button type="submit" class="auth-submit">슬라이드 의뢰 제출</button>
-            <div id="slide-msg" class="auth-message"></div>
-          </div>
-        </form>
-      </section>
+        <button type="submit" class="w-full py-4 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 shadow-sm">슬라이드 의뢰 제출</button>
+        <div id="slide-msg" class="text-sm font-medium text-center"></div>
+      </form>
     </main>
 
-    <footer class="footer">
-      <div class="footer__inner">
-        <span>© <span id="year">2026</span> Edu-match Platform.</span>
-        <span class="footer__tag">Slide Drafting · Brand Aligned</span>
-      </div>
-    </footer>
-
-    <script>
-      document.getElementById("year").textContent = String(new Date().getFullYear());
-    </script>
+    <footer class="max-w-6xl mx-auto px-5 py-10 text-center text-sm text-slate-500">© <span id="year">2026</span> Edu-match Platform</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
     <script src="./slide-request.js" defer></script>
   </body>
 </html>

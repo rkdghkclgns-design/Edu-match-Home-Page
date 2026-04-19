@@ -1,94 +1,54 @@
-// =========================================================
-// Edu-match — PBL 훈련운영계획서 의뢰 (KDT 표준 양식 반영)
-// =========================================================
-
+// Edu-match — PBL 훈련운영계획서 의뢰 (Tailwind rebuild)
 (function () {
-  const em = window.EduMatch;
-  if (!em?.supabase) {
-    alert("Supabase 설정이 누락되었습니다.");
-    return;
-  }
-  const supabase = em.supabase;
-  const TABLES = em.TABLES;
+  const EM = window.EM;
+  if (!EM?.client) { alert("Supabase client missing"); return; }
+  const supabase = EM.client;
 
-  const list = document.getElementById("materials-list");
-  const addBtn = document.getElementById("add-material");
-  const form = document.getElementById("pbl-form");
-  const msg = document.getElementById("pbl-msg");
+  const $ = (id) => document.getElementById(id);
+  const list = $("materials-list");
+  const addBtn = $("add-material");
+  const form = $("pbl-form");
+  const msg = $("pbl-msg");
 
   function addRow(prefill = {}) {
     const row = document.createElement("div");
-    row.className = "pbl-material-row";
+    row.className = "grid grid-cols-[1fr_2fr_auto] gap-2";
     row.innerHTML = `
-      <input type="text" placeholder="자료명 (예: 사전 설문, 참여기업 리스트)" value="${prefill.name || ""}" data-field="name" />
-      <input type="url" placeholder="공유 URL" value="${prefill.url || ""}" data-field="url" />
-      <button type="button" class="remove" aria-label="삭제">×</button>
+      <input type="text" placeholder="자료명" value="${prefill.name || ""}" data-field="name" class="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
+      <input type="url" placeholder="공유 URL" value="${prefill.url || ""}" data-field="url" class="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
+      <button type="button" class="px-3 py-2 text-sm text-slate-500 border border-slate-200 rounded-lg hover:text-red-600 hover:border-red-200" data-remove>×</button>
     `;
-    row.querySelector(".remove").addEventListener("click", () => row.remove());
+    row.querySelector("[data-remove]").addEventListener("click", () => row.remove());
     list.appendChild(row);
   }
-
-  addRow();
-  addRow();
+  addRow(); addRow();
   addBtn.addEventListener("click", () => addRow());
 
-  function showMsg(text, type) {
+  function show(text, type) {
     msg.textContent = text;
-    msg.className = "auth-message is-shown auth-message--" + type;
+    msg.className = "text-sm font-medium text-center " + (type === "ok" ? "text-emerald-600" : "text-red-600");
   }
 
-  function val(id) {
-    const el = document.getElementById(id);
-    return el ? (el.value || "").toString().trim() : "";
-  }
+  const val = (id) => ($(id)?.value || "").toString().trim();
+  const num = (id) => Number(val(id)) || 0;
 
-  function num(id) {
-    return Number(val(id)) || 0;
-  }
-
-  function buildKdtPlan() {
+  function buildKdt() {
     return {
-      overview: {
-        purpose: val("p-purpose"),
-        direction: val("p-direction"),
-        past_results: val("p-results"),
-        analysis: val("p-analysis"),
-      },
+      overview: { purpose: val("p-purpose"), direction: val("p-direction"), past_results: val("p-results"), analysis: val("p-analysis") },
       capability: {
-        enterprise_demand: {
-          composition: val("e-compose"),
-          management: val("e-manage"),
-          survey: val("e-survey"),
-        },
-        training_content: {
-          regular_curriculum: val("t-regular"),
-          project_learning: val("t-project"),
-          management_plan: val("t-mgmt"),
-        },
-        trainee_management: {
-          selection: val("s-select"),
-          career_support: val("s-career"),
-        },
+        enterprise_demand: { composition: val("e-compose"), management: val("e-manage"), survey: val("e-survey") },
+        training_content: { regular_curriculum: val("t-regular"), project_learning: val("t-project"), management_plan: val("t-mgmt") },
+        trainee_management: { selection: val("s-select"), career_support: val("s-career") },
       },
       infrastructure: {
         manpower: {
-          regular_instructors: val("i-regular"),
-          project_instructors: val("i-project"),
-          management: val("i-mgmt"),
-          main_instructor_count: num("i-main-total"),
-          assistant_instructor_count: num("i-sub-total"),
+          regular_instructors: val("i-regular"), project_instructors: val("i-project"), management: val("i-mgmt"),
+          main_instructor_count: num("i-main-total"), assistant_instructor_count: num("i-sub-total"),
         },
-        resources: {
-          facility_equipment: val("r-facility"),
-          utilization: val("r-util"),
-        },
+        resources: { facility_equipment: val("r-facility"), utilization: val("r-util") },
       },
-      appendix: {
-        autonomy_metric: val("x-metric"),
-        partner_appropriateness: val("x-partner"),
-        online_realtime_guidance: val("x-online"),
-      },
-      format_reference: "KDT 훈련운영계획서(선도제외) 표준 양식 기반",
+      appendix: { autonomy_metric: val("x-metric"), partner_appropriateness: val("x-partner"), online_realtime_guidance: val("x-online") },
+      format_reference: "KDT 훈련운영계획서(선도제외) 표준 양식",
     };
   }
 
@@ -113,43 +73,29 @@
       training_course_name: val("kdt-course"),
       course_code: val("kdt-code"),
       total_trainees: num("kdt-total"),
-      kdt_plan: buildKdtPlan(),
+      kdt_plan: buildKdt(),
     };
-
-    showMsg("제출 중…", "success");
-    const { data: inserted, error } = await supabase
-      .from(TABLES.pblRequests)
-      .insert(payload)
-      .select()
-      .single();
-    if (error) {
-      showMsg("의뢰 실패: " + error.message, "error");
-      return;
+    if (!payload.requester_name || !payload.requester_email || !payload.topic || !payload.objectives) {
+      show("필수 항목을 모두 입력해주세요.", "err"); return;
     }
-
-    const rows = Array.from(list.querySelectorAll(".pbl-material-row"))
-      .map((row) => ({
-        request_id: inserted.id,
-        name: row.querySelector('[data-field="name"]').value.trim(),
-        url: row.querySelector('[data-field="url"]').value.trim(),
-      }))
-      .filter((r) => r.name || r.url);
-
-    if (rows.length > 0) {
-      const { error: mErr } = await supabase.from(TABLES.pblMaterials).insert(rows);
-      if (mErr) {
-        showMsg(`의뢰는 접수되었으나 일부 자료 등록 실패: ${mErr.message}`, "error");
-        return;
-      }
+    show("제출 중…", "ok");
+    try {
+      const { data: inserted, error } = await supabase.from("em_pbl_requests").insert(payload).select().single();
+      if (error) throw error;
+      const rows = Array.from(list.querySelectorAll('.grid'))
+        .map((row) => ({
+          request_id: inserted.id,
+          name: row.querySelector('[data-field="name"]').value.trim(),
+          url: row.querySelector('[data-field="url"]').value.trim(),
+        }))
+        .filter((r) => r.name || r.url);
+      if (rows.length > 0) await supabase.from("em_pbl_materials").insert(rows);
+      show(`의뢰 접수 완료 (번호: ${inserted.id.slice(0, 8)})`, "ok");
+      EM.toast("PBL 의뢰가 접수되었습니다.", "ok");
+      form.reset();
+      list.innerHTML = ""; addRow(); addRow();
+    } catch (err) {
+      show("의뢰 실패: " + err.message, "err");
     }
-
-    showMsg(
-      `훈련운영계획서 초안 의뢰가 접수되었습니다. (의뢰번호: ${inserted.id.slice(0, 8)}) · 1~2주 내 담당 매니저가 회신드립니다.`,
-      "success",
-    );
-    form.reset();
-    list.innerHTML = "";
-    addRow();
-    addRow();
   });
 })();
