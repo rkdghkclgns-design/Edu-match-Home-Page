@@ -52,17 +52,23 @@
   // - profiles 행은 auth.users insert 트리거(`handle_new_auth_user`)가 자동 생성
   // - 세션이 즉시 발급되면(이메일 확인 비활성) 클라이언트에서도 한 번 더 upsert 해 최신값 보장
   // - 이메일 확인이 켜진 환경에서는 인증 완료 후 로그인 시점에 풀필 됨
-  async function signUp({ email, password, fullName, role }) {
+  async function signUp({ email, password, fullName, role, phone }) {
     const safeRole = (role === "lecturer" || role === "client" || role === "admin") ? role : "client";
+    const safePhone = (phone || "").toString().trim();
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName || "", role: safeRole } },
+      options: {
+        data: {
+          full_name: fullName || "",
+          role: safeRole,
+          phone: safePhone,
+        },
+      },
     });
     if (error) throw error;
 
     // 즉시 로그인된 경우만 client-side upsert (RLS: auth.uid() = id 필요)
-    // 트리거가 이미 row 를 생성했더라도 onConflict 로 안전하게 갱신
     if (data?.session && data.user) {
       const { error: pErr } = await client.from("profiles").upsert({
         id: data.user.id,
@@ -70,6 +76,7 @@
         full_name: fullName || "",
         role: safeRole,
         membership: "basic",
+        phone: safePhone || null,
       }, { onConflict: "id" });
       if (pErr) {
         toast("프로필 동기화 실패: " + pErr.message + " (관리자 문의 필요)", "warn");
@@ -78,7 +85,6 @@
 
     return {
       ...data,
-      // UI 가 분기 처리할 수 있도록 명확한 플래그 제공
       needsEmailConfirmation: !data?.session && !!data?.user,
     };
   }

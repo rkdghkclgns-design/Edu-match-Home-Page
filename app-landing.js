@@ -673,7 +673,17 @@
     const fd = new FormData(authForm);
     try {
       if (authMode === "signup") {
-        await EM.signUp({ email: fd.get("email"), password: fd.get("password"), fullName: fd.get("full_name"), role: fd.get("role") });
+        const phone = String(fd.get("phone") || "").replace(/[\s-]/g, "");
+        if (!/^01[0-9]\d{7,8}$/.test(phone)) {
+          return EM.toast("휴대폰 번호 형식을 확인해주세요. (010-1234-5678)", "warn");
+        }
+        await EM.signUp({
+          email: fd.get("email"),
+          password: fd.get("password"),
+          fullName: fd.get("full_name"),
+          role: fd.get("role"),
+          phone,
+        });
         EM.toast("회원가입 완료. 이메일 인증 후 로그인해주세요.", "ok");
       } else {
         await EM.signIn({ email: fd.get("email"), password: fd.get("password") });

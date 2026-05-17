@@ -149,7 +149,10 @@
     if (!list.length) { tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">사용자가 없습니다.</td></tr>`; return; }
     tb.innerHTML = list.map((u) => `
       <tr class="hover:bg-slate-50">
-        <td class="px-4 py-3 font-medium">${escape(u.full_name || "—")}</td>
+        <td class="px-4 py-3 font-medium">
+          <div>${escape(u.full_name || "—")}</div>
+          ${u.phone ? `<div class="text-xs text-slate-400 mt-0.5">📱 ${escape(u.phone)}</div>` : ""}
+        </td>
         <td class="px-4 py-3 text-slate-600">${escape(u.email)}</td>
         <td class="px-4 py-3"><span class="text-xs font-semibold px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'lecturer' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'}">${escape(u.role || "—")}</span></td>
         <td class="px-4 py-3">
@@ -195,11 +198,33 @@
   document.body.addEventListener("click", async (e) => {
     const delBtn = e.target.closest("[data-delete-user]");
     if (delBtn) {
-      if (!confirm("이 사용자를 삭제하시겠습니까?")) return;
+      const targetId = delBtn.getAttribute("data-delete-user");
+      if (!confirm("이 사용자를 완전 삭제하시겠습니까?\n(auth.users + profiles 동시 삭제 · 복구 불가)")) return;
+
+      // Edge Function 경유로 service_role 권한 위임 (RLS 우회 + auth.users cascade)
       try {
-        const { error } = await supabase.from("profiles").delete().eq("id", delBtn.getAttribute("data-delete-user"));
-        if (error) throw error;
-        EM.toast("삭제 완료", "ok");
+        const { data: { session } } = await EM.client.auth.getSession();
+        if (!session?.access_token) {
+          EM.toast("관리자 세션이 만료되었습니다. 다시 로그인해주세요.", "warn");
+          return;
+        }
+        const resp = await fetch(`${EM.SUPABASE_URL}/functions/v1/em-admin-delete-user`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ user_id: targetId }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.ok) {
+          // Edge fn 실패 시 폴백: 직접 delete (관리자 RLS 가 허용된 상태)
+          const { error: directErr } = await supabase.from("profiles").delete().eq("id", targetId);
+          if (directErr) throw new Error(data.error || directErr.message);
+          EM.toast("프로필만 삭제 완료 (auth 계정은 잔존 가능)", "warn");
+        } else {
+          EM.toast(data.note ? `삭제 완료: ${data.note}` : "사용자 삭제 완료", "ok");
+        }
         loadUsers(); loadKpis();
       } catch (err) {
         EM.toast("삭제 실패: " + err.message, "err");

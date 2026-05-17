@@ -32,7 +32,12 @@
         <form id="signup-form" class="mt-6 space-y-4" novalidate>
           <div><label class="block text-sm font-medium text-slate-700">이름</label><input id="signup-name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
           <div><label class="block text-sm font-medium text-slate-700">이메일</label><input id="signup-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
-          <div><label class="block text-sm font-medium text-slate-700">연락처</label><input id="signup-phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">휴대폰 번호 <span class="text-red-500">*</span></label>
+            <input id="signup-phone" type="tel" required pattern="01[0-9][-\s]?\d{3,4}[-\s]?\d{4}" placeholder="010-0000-0000" inputmode="tel"
+                   class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            <p class="mt-1 text-xs text-slate-500">매칭 · 의뢰 알림을 위해 휴대폰 번호가 필수입니다. (예: 010-1234-5678)</p>
+          </div>
           <div>
             <label class="block text-sm font-medium text-slate-700">가입 유형</label>
             <select id="signup-role" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
@@ -85,8 +90,14 @@
           const password2 = document.getElementById("signup-password2").value;
           if (password.length < 6) { msg.textContent = "비밀번호는 6자 이상이어야 합니다."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
           if (password !== password2) { msg.textContent = "비밀번호가 일치하지 않습니다."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
+          // 휴대폰 번호 필수 + 한국 형식 검증
+          const phoneNorm = phone.replace(/[\s-]/g, "");
+          if (!/^01[0-9]\d{7,8}$/.test(phoneNorm)) {
+            msg.textContent = "휴대폰 번호 형식을 확인해주세요. (예: 010-1234-5678)";
+            msg.className = "text-sm text-center font-medium text-red-600"; return;
+          }
           try {
-            const result = await EM.signUp({ email, password, fullName: name, role });
+            const result = await EM.signUp({ email, password, fullName: name, role, phone: phoneNorm });
             // 세션이 즉시 발급된 경우만 client-side update 가능
             if (result?.session) {
               const { data: { user } } = await EM.client.auth.getUser();
