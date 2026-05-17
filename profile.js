@@ -45,14 +45,36 @@
     if (!user) { showGate(); return; }
     currentUser = user;
 
-    const { data: prof, error } = await supabase
+    let { data: prof, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
       .maybeSingle();
 
     if (error) { setMsg("프로필 조회 실패: " + error.message, "err"); }
-    currentProfile = prof || { id: user.id, email: user.email };
+
+    // 트리거가 어떤 이유로 실패했거나 RLS 가 막은 경우: 즉시 안전망으로 행 생성
+    if (!prof) {
+      const meta = user.user_metadata || {};
+      const seed = {
+        id: user.id,
+        email: user.email,
+        full_name: meta.full_name || (user.email || "").split("@")[0],
+        role: (meta.role === "lecturer" || meta.role === "admin") ? meta.role : "client",
+        membership: "basic",
+        phone: meta.phone || null,
+      };
+      const { data: created, error: upErr } = await supabase
+        .from("profiles")
+        .upsert(seed, { onConflict: "id" })
+        .select()
+        .maybeSingle();
+      if (upErr) {
+        setMsg("프로필 자동 생성 실패: " + upErr.message, "err");
+      }
+      prof = created || seed;
+    }
+    currentProfile = prof;
 
     // META
     $("meta-email").textContent = currentProfile.email || user.email;
@@ -114,12 +136,19 @@
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const url = data.publicUrl;
 
-      // profiles 에 즉시 반영
-      const { error: pErr } = await supabase
+      // profiles 에 즉시 반영 (.select() 로 RLS silent-fail 차단)
+      const { data: rows, error: pErr } = await supabase
         .from("profiles")
         .update({ avatar_url: url })
-        .eq("id", currentUser.id);
+        .eq("id", currentUser.id)
+        .select();
       if (pErr) throw pErr;
+      if (!rows || rows.length === 0) {
+        const { error: upErr } = await supabase
+          .from("profiles")
+          .upsert({ id: currentUser.id, email: currentUser.email, avatar_url: url }, { onConflict: "id" });
+        if (upErr) throw upErr;
+      }
 
       currentProfile.avatar_url = url;
       setAvatar(url);
@@ -136,7 +165,13 @@
   $("avatar-remove").addEventListener("click", async () => {
     if (!confirm("프로필 사진을 제거할까요?")) return;
     try {
-      await supabase.from("profiles").update({ avatar_url: null }).eq("id", currentUser.id);
+      const { data: rows, error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("id", currentUser.id)
+        .select();
+      if (error) throw error;
+      if (!rows || rows.length === 0) throw new Error("권한이 없거나 프로필을 찾을 수 없습니다.");
       currentProfile.avatar_url = null;
       setAvatar("");
       EM.toast("프로필 사진을 제거했습니다.", "ok");
@@ -176,13 +211,45 @@
     };
 
     setMsg("저장 중…", "ok");
+
+    // 세션 재검증 (저장 직전 토큰 만료 방지)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) {
+      setMsg("세션이 만료되었습니다. 다시 로그인해주세요.", "err");
+      setTimeout(() => (location.href = "./login.html"), 1500);
+      return;
+    }
+    if (session.user.id !== currentUser.id) currentUser = session.user;
+
     try {
-      const { error } = await supabase.from("profiles").update(payload).eq("id", currentUser.id);
+      // .select() 로 실제 업데이트된 행을 반환받아 RLS silent fail 차단
+      const { data: rows, error } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", currentUser.id)
+        .select();
       if (error) throw error;
-      Object.assign(currentProfile, payload);
+      if (!rows || rows.length === 0) {
+        // RLS 가 wite 를 거절 → 권한 문제. 트리거가 row 를 못 만들었을 가능성.
+        // 안전망: upsert 시도
+        const { data: upRows, error: upErr } = await supabase
+          .from("profiles")
+          .upsert({ id: currentUser.id, email: currentUser.email, ...payload }, { onConflict: "id" })
+          .select();
+        if (upErr) throw upErr;
+        if (!upRows || upRows.length === 0) {
+          throw new Error("프로필 권한이 없습니다. 로그인 상태를 확인해주세요.");
+        }
+        Object.assign(currentProfile, upRows[0]);
+      } else {
+        Object.assign(currentProfile, rows[0]);
+      }
       setMsg("✓ 프로필이 저장되었습니다.", "ok");
       EM.toast("프로필이 저장되었습니다.", "ok");
+      // DB 의 최종 상태로 폼 재로드 (트리거/제약/디폴트가 적용된 진실의 단일 소스)
+      await loadProfile();
     } catch (err) {
+      console.error("[profile save]", err);
       setMsg("저장 실패: " + err.message, "err");
     }
   });
