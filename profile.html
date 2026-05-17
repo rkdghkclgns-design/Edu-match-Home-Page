@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <link rel="icon" type="image/png" href="./assets/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/logo.png" />
+    <link rel="shortcut icon" href="./assets/logo.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>내 프로필 — Edu-match</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: {
+        brand:{50:"#eef2ff",100:"#e0e7ff",500:"#6366f1",600:"#4f46e5",700:"#4338ca"},
+        accent:{500:"#06b6d4",600:"#0891b2"},
+      } } } };
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js" defer></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-100">
+      <div class="max-w-5xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-center gap-2.5">
+          <img src="./assets/logo.png" alt="Edu-match" class="h-8 w-8 object-contain" />
+          <span class="text-xl font-extrabold tracking-tight text-brand-600">Edu-match</span>
+          <span class="text-xs font-medium text-slate-400 hidden sm:inline">profile</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="./index.html#jobs" class="hover:text-slate-900">공고</a>
+          <a href="./index.html#instructors" class="hover:text-slate-900">강사진</a>
+          <a href="./materials.html" class="hover:text-slate-900">자료실</a>
+          <a href="./register-lecture.html" class="hover:text-slate-900">강의 등록</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Auth gate -->
+    <div id="gate" class="hidden max-w-md mx-auto mt-20 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+      <div class="text-4xl">🔒</div>
+      <h2 class="mt-3 text-xl font-bold">로그인이 필요합니다</h2>
+      <p class="mt-1 text-sm text-slate-500">프로필 수정은 로그인 후 가능합니다.</p>
+      <div class="mt-6 flex gap-2 justify-center">
+        <a href="./login.html" class="px-5 py-2.5 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">로그인</a>
+        <a href="./signup.html" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200">회원가입</a>
+      </div>
+    </div>
+
+    <main id="content" class="hidden max-w-5xl mx-auto px-5 py-10">
+      <div class="text-center">
+        <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">My Profile</span>
+        <h1 class="mt-2 text-3xl font-extrabold">내 프로필 꾸미기</h1>
+        <p class="mt-3 text-slate-600">사진 · 주요 이력 · 어필 메시지를 채우면 Edu-match 강사진 카드에 그대로 노출됩니다.</p>
+      </div>
+
+      <form id="profile-form" class="mt-8 grid lg:grid-cols-[280px_1fr] gap-6">
+        <!-- LEFT: avatar + meta -->
+        <aside class="space-y-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm text-center">
+            <div class="relative inline-block">
+              <div id="avatar-wrap" class="w-40 h-40 mx-auto rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
+                <img id="avatar-img" src="" alt="" class="w-full h-full object-cover hidden" referrerpolicy="no-referrer"/>
+                <div id="avatar-placeholder" class="text-5xl text-slate-300">👤</div>
+              </div>
+              <label for="avatar-file" class="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center shadow-md cursor-pointer">
+                <span class="text-lg">📷</span>
+              </label>
+              <input id="avatar-file" type="file" accept="image/*" class="hidden" />
+            </div>
+            <div class="mt-3 text-sm text-slate-500" id="avatar-status">사진을 변경하려면 카메라 아이콘을 누르세요</div>
+            <button type="button" id="avatar-remove" class="mt-2 text-xs text-red-600 hover:text-red-800 hidden">사진 제거</button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500">멤버십</label>
+              <div class="mt-1 flex items-center gap-2">
+                <span id="meta-membership" class="text-sm font-bold">Basic</span>
+                <span id="meta-role" class="text-xs px-2 py-0.5 rounded-full"></span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500">가입 이메일</label>
+              <div id="meta-email" class="mt-1 text-sm break-all"></div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500">가입일</label>
+              <div id="meta-joined" class="mt-1 text-sm"></div>
+            </div>
+            <button type="button" id="btn-signout" class="w-full mt-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg">로그아웃</button>
+          </div>
+        </aside>
+
+        <!-- RIGHT: form fields -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">이름</label>
+              <input id="p-name" type="text" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">활동 분야 · 직함 <span class="text-xs text-slate-400">(예: AI · 머신러닝 전문 강사)</span></label>
+              <input id="p-title" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">휴대폰</label>
+              <input id="p-phone" type="tel" pattern="01[0-9][-\s]?\d{3,4}[-\s]?\d{4}" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">활동 지역</label>
+              <input id="p-location" type="text" placeholder="서울 · 경기 · 전국 출강 등" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">대표 카테고리</label>
+              <select id="p-category" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="">선택</option>
+                <option value="corporate-lecture">기업출강 워크샵</option>
+                <option value="teambuilding">팀빌딩 프로그램</option>
+                <option value="craft-experience">공방체험</option>
+                <option value="diy-kit">DIY키트</option>
+                <option value="it-ai">IT · AI 교육</option>
+                <option value="leadership">리더십 · 조직개발</option>
+                <option value="design">디자인 · UX</option>
+                <option value="data">데이터 분석</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">웹사이트 · 포트폴리오 URL</label>
+              <input id="p-website" type="url" placeholder="https://..." class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700">한 줄 소개 (Bio)</label>
+            <textarea id="p-bio" rows="2" maxlength="200" placeholder="강사진 카드에 표시되는 짧은 소개 (200자 이내)" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700">주요 이력 · 경력 <span class="text-xs text-slate-400">(줄바꿈으로 항목 구분)</span></label>
+            <textarea id="p-career" rows="6" placeholder="예)
+- 前 네이버 AI Lab 연구원
+- 카이스트 AI 대학원 졸업
+- 삼성전자 사내 GPT 가이드라인 개발
+- 누적 강의 1,200시간 / 수강자 평점 4.9" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300 font-mono"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700">어필 메시지 <span class="text-xs text-slate-400">(의뢰자에게 전달되는 핵심 메시지)</span></label>
+            <textarea id="p-appeal" rows="4" maxlength="400" placeholder="예)
+'생성형 AI 를 사내 업무 자동화에 곧바로 적용할 수 있는 실전 워크숍을 운영합니다. 부서별 맞춤 커리큘럼 조율 가능, 종료 후 4주간 사후 멘토링까지 포함합니다.'" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700">전문 키워드 <span class="text-xs text-slate-400">(쉼표 구분 · 최대 8개)</span></label>
+            <input id="p-expertise" type="text" placeholder="Python, LLM, 프롬프트, 데이터 분석" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">경력 (년)</label>
+              <input id="p-years" type="number" min="0" max="60" value="0" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">매칭용 연락 이메일 <span class="text-xs text-slate-400">(공개됨)</span></label>
+              <input id="p-contact-email" type="email" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <p class="text-xs text-slate-500">저장 후 즉시 강사진 섹션에 반영됩니다. (관리자 승인 강사만 노출)</p>
+            <button type="submit" class="px-6 py-3 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 shadow-sm">프로필 저장</button>
+          </div>
+          <div id="save-msg" class="text-sm text-center font-medium"></div>
+        </section>
+      </form>
+    </main>
+
+    <footer class="max-w-5xl mx-auto px-5 py-10 text-center text-sm text-slate-500">© <span id="year">2026</span> Edu-match Platform</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
+    <script src="./profile.js" defer></script>
+  </body>
+</html>

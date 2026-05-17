@@ -655,18 +655,27 @@
   }
   qsa("[data-auth-tab]").forEach((t) => t.addEventListener("click", () => { authMode = t.getAttribute("data-auth-tab"); syncAuthMode(); }));
 
+  let __isLoggedIn = false;
   async function refreshAuthUI() {
     const prof = await EM.getCurrentProfile();
-    if (!prof || !prof.id) { authBtn.textContent = "로그인"; return; }
+    __isLoggedIn = !!(prof && prof.id);
+    if (!__isLoggedIn) { authBtn.textContent = "로그인"; authBtn.title = ""; return; }
     const badge = prof.membership === "pro"
       ? '<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-yellow-900 text-[10px] font-bold">PRO</span>'
       : "";
-    authBtn.innerHTML = `${escape(prof.full_name || prof.email)}${badge} · 로그아웃`;
+    authBtn.innerHTML = `${escape(prof.full_name || prof.email)}${badge}`;
+    authBtn.title = "클릭하여 프로필 꾸미기 (Shift+클릭: 로그아웃)";
   }
-  authBtn.addEventListener("click", async () => {
-    const prof = await EM.getCurrentProfile();
-    if (prof && prof.id) { await EM.signOut(); EM.toast("로그아웃 완료", "ok"); refreshAuthUI(); return; }
-    openModal("modal-auth"); syncAuthMode();
+  authBtn.addEventListener("click", async (e) => {
+    if (!__isLoggedIn) {
+      openModal("modal-auth"); syncAuthMode();
+      return;
+    }
+    if (e.shiftKey) {
+      await EM.signOut(); EM.toast("로그아웃 완료", "ok"); refreshAuthUI(); return;
+    }
+    // 일반 클릭 → 프로필 꾸미기 페이지
+    location.href = "./profile.html";
   });
   authForm.addEventListener("submit", async (e) => {
     e.preventDefault();
