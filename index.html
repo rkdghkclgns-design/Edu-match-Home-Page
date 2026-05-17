@@ -73,33 +73,69 @@
       <!-- HERO -->
       <section class="relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-cyan-50"></div>
+        <!-- 배경 데코 블롭 -->
+        <div class="hidden lg:block absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full bg-gradient-to-br from-brand-200/40 to-cyan-200/40 blur-3xl pointer-events-none"></div>
         <div class="relative max-w-6xl mx-auto px-5 py-20 lg:py-24">
-          <div class="max-w-2xl">
-            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
-              <span class="w-2 h-2 rounded-full bg-brand-500"></span>
-              강사 중심 매칭 · 품앗이 5% 쉐어 · 매칭 알선 수수료 5%
-            </span>
-            <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold tracking-tight">
-              전문 강사를 위한<br/>
-              <span class="bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-transparent">강의 공고 허브</span>
-            </h1>
-            <p class="mt-5 text-lg text-slate-600 leading-relaxed">
-              공고 탐색 · 지원 · 품앗이 쉐어 · 자료실 · PBL/슬라이드 의뢰까지 한 곳에서. 강사가 직접 진행하는 매칭입니다.
-          <br/><span class="text-xs text-amber-700">※ 현재 베타 — 결제 · Pro 멤버십은 정식 오픈 시 활성화됩니다.</span>
-            </p>
-            <div class="mt-8 flex flex-wrap gap-3">
-              <a href="#jobs" class="inline-flex items-center px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition shadow-sm">공고 탐색 →</a>
-              <!-- BETA: 결제/멤버십 CTA 임시 숨김 -->
-              <a href="#pricing" data-paid style="display:none" class="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 hover:border-slate-300 transition">Pro 멤버십</a>
-              <a href="./register-lecture.html" class="inline-flex items-center px-6 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition">강의 등록 (의뢰자)</a>
+          <div class="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <!-- LEFT: copy + CTA + KPI -->
+            <div class="lg:col-span-7">
+              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                강사 중심 매칭 · 품앗이 5% 쉐어 · 매칭 알선 수수료 5%
+              </span>
+              <h1 class="mt-4 text-4xl lg:text-5xl font-extrabold tracking-tight">
+                전문 강사를 위한<br/>
+                <span class="bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-transparent">강의 공고 허브</span>
+              </h1>
+              <p class="mt-5 text-lg text-slate-600 leading-relaxed">
+                공고 탐색 · 지원 · 품앗이 쉐어 · 자료실 · PBL/슬라이드 의뢰까지 한 곳에서. 강사가 직접 진행하는 매칭입니다.
+                <br/><span class="text-xs text-amber-700">※ 현재 베타 — 결제 · Pro 멤버십은 정식 오픈 시 활성화됩니다.</span>
+              </p>
+              <div class="mt-8 flex flex-wrap gap-3">
+                <a href="#jobs" class="inline-flex items-center px-6 py-3 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700 transition shadow-sm">공고 탐색 →</a>
+                <!-- BETA: 결제/멤버십 CTA 임시 숨김 -->
+                <a href="#pricing" data-paid style="display:none" class="inline-flex items-center px-6 py-3 bg-white text-slate-900 font-semibold rounded-lg border border-slate-200 hover:border-slate-300 transition">Pro 멤버십</a>
+                <a href="./register-lecture.html" class="inline-flex items-center px-6 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition">강의 등록 (의뢰자)</a>
+              </div>
+              <dl class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
+                <div><dt class="text-xs text-slate-500">활동 강사</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-lecturers">—</dd></div>
+                <!-- BETA: Pro 강사 KPI 임시 숨김 -->
+                <div data-paid style="display:none"><dt class="text-xs text-slate-500">Pro 강사</dt><dd class="text-2xl font-bold text-brand-600 mt-1" id="kpi-pros">—</dd></div>
+                <div><dt class="text-xs text-slate-500">공개 공고</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-jobs">—</dd></div>
+                <div><dt class="text-xs text-slate-500">품앗이 공고</dt><dd class="text-2xl font-bold text-yellow-600 mt-1" id="kpi-share">—</dd></div>
+              </dl>
             </div>
-            <dl class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
-              <div><dt class="text-xs text-slate-500">활동 강사</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-lecturers">—</dd></div>
-              <!-- BETA: Pro 강사 KPI 임시 숨김 -->
-              <div data-paid style="display:none"><dt class="text-xs text-slate-500">Pro 강사</dt><dd class="text-2xl font-bold text-brand-600 mt-1" id="kpi-pros">—</dd></div>
-              <div><dt class="text-xs text-slate-500">공개 공고</dt><dd class="text-2xl font-bold text-slate-900 mt-1" id="kpi-jobs">—</dd></div>
-              <div><dt class="text-xs text-slate-500">품앗이 공고</dt><dd class="text-2xl font-bold text-yellow-600 mt-1" id="kpi-share">—</dd></div>
-            </dl>
+
+            <!-- RIGHT: brand logo visual -->
+            <div class="lg:col-span-5 flex items-center justify-center">
+              <div class="relative w-full max-w-md">
+                <!-- 카드 배경 -->
+                <div class="absolute inset-0 bg-gradient-to-br from-brand-100/70 via-white to-cyan-100/60 rounded-[2.5rem] rotate-3 shadow-xl"></div>
+                <div class="absolute inset-0 bg-white/60 backdrop-blur rounded-[2.5rem] -rotate-2 shadow-md"></div>
+                <!-- 로고 카드 -->
+                <div class="relative bg-white rounded-[2.5rem] p-10 lg:p-12 shadow-2xl ring-1 ring-slate-100 flex flex-col items-center">
+                  <img src="./assets/logo.png" alt="Edu-match" class="w-56 lg:w-64 h-auto object-contain drop-shadow-md" />
+                  <div class="mt-4 text-center">
+                    <div class="text-xs font-bold tracking-widest text-brand-600">EDU · MATCH</div>
+                    <div class="mt-1 text-sm text-slate-500">강사와 강의 공고를 잇다</div>
+                  </div>
+                  <!-- 미니 인디케이터 -->
+                  <div class="mt-6 flex items-center gap-2 text-[11px] font-semibold">
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">● 베타 운영 중</span>
+                    <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">수수료 무료</span>
+                  </div>
+                </div>
+                <!-- 떠다니는 작은 배지 -->
+                <div class="hidden lg:flex absolute -left-6 top-10 items-center gap-2 px-3 py-2 bg-white rounded-xl shadow-lg ring-1 ring-slate-100">
+                  <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm">📌</div>
+                  <div class="text-xs"><div class="font-bold">알선 수수료</div><div class="text-slate-500">정식 오픈 시 5%</div></div>
+                </div>
+                <div class="hidden lg:flex absolute -right-4 bottom-6 items-center gap-2 px-3 py-2 bg-white rounded-xl shadow-lg ring-1 ring-slate-100">
+                  <div class="w-8 h-8 rounded-lg bg-yellow-50 text-yellow-700 flex items-center justify-center text-sm">🤝</div>
+                  <div class="text-xs"><div class="font-bold">품앗이</div><div class="text-slate-500">강사간 5% 쉐어</div></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
