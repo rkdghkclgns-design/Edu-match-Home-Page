@@ -154,7 +154,17 @@
           ${u.phone ? `<div class="text-xs text-slate-400 mt-0.5">📱 ${escape(u.phone)}</div>` : ""}
         </td>
         <td class="px-4 py-3 text-slate-600">${escape(u.email)}</td>
-        <td class="px-4 py-3"><span class="text-xs font-semibold px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'lecturer' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'}">${escape(u.role || "—")}</span></td>
+        <td class="px-4 py-3">
+          <select data-update-role data-id="${escape(u.id)}" data-prev="${escape(u.role || "client")}"
+            class="rounded-lg border px-2 py-1 text-xs font-semibold outline-none focus:ring-2 focus:ring-brand-300
+                   ${u.role === 'admin' ? 'border-red-200 bg-red-50 text-red-700' :
+                     u.role === 'lecturer' ? 'border-blue-200 bg-blue-50 text-blue-700' :
+                     'border-slate-200 bg-slate-50 text-slate-700'}">
+            <option value="client"   ${u.role === 'client'   ? 'selected' : ''}>client</option>
+            <option value="lecturer" ${u.role === 'lecturer' ? 'selected' : ''}>lecturer</option>
+            <option value="admin"    ${u.role === 'admin'    ? 'selected' : ''}>admin</option>
+          </select>
+        </td>
         <td class="px-4 py-3">
           <select data-update-membership data-id="${escape(u.id)}" class="rounded-lg border border-slate-200 px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-brand-300">
             <option value="basic" ${u.membership === 'basic' ? 'selected' : ''}>Basic</option>
@@ -177,21 +187,69 @@
   });
 
   document.body.addEventListener("change", async (e) => {
-    const sel = e.target.closest("[data-update-membership]");
-    if (!sel) return;
-    const id = sel.getAttribute("data-id");
-    const prev = sel.dataset.prev || "basic";
-    try {
-      const patch = { membership: sel.value };
-      if (sel.value === "pro") patch.pro_since = new Date().toISOString();
-      const { error } = await supabase.from("profiles").update(patch).eq("id", id);
-      if (error) throw error;
-      EM.toast(`등급 업데이트: ${sel.value.toUpperCase()}`, "ok");
-      sel.dataset.prev = sel.value;
-      loadKpis();
-    } catch (err) {
-      EM.toast("업데이트 실패: " + err.message, "err");
-      sel.value = prev;
+    const memSel = e.target.closest("[data-update-membership]");
+    if (memSel) {
+      const id = memSel.getAttribute("data-id");
+      const prev = memSel.dataset.prev || "basic";
+      try {
+        const patch = { membership: memSel.value };
+        if (memSel.value === "pro") patch.pro_since = new Date().toISOString();
+        const { data: rows, error } = await supabase.from("profiles").update(patch).eq("id", id).select();
+        if (error) throw error;
+        if (!rows?.length) throw new Error("권한이 없거나 대상이 없습니다.");
+        EM.toast(`등급 업데이트: ${memSel.value.toUpperCase()}`, "ok");
+        memSel.dataset.prev = memSel.value;
+        loadKpis();
+      } catch (err) {
+        EM.toast("업데이트 실패: " + err.message, "err");
+        memSel.value = prev;
+      }
+      return;
+    }
+
+    const roleSel = e.target.closest("[data-update-role]");
+    if (roleSel) {
+      const id = roleSel.getAttribute("data-id");
+      const prev = roleSel.dataset.prev || "client";
+      const next = roleSel.value;
+
+      // 안전 가드 1: 자기 자신을 admin → 비-admin 으로 변경 금지 (락아웃 방지)
+      const myProf = await EM.getCurrentProfile();
+      if (myProf?.id === id && prev === "admin" && next !== "admin") {
+        EM.toast("본인의 admin 권한을 해제할 수 없습니다.", "warn");
+        roleSel.value = prev;
+        return;
+      }
+
+      // 안전 가드 2: admin 승격 시 명시적 확인
+      if (next === "admin" && prev !== "admin") {
+        if (!confirm("이 사용자를 관리자(admin)로 승격합니다.\n모든 사용자/공고/매칭 데이터를 관리할 수 있게 됩니다. 진행할까요?")) {
+          roleSel.value = prev;
+          return;
+        }
+      }
+
+      try {
+        const { data: rows, error } = await supabase
+          .from("profiles")
+          .update({ role: next })
+          .eq("id", id)
+          .select();
+        if (error) throw error;
+        if (!rows?.length) throw new Error("권한이 없거나 대상이 없습니다.");
+        EM.toast(`유형 변경: ${prev} → ${next}`, "ok");
+        roleSel.dataset.prev = next;
+        // 색상 클래스도 즉시 업데이트
+        roleSel.className = "rounded-lg border px-2 py-1 text-xs font-semibold outline-none focus:ring-2 focus:ring-brand-300 " +
+          (next === "admin" ? "border-red-200 bg-red-50 text-red-700" :
+           next === "lecturer" ? "border-blue-200 bg-blue-50 text-blue-700" :
+           "border-slate-200 bg-slate-50 text-slate-700");
+        loadKpis();
+      } catch (err) {
+        EM.toast("유형 변경 실패: " + err.message, "err");
+        roleSel.value = prev;
+      }
+      return;
     }
   });
 
