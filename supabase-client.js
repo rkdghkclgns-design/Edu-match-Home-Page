@@ -109,8 +109,32 @@
 
   async function signIn({ email, password }) {
     const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data;
+    if (!error) return data;
+
+    // 자동 복구: 'Email not confirmed' 에러 → em-confirm-email 호출 후 재시도
+    if (/email.*not.*confirm/i.test(error.message || "")) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/functions/v1/em-confirm-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: PUBLISHABLE_KEY,
+            Authorization: `Bearer ${PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ email }),
+        });
+        const r = await resp.json().catch(() => ({}));
+        if (resp.ok && r.ok) {
+          const retry = await client.auth.signInWithPassword({ email, password });
+          if (retry.error) throw retry.error;
+          return retry.data;
+        }
+        throw new Error(r?.error || "이메일 인증 자동 복구에 실패했습니다. 관리자에게 문의해주세요.");
+      } catch (e) {
+        throw e;
+      }
+    }
+    throw error;
   }
 
   async function signOut() {
