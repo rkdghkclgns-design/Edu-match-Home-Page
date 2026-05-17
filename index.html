@@ -160,7 +160,7 @@
           <div>
             <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Open Positions</span>
             <h2 class="mt-2 text-3xl font-extrabold">지금 지원 가능한 공고</h2>
-            <p class="mt-2 text-slate-600">⭐ PREMIUM / 🤝 품앗이 10% / ✈ 출장비 / 💰 시간당·과정당 단가 표기.</p>
+            <p class="mt-2 text-slate-600">⭐ PREMIUM / 🤝 품앗이 5% / ✈ 출장비 / 💰 시간당·과정당 단가 표기.</p>
           </div>
         </div>
 
@@ -298,8 +298,11 @@
         </div>
         <form id="auth-form" class="mt-5 space-y-4">
           <div class="hidden" data-auth-only="signup">
-            <label class="block text-sm font-medium text-slate-700">이름</label>
-            <input name="full_name" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
+            <label class="block text-sm font-medium text-slate-700">이름 <span class="text-red-500">*</span></label>
+            <input name="full_name" type="text" minlength="2" maxlength="40"
+                   pattern="[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\.\-_'()]+"
+                   title="한글·영문·숫자만. 특수문자/이모지 사용 불가."
+                   class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
           </div>
           <div class="hidden" data-auth-only="signup">
             <label class="block text-sm font-medium text-slate-700">가입 유형</label>

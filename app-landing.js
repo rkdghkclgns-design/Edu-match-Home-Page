@@ -682,6 +682,12 @@
     const fd = new FormData(authForm);
     try {
       if (authMode === "signup") {
+        const fullName = String(fd.get("full_name") || "").trim();
+        const NAME_OK = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\.\-_'()]{2,40}$/;
+        const NAME_BAD = /[�<>{}\[\]\\\/\^\$\*\+=|@#!?]/;
+        if (!NAME_OK.test(fullName) || NAME_BAD.test(fullName)) {
+          return EM.toast("이름에 특수문자·이모지는 사용할 수 없습니다. (한글·영문·숫자만)", "warn");
+        }
         const phone = String(fd.get("phone") || "").replace(/[\s-]/g, "");
         if (!/^01[0-9]\d{7,8}$/.test(phone)) {
           return EM.toast("휴대폰 번호 형식을 확인해주세요. (010-1234-5678)", "warn");
@@ -689,11 +695,11 @@
         await EM.signUp({
           email: fd.get("email"),
           password: fd.get("password"),
-          fullName: fd.get("full_name"),
+          fullName,
           role: fd.get("role"),
           phone,
         });
-        EM.toast("회원가입 완료. 이메일 인증 후 로그인해주세요.", "ok");
+        EM.toast("회원가입 완료. 자동 로그인 되었습니다.", "ok");
       } else {
         await EM.signIn({ email: fd.get("email"), password: fd.get("password") });
         EM.toast("로그인 성공", "ok");

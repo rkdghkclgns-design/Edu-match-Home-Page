@@ -30,7 +30,14 @@
         <p class="mt-1 text-sm text-slate-500">강사 회원으로 가입하면 공고 지원 · 자료실 · 문서 의뢰 모두 이용할 수 있습니다.</p>
 
         <form id="signup-form" class="mt-6 space-y-4" novalidate>
-          <div><label class="block text-sm font-medium text-slate-700">이름</label><input id="signup-name" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">이름 <span class="text-red-500">*</span></label>
+            <input id="signup-name" required minlength="2" maxlength="40"
+                   pattern="[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\.\-_'()]+"
+                   title="한글 · 영문 · 숫자만 사용해주세요. 이모지/특수문자는 사용할 수 없습니다."
+                   class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            <p class="mt-1 text-xs text-slate-500">한글 · 영문 · 숫자만 입력 가능합니다.</p>
+          </div>
           <div><label class="block text-sm font-medium text-slate-700">이메일</label><input id="signup-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/></div>
           <div>
             <label class="block text-sm font-medium text-slate-700">휴대폰 번호 <span class="text-red-500">*</span></label>
@@ -90,6 +97,14 @@
           const password2 = document.getElementById("signup-password2").value;
           if (password.length < 6) { msg.textContent = "비밀번호는 6자 이상이어야 합니다."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
           if (password !== password2) { msg.textContent = "비밀번호가 일치하지 않습니다."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
+          // 이름 유효성: 한글/영문/숫자/공백/일부 부호만 허용 + 특수문자/이모지/HTML 메타 차단
+          const NAME_OK = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\.\-_'()]{2,40}$/;
+          const NAME_BAD = /[�<>{}\[\]\\\/\^\$\*\+=|@#!?]/;
+          if (!name || name.length < 2) { msg.textContent = "이름은 2자 이상 입력해주세요."; msg.className = "text-sm text-center font-medium text-red-600"; return; }
+          if (NAME_BAD.test(name) || !NAME_OK.test(name)) {
+            msg.textContent = "이름에 특수문자·이모지는 사용할 수 없습니다. (한글·영문·숫자만)";
+            msg.className = "text-sm text-center font-medium text-red-600"; return;
+          }
           // 휴대폰 번호 필수 + 한국 형식 검증
           const phoneNorm = phone.replace(/[\s-]/g, "");
           if (!/^01[0-9]\d{7,8}$/.test(phoneNorm)) {
