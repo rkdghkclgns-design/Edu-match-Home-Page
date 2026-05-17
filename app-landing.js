@@ -48,9 +48,9 @@
       return m ? pushToken(`<div class="aspect-video my-3 rounded-xl overflow-hidden border border-slate-100"><iframe src="https://www.youtube.com/embed/${m[1]}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`) : url;
     });
 
-    // 이미지: ![alt](https://...)
+    // 이미지: ![alt](https://...) - URL 도 escape 하여 attribute 탈출 차단
     t = t.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, (_, alt, url) =>
-      pushToken(`<figure class="my-3"><img src="${url}" alt="${escape(alt)}" class="rounded-xl w-full max-h-96 object-cover border border-slate-100" loading="lazy" referrerpolicy="no-referrer"/>${alt ? `<figcaption class="mt-1 text-xs text-slate-500">${escape(alt)}</figcaption>` : ""}</figure>`)
+      pushToken(`<figure class="my-3"><img src="${escape(url)}" alt="${escape(alt)}" class="rounded-xl w-full max-h-96 object-cover border border-slate-100" loading="lazy" referrerpolicy="no-referrer"/>${alt ? `<figcaption class="mt-1 text-xs text-slate-500">${escape(alt)}</figcaption>` : ""}</figure>`)
     );
 
     // 2) 나머지 텍스트는 escape 후 마크다운 치환
@@ -139,6 +139,7 @@
         .from("job_postings")
         .select("*")
         .eq("status", "open")
+        .eq("match_status", "open")  // 매칭 완료 공고는 공개 그리드에서 항상 제외
         .order("is_premium", { ascending: false })
         .order("is_urgent", { ascending: false })
         .order("created_at", { ascending: false })
@@ -504,6 +505,7 @@
       .from("job_postings")
       .select("*")
       .or(`posted_by_instructor_id.eq.${ins.id},posted_by_email.eq.${ins.contact_email || ins.email || "__none__"}`)
+      .eq("status", "open")
       .order("created_at", { ascending: false });
 
     const pro = ins.membership === "pro";
@@ -610,8 +612,13 @@
     }
   });
 
-  // ---------- Pro upgrade ----------
+  // ---------- Pro upgrade (BETA: 결제 미연동 · 호출 시 즉시 안내) ----------
+  const BETA_PAID_DISABLED = true;
   qs("#btn-upgrade-pro").addEventListener("click", async () => {
+    if (BETA_PAID_DISABLED) {
+      EM.toast("결제 · Pro 멤버십은 정식 오픈 시 활성화됩니다. 현재는 공고 등록/매칭만 사용 가능합니다.", "warn");
+      return;
+    }
     const prof = await EM.getCurrentProfile();
     if (!prof || !prof.id) {
       EM.toast("Pro 구독은 로그인 후 가능합니다.", "warn");

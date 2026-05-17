@@ -22,13 +22,15 @@
   function closeGate() { gate.classList.add("hidden"); gate.classList.remove("flex"); }
 
   async function assertAdmin() {
-    if (localStorage.getItem(DEMO_FLAG) === "true") {
-      qs("#me-label").textContent = "데모 관리자";
+    // 데모 플래그는 sessionStorage 로만 유지 (탭 종료 시 만료) - 베타용 우회 게이트
+    if (sessionStorage.getItem(DEMO_FLAG) === "true") {
+      qs("#me-label").textContent = "데모 관리자 (세션 한정)";
       return true;
     }
     const prof = await EM.getCurrentProfile();
-    if (prof && prof.id && (prof.role === "admin" || prof.membership === "pro")) {
-      qs("#me-label").textContent = `${prof.full_name || prof.email}${prof.role === "admin" ? " · admin" : ""}`;
+    // role === 'admin' 만 통과. (membership=pro 는 단순 결제 상태일 뿐 권한 없음)
+    if (prof && prof.id && prof.role === "admin") {
+      qs("#me-label").textContent = `${prof.full_name || prof.email} · admin`;
       return true;
     }
     return false;
@@ -50,14 +52,14 @@
   });
 
   qs("#gate-demo").addEventListener("click", () => {
-    localStorage.setItem(DEMO_FLAG, "true");
-    qs("#me-label").textContent = "데모 관리자";
+    sessionStorage.setItem(DEMO_FLAG, "true");
+    qs("#me-label").textContent = "데모 관리자 (세션 한정)";
     closeGate();
     bootstrap();
   });
 
   qs("#btn-logout").addEventListener("click", async () => {
-    localStorage.removeItem(DEMO_FLAG);
+    sessionStorage.removeItem(DEMO_FLAG);
     try { await EM.signOut(); } catch (e) {}
     location.reload();
   });

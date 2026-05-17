@@ -294,12 +294,11 @@
     }
     const travel = getTravelFee();
 
+    // 공개 description 에는 담당자 개인정보 미포함 (강사 쉐어 안내만 유지)
     const descBase = $("j-desc").value.trim();
     const description = [
       descBase,
-      "",
-      `— 담당자: ${contact} (${email}${phone ? " · " + phone : ""})`,
-      isShared ? `— 강사 등록 · 수익 5% 쉐어 → ${shareName} (${shareEmail})` : "",
+      isShared ? `\n— 강사 등록 · 수익 5% 쉐어 → ${shareName}` : "",
     ].filter(Boolean).join("\n");
 
     const budgetDisplay = btype === "negotiable" ? "협의"
@@ -309,6 +308,9 @@
     const payload = {
       title: $("j-title").value.trim(),
       description,
+      // 담당자 정보는 별도 컬럼으로만 저장 (description 에 노출 X)
+      posted_by_email: isShared ? shareEmail : email,
+      posted_by_name: isShared ? shareName : contact,
       organization: $("r-org").value.trim(),
       category: $("j-category").value,
       format: $("j-format").value,
@@ -324,8 +326,7 @@
       platform_fee_percent: 5,
       source: isShared ? "instructor-shared" : "client-registered",
       revenue_share_percent: isShared ? 5 : 0,
-      posted_by_name: isShared ? shareName : null,
-      posted_by_email: isShared ? shareEmail : null,
+      // posted_by_name / posted_by_email 은 payload 상단에서 이미 설정됨 (담당자 또는 쉐어 강사)
       travel_fee_region: travel.region,
       travel_fee_amount: travel.amount,
       min_price_ref_url: "https://www.hrd.go.kr",

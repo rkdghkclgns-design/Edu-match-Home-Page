@@ -7,8 +7,6 @@
 
 (function () {
   const SUPABASE_URL = "https://pkwbqbxuujpcvndpacsc.supabase.co";
-  const SUPABASE_ANON_KEY = "sb-publishable-key-placeholder";
-
   // Publishable key (공개용 anon key) — RLS 가 안전장치 역할
   const PUBLISHABLE_KEY = "sb_publishable_09z4u2K4XVU5fUl2e532Fg_kqct0zez";
 
@@ -51,26 +49,38 @@
   }
 
   // Auth 편의 함수
+  // - profiles 행은 auth.users insert 트리거(`handle_new_auth_user`)가 자동 생성
+  // - 세션이 즉시 발급되면(이메일 확인 비활성) 클라이언트에서도 한 번 더 upsert 해 최신값 보장
+  // - 이메일 확인이 켜진 환경에서는 인증 완료 후 로그인 시점에 풀필 됨
   async function signUp({ email, password, fullName, role }) {
+    const safeRole = (role === "lecturer" || role === "client" || role === "admin") ? role : "client";
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, role } },
+      options: { data: { full_name: fullName || "", role: safeRole } },
     });
     if (error) throw error;
 
-    // profiles upsert (id = auth.users.id)
-    if (data.user) {
+    // 즉시 로그인된 경우만 client-side upsert (RLS: auth.uid() = id 필요)
+    // 트리거가 이미 row 를 생성했더라도 onConflict 로 안전하게 갱신
+    if (data?.session && data.user) {
       const { error: pErr } = await client.from("profiles").upsert({
         id: data.user.id,
         email,
-        full_name: fullName,
-        role: role || "client",
+        full_name: fullName || "",
+        role: safeRole,
         membership: "basic",
       }, { onConflict: "id" });
-      if (pErr) console.warn("profile upsert warning:", pErr);
+      if (pErr) {
+        toast("프로필 동기화 실패: " + pErr.message + " (관리자 문의 필요)", "warn");
+      }
     }
-    return data;
+
+    return {
+      ...data,
+      // UI 가 분기 처리할 수 있도록 명확한 플래그 제공
+      needsEmailConfirmation: !data?.session && !!data?.user,
+    };
   }
 
   async function signIn({ email, password }) {
@@ -95,8 +105,12 @@
     return data || { id: user.id, email: user.email, full_name: "", role: "client", membership: "basic" };
   }
 
-  // 멤버십 업그레이드 (Pro 구독)
+  // 멤버십 업그레이드 (Pro 구독) — BETA 에서는 호출 자체를 차단
+  // 운영 시에는 Edge Function 에서 결제 검증 후 service_role 로 update 하는 흐름으로 교체
   async function upgradeToPro() {
+    if (window.EM_BETA_PAID_DISABLED === true) {
+      throw new Error("결제 기능은 정식 오픈 시 활성화됩니다.");
+    }
     const { data: { user } } = await client.auth.getUser();
     if (!user) throw new Error("로그인이 필요합니다.");
     const { data, error } = await client
@@ -109,9 +123,19 @@
     return data;
   }
 
-  // 이력서 업로드 → public URL
+  // 이력서 업로드 → public URL (MIME guard 포함)
+  const RESUME_MIME_ALLOW = new Set([
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg", "image/jpg", "image/png",
+  ]);
   async function uploadResume(file, applicantEmail) {
     if (!file) return null;
+    if (file.size > 10 * 1024 * 1024) throw new Error("파일은 10MB 이하만 업로드 가능합니다.");
+    if (file.type && !RESUME_MIME_ALLOW.has(file.type)) {
+      throw new Error("PDF · DOC · DOCX · JPG · PNG 형식만 업로드 가능합니다.");
+    }
     const safeEmail = (applicantEmail || "anon").replace(/[^a-z0-9._-]/gi, "_").slice(0, 40);
     const ext = (file.name.split(".").pop() || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "pdf";
     const path = `${new Date().toISOString().slice(0, 10)}/${safeEmail}-${Date.now().toString(36)}.${ext}`;
@@ -125,10 +149,79 @@
     return data.publicUrl;
   }
 
+  // =========================================================
+  // 베타 안내 배너 (오늘 하루 보지 않기)
+  // =========================================================
+  const BETA_DISMISS_KEY = "em_beta_dismissed_date";
+  function todayKey() { return new Date().toISOString().slice(0, 10); }
+
+  function mountBetaBanner() {
+    if (document.getElementById("em-beta-banner")) return;
+    if (localStorage.getItem(BETA_DISMISS_KEY) === todayKey()) return;
+
+    const wrap = document.createElement("div");
+    wrap.id = "em-beta-banner";
+    wrap.style.cssText = [
+      "position:fixed", "top:0", "left:0", "right:0", "z-index:60",
+      "background:linear-gradient(90deg,#4f46e5 0%,#0891b2 100%)",
+      "color:#fff", "font-family:Pretendard,system-ui,sans-serif",
+      "padding:10px 16px", "font-size:13px", "font-weight:600",
+      "display:flex", "align-items:center", "gap:12px",
+      "box-shadow:0 2px 10px rgba(0,0,0,0.10)",
+    ].join(";");
+    wrap.innerHTML = `
+      <span style="background:rgba(255,255,255,0.18);padding:3px 8px;border-radius:999px;font-weight:800;letter-spacing:0.05em;font-size:11px;">BETA</span>
+      <span style="flex:1;line-height:1.5;">
+        현재 Edu-match 는 <strong>베타 운영 중</strong> 입니다 — <strong>강의 공고 등록 · 강사 매칭</strong> 기능만 제공됩니다. 결제 · Pro 멤버십 · 정산 기능은 정식 오픈 시 공개됩니다.
+      </span>
+      <button id="em-beta-dismiss" type="button" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">오늘 하루 보지 않기</button>
+      <button id="em-beta-close" type="button" aria-label="닫기" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;line-height:1;padding:4px 8px;">×</button>
+    `;
+    document.body.prepend(wrap);
+
+    // 콘텐츠가 가려지지 않도록 본문 상단 패딩 추가 (헤더 sticky 와 함께 동작)
+    // 첫 페인트 후 실제 높이로 재조정 (offsetHeight 가 0 인 초기 측정 보완)
+    let h = wrap.offsetHeight;
+    if (!h) h = 56; // 안전 기본값
+    document.body.style.paddingTop = h + "px";
+    requestAnimationFrame(() => {
+      const real = wrap.offsetHeight || h;
+      document.body.style.paddingTop = real + "px";
+      document.querySelectorAll("header.sticky, header.fixed").forEach((el) => { el.style.top = real + "px"; });
+    });
+    // sticky 헤더가 있으면 top 위치를 배너 아래로 내림
+    document.querySelectorAll("header.sticky, header.fixed").forEach((el) => {
+      el.dataset.emOriginalTop = el.style.top || "";
+      el.style.top = h + "px";
+    });
+
+    function close(persist) {
+      wrap.remove();
+      document.body.style.paddingTop = "";
+      document.querySelectorAll("header.sticky, header.fixed").forEach((el) => {
+        el.style.top = el.dataset.emOriginalTop || "";
+      });
+      if (persist) localStorage.setItem(BETA_DISMISS_KEY, todayKey());
+    }
+    wrap.querySelector("#em-beta-dismiss").addEventListener("click", () => {
+      close(true);
+      toast("오늘 하루 베타 배너를 숨깁니다.", "ok");
+    });
+    wrap.querySelector("#em-beta-close").addEventListener("click", () => close(false));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountBetaBanner);
+  } else {
+    mountBetaBanner();
+  }
+
+  // BETA: 결제 비활성 플래그 (upgradeToPro 가 참조)
+  window.EM_BETA_PAID_DISABLED = true;
+
   window.EM = {
     client,
     SUPABASE_URL,
-    PUBLISHABLE_KEY,
     toast,
     signUp,
     signIn,
@@ -136,5 +229,6 @@
     getCurrentProfile,
     upgradeToPro,
     uploadResume,
+    mountBetaBanner,
   };
 })();
