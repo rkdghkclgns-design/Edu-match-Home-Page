@@ -52,40 +52,58 @@
   // - profiles 행은 auth.users insert 트리거(`handle_new_auth_user`)가 자동 생성
   // - 세션이 즉시 발급되면(이메일 확인 비활성) 클라이언트에서도 한 번 더 upsert 해 최신값 보장
   // - 이메일 확인이 켜진 환경에서는 인증 완료 후 로그인 시점에 풀필 됨
+  // GoTrue 의 confirmation-email rate-limit 을 우회하기 위해 service_role Edge Function 으로 가입.
+  // 이메일 확인은 즉시 완료(email_confirm=true) 상태로 생성되므로 인증 메일 발송 없음.
   async function signUp({ email, password, fullName, role, phone }) {
     const safeRole = (role === "lecturer" || role === "client" || role === "admin") ? role : "client";
-    const safePhone = (phone || "").toString().trim();
-    const { data, error } = await client.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName || "",
-          role: safeRole,
-          phone: safePhone,
-        },
-      },
-    });
-    if (error) throw error;
+    const safePhone = (phone || "").toString().replace(/[\s-]/g, "");
 
-    // 즉시 로그인된 경우만 client-side upsert (RLS: auth.uid() = id 필요)
-    if (data?.session && data.user) {
-      const { error: pErr } = await client.from("profiles").upsert({
-        id: data.user.id,
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/em-signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: PUBLISHABLE_KEY,
+        Authorization: `Bearer ${PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
         email,
+        password,
         full_name: fullName || "",
         role: safeRole,
-        membership: "basic",
-        phone: safePhone || null,
-      }, { onConflict: "id" });
-      if (pErr) {
-        toast("프로필 동기화 실패: " + pErr.message + " (관리자 문의 필요)", "warn");
+        phone: safePhone || "",
+      }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok || !data.ok) {
+      const raw = data?.error || `signup failed (HTTP ${resp.status})`;
+      // 영문 에러를 한국어로 변환
+      let msg = raw;
+      if (/already registered|already exists|duplicate/i.test(raw)) {
+        msg = "이미 가입된 이메일입니다. 로그인해주세요.";
+      } else if (/password/i.test(raw) && /short|6/i.test(raw)) {
+        msg = "비밀번호는 6자 이상이어야 합니다.";
+      } else if (/invalid email/i.test(raw)) {
+        msg = "이메일 형식이 올바르지 않습니다.";
+      } else if (/invalid phone/i.test(raw)) {
+        msg = "휴대폰 번호 형식이 올바르지 않습니다.";
+      } else if (/rate limit/i.test(raw)) {
+        msg = "잠시 후 다시 시도해주세요. (요청 빈도 제한)";
       }
+      throw new Error(msg);
+    }
+
+    // 가입 직후 자동 로그인
+    try {
+      await client.auth.signInWithPassword({ email, password });
+    } catch (e) {
+      // 자동 로그인 실패해도 가입은 성공이므로 toast 만
+      toast("자동 로그인 실패: " + (e?.message || e), "warn");
     }
 
     return {
-      ...data,
-      needsEmailConfirmation: !data?.session && !!data?.user,
+      user: { id: data.user_id, email },
+      session: (await client.auth.getSession())?.data?.session || null,
+      needsEmailConfirmation: false,
     };
   }
 

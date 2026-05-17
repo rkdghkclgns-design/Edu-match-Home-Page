@@ -98,26 +98,13 @@
           }
           try {
             const result = await EM.signUp({ email, password, fullName: name, role, phone: phoneNorm });
-            // 세션이 즉시 발급된 경우만 client-side update 가능
-            if (result?.session) {
-              const { data: { user } } = await EM.client.auth.getUser();
-              if (user && category) {
-                await EM.client.from("profiles").update({ category }).eq("id", user.id);
-              }
-            } else if (category) {
-              // 세션이 없으면 메모리에만 저장해두고 로그인 후 반영하도록 안내
-              sessionStorage.setItem("em_pending_category", category);
+            // 가입 직후 자동 로그인 완료 (em-signup Edge Function 경유) → category 즉시 반영 가능
+            if (category && result?.user?.id) {
+              await EM.client.from("profiles").update({ category }).eq("id", result.user.id);
             }
-
-            if (result?.needsEmailConfirmation) {
-              msg.innerHTML = "📧 회원가입 접수 완료. <strong>이메일 인증 메일을 확인</strong>한 뒤 로그인해주세요.";
-            } else if (role === "lecturer") {
-              msg.textContent = "강사 회원가입 완료. 관리자 승인 후 자료실 이용이 가능합니다.";
-            } else {
-              msg.textContent = "회원가입 완료. 로그인 페이지로 이동합니다.";
-            }
+            msg.textContent = "✓ 회원가입 완료. 잠시 후 홈으로 이동합니다.";
             msg.className = "text-sm text-center font-medium text-emerald-600";
-            setTimeout(() => (location.href = "./login.html"), 2200);
+            setTimeout(() => (location.href = role === "lecturer" ? "./profile.html" : "./index.html"), 1400);
           } catch (err) {
             msg.textContent = "회원가입 실패: " + err.message;
             msg.className = "text-sm text-center font-medium text-red-600";
