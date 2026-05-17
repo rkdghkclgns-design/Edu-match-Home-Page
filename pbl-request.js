@@ -82,16 +82,42 @@
     try {
       const { data: inserted, error } = await supabase.from("em_pbl_requests").insert(payload).select().single();
       if (error) throw error;
-      const rows = Array.from(list.querySelectorAll('.grid'))
+      const matRows = Array.from(list.querySelectorAll('.grid'))
         .map((row) => ({
           request_id: inserted.id,
           name: row.querySelector('[data-field="name"]').value.trim(),
           url: row.querySelector('[data-field="url"]').value.trim(),
         }))
         .filter((r) => r.name || r.url);
-      if (rows.length > 0) await supabase.from("em_pbl_materials").insert(rows);
-      show(`의뢰 접수 완료 (번호: ${inserted.id.slice(0, 8)})`, "ok");
-      EM.toast("PBL 의뢰가 접수되었습니다.", "ok");
+      if (matRows.length > 0) await supabase.from("em_pbl_materials").insert(matRows);
+
+      // 운영자 알림 (Edge Function + mailto 백업)
+      await EM.notifyAndMail({
+        type: "pbl",
+        subject: `[Edu-match · PBL 의뢰] ${payload.topic}`,
+        summary: payload.objectives,
+        request_id: inserted.id,
+        requester_name: payload.requester_name,
+        requester_email: payload.requester_email,
+        fields: {
+          기관: payload.organization,
+          분야: payload.domain,
+          수준: payload.target_level,
+          회차당인원: payload.audience_size + "명",
+          총훈련시간: payload.duration_hours + "시간",
+          총양성인원: payload.total_trainees,
+          아카데미: payload.academy_type,
+          훈련유형: payload.training_type,
+          훈련과정명: payload.training_course_name,
+          산출물: payload.deliverable_format,
+          담당연락처: payload.requester_phone,
+          비고: payload.notes,
+          첨부자료수: matRows.length + "건",
+        },
+      });
+
+      show(`PBL 의뢰 접수 완료 (번호: ${inserted.id.slice(0, 8)}) · 운영자 메일 알림 전송`, "ok");
+      EM.toast("PBL 의뢰가 접수되었고 운영자에게 알림 메일이 전달되었습니다.", "ok");
       form.reset();
       list.innerHTML = ""; addRow(); addRow();
     } catch (err) {

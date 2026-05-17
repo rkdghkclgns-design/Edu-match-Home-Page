@@ -219,6 +219,67 @@
   // BETA: 결제 비활성 플래그 (upgradeToPro 가 참조)
   window.EM_BETA_PAID_DISABLED = true;
 
+  // =========================================================
+  // 운영자 알림 (PBL/슬라이드 의뢰 → rkdghkclgns@naver.com)
+  // =========================================================
+  const NOTIFY_TO = "rkdghkclgns@naver.com";
+  const NOTIFY_URL = `${SUPABASE_URL}/functions/v1/em-notify-request`;
+
+  // 1) Edge Function 비동기 호출 (best-effort, 실패해도 사용자 흐름 차단 X)
+  async function notifyOps(payload) {
+    try {
+      const resp = await fetch(NOTIFY_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: PUBLISHABLE_KEY,
+          Authorization: `Bearer ${PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json().catch(() => ({}));
+      return { ok: resp.ok && data?.ok, data };
+    } catch (err) {
+      return { ok: false, error: String(err) };
+    }
+  }
+
+  // 2) 사용자 이메일 클라이언트 mailto: (확실한 백업 — 클릭만 하면 전송)
+  function openMailto({ subject, body }) {
+    const url = `mailto:${encodeURIComponent(NOTIFY_TO)}?subject=${encodeURIComponent(subject || "[Edu-match] 의뢰 접수")}&body=${encodeURIComponent(body || "")}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.rel = "noopener";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 1000);
+  }
+
+  // 3) 한 번에 사용하는 헬퍼 — Edge fn 시도 + mailto 백업 + 토스트 안내
+  async function notifyAndMail({ type, subject, summary, fields, request_id, requester_name, requester_email }) {
+    const result = await notifyOps({ type, subject, summary, fields, request_id, requester_name, requester_email });
+
+    // mailto 백업 본문 (line 길이 적당히 정리)
+    const lines = [];
+    lines.push(`[Edu-match] ${type === "slide" ? "슬라이드" : type === "pbl" ? "PBL" : "의뢰"} 접수 알림`);
+    if (subject) lines.push(`${subject}`);
+    lines.push("");
+    if (request_id) lines.push(`의뢰번호: ${request_id}`);
+    if (requester_name) lines.push(`의뢰자: ${requester_name}`);
+    if (requester_email) lines.push(`이메일: ${requester_email}`);
+    if (summary) { lines.push(""); lines.push(summary); }
+    if (fields) {
+      lines.push("");
+      for (const [k, v] of Object.entries(fields)) {
+        if (v != null && v !== "") lines.push(`- ${k}: ${v}`);
+      }
+    }
+    openMailto({ subject, body: lines.join("\n") });
+
+    return result;
+  }
+
   window.EM = {
     client,
     SUPABASE_URL,
@@ -230,5 +291,9 @@
     upgradeToPro,
     uploadResume,
     mountBetaBanner,
+    notifyOps,
+    notifyAndMail,
+    openMailto,
+    NOTIFY_TO,
   };
 })();

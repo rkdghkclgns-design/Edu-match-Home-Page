@@ -308,9 +308,10 @@
     const payload = {
       title: $("j-title").value.trim(),
       description,
-      // 담당자 정보는 별도 컬럼으로만 저장 (description 에 노출 X)
+      // 담당자 정보는 별도 컬럼으로만 저장 (description 에 노출 X · UI 에서 별도 표시)
       posted_by_email: isShared ? shareEmail : email,
-      posted_by_name: isShared ? shareName : contact,
+      posted_by_name:  isShared ? shareName  : contact,
+      posted_by_phone: phone || null,
       organization: $("r-org").value.trim(),
       category: $("j-category").value,
       format: $("j-format").value,

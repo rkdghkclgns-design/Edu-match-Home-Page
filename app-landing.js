@@ -186,7 +186,37 @@
   function renderJobs(list) {
     const grid = qs("#jobs-grid");
     if (!list.length) {
-      grid.innerHTML = `<div class="col-span-full text-sm text-slate-400 text-center py-12">조건에 맞는 공고가 없습니다.</div>`;
+      const filterActive = !!(qs("#jf-q").value.trim() || qs("#jf-category").value || qs("#jf-format").value || qs("#jf-urgent").checked || qs("#jf-share").checked);
+      if (filterActive) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-16">
+            <div class="text-4xl">🔎</div>
+            <p class="mt-3 text-sm text-slate-500">조건에 맞는 공고가 없습니다.</p>
+            <button type="button" id="jf-reset-empty" class="mt-3 inline-flex items-center px-4 py-2 text-sm font-semibold text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100">필터 초기화</button>
+          </div>`;
+        qs("#jf-reset-empty")?.addEventListener("click", () => qs("#jf-reset").click());
+      } else {
+        grid.innerHTML = `
+          <div class="col-span-full">
+            <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-brand-50 to-cyan-50 p-10 md:p-14 text-center">
+              <div class="text-5xl">📝</div>
+              <h3 class="mt-4 text-2xl font-extrabold">아직 등록된 공고가 없습니다</h3>
+              <p class="mt-2 text-slate-600">첫 번째 강의 공고를 등록하고 Edu-match 강사진의 지원을 받아보세요.<br/>등록 후 즉시 강사들에게 공개됩니다.</p>
+              <div class="mt-6 flex flex-wrap justify-center gap-3">
+                <a href="./register-lecture.html" class="inline-flex items-center px-6 py-3 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 shadow-sm">
+                  지금 바로 등록하기 →
+                </a>
+                <a href="./pbl-request.html" class="inline-flex items-center px-6 py-3 bg-white text-slate-700 font-semibold rounded-lg border border-slate-200 hover:border-brand-300">
+                  PBL 문서 의뢰
+                </a>
+                <a href="./slide-request.html" class="inline-flex items-center px-6 py-3 bg-white text-slate-700 font-semibold rounded-lg border border-slate-200 hover:border-brand-300">
+                  슬라이드 의뢰
+                </a>
+              </div>
+              <p class="mt-4 text-xs text-slate-500">🧪 베타 운영 중 · 공고 등록 · 매칭 기능만 제공</p>
+            </div>
+          </div>`;
+      }
       return;
     }
     grid.innerHTML = list.map((j) => {
@@ -215,7 +245,10 @@
             <span class="text-xs font-semibold text-brand-600">${escape(catLabel(j.category))}</span>
             <div class="flex gap-1 flex-wrap justify-end">${premium}${urgent}</div>
           </div>
-          <div class="mt-1 text-xs text-slate-500">${escape(j.organization || "기관 미지정")}</div>
+          <div class="mt-1 text-xs text-slate-500 flex items-center justify-between gap-2">
+            <span class="truncate">${escape(j.organization || "기관 미지정")}</span>
+            ${j.posted_by_email ? `<a href="mailto:${escape(j.posted_by_email)}" onclick="event.stopPropagation()" class="text-brand-600 hover:underline text-[11px] whitespace-nowrap">✉ 연락</a>` : ""}
+          </div>
           <h3 class="mt-2 font-bold text-lg leading-snug line-clamp-2">${escape(j.title)}</h3>
           <div class="mt-2 flex flex-wrap gap-1.5">${budget}${feeChip}${share}${travel}</div>
           <p class="mt-3 text-sm text-slate-600 line-clamp-3">${escape(j.description || "")}</p>
@@ -275,6 +308,17 @@
         <div><div class="text-xs text-slate-500">대상</div><div class="font-semibold">${escape(job.target_audience || "—")}</div></div>
         <div><div class="text-xs text-slate-500">출장비</div><div class="font-semibold">${escape(job.travel_fee_region || "미선택")} · ${escape(KRW(job.travel_fee_amount))}</div></div>
       </div>
+
+      ${(job.posted_by_email || job.posted_by_phone || job.posted_by_name) ? `
+      <div class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm">
+        <div class="font-bold text-slate-900">📇 공고 등록자 연락처</div>
+        <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+          ${job.posted_by_name  ? `<div><div class="text-xs text-slate-500">담당자</div><div class="font-semibold">${escape(job.posted_by_name)}</div></div>` : ""}
+          ${job.posted_by_email ? `<div><div class="text-xs text-slate-500">이메일</div><a href="mailto:${escape(job.posted_by_email)}" class="font-semibold text-brand-600 hover:underline break-all">${escape(job.posted_by_email)}</a></div>` : ""}
+          ${job.posted_by_phone ? `<div><div class="text-xs text-slate-500">연락처</div><a href="tel:${escape(job.posted_by_phone)}" class="font-semibold text-brand-600 hover:underline">${escape(job.posted_by_phone)}</a></div>` : ""}
+        </div>
+        <p class="mt-2 text-xs text-slate-500">베타 운영 중에는 등록자에게 직접 연락하여 협의 진행해주세요.</p>
+      </div>` : ""}
 
       ${(() => {
         const f = feeLineFor(job);
