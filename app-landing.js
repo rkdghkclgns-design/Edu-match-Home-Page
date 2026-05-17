@@ -278,11 +278,17 @@
 
       ${(() => {
         const f = feeLineFor(job);
+        const betaNote = `
+          <div class="mt-2 flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900">
+            <span class="text-xs font-bold">🧪 BETA</span>
+            <p class="text-xs leading-relaxed">베타 운영 중에는 <strong>개인간 협의하여 진행</strong>하시면 됩니다. (수수료 자동 정산은 정식 오픈 시 활성화)</p>
+          </div>`;
         if (!f.amount) {
           return `
           <div class="mt-5 p-4 rounded-xl bg-indigo-50 border border-indigo-100 text-sm">
             <div class="flex items-center gap-2 font-bold text-indigo-900">📌 공고 알선 수수료 정책</div>
             <p class="mt-1 text-slate-700">공고가 성사되면 <strong>게시 금액의 ${f.pct}%</strong> 가 Edu-match 플랫폼 알선 수수료로 차감됩니다. 게시 금액이 '협의' 인 경우 매칭 확정 후 계산합니다.</p>
+            ${betaNote}
           </div>`;
         }
         return `
@@ -294,6 +300,7 @@
               <div><div class="text-xs text-slate-500">실 지급 예상</div><div class="font-bold text-emerald-700">${escape(KRW(f.payout))}</div></div>
             </div>
             ${job.match_status === 'matched' ? `<p class="mt-2 text-xs text-slate-600">✓ 매칭 완료 · ${new Date(job.matched_at).toLocaleDateString("ko-KR")} 정산 반영</p>` : `<p class="mt-2 text-xs text-slate-500">공고 매칭이 확정되는 시점에 자동 정산됩니다.</p>`}
+            ${betaNote}
           </div>`;
       })()}
 
