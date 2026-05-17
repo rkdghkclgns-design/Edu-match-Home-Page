@@ -502,6 +502,29 @@
 
   function renderInstructors() {
     const grid = qs("#ins-grid");
+    if (!__instructors.length) {
+      grid.innerHTML = `
+        <div class="col-span-full">
+          <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-brand-50 to-cyan-50 p-10 md:p-14 text-center">
+            <div class="text-5xl">🎓</div>
+            <h3 class="mt-4 text-2xl font-extrabold">아직 등록된 강사가 없습니다</h3>
+            <p class="mt-2 text-slate-600">Edu-match 의 첫 번째 강사가 되어주세요. 가입 후 관리자 승인이 완료되면<br/>강사진 섹션에 프로필이 노출되고 공고 매칭에 우선 추천됩니다.</p>
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+              <a href="./signup.html" class="inline-flex items-center px-6 py-3 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700 shadow-sm">
+                첫번째 강사 등록하기 →
+              </a>
+              <a href="./materials.html" class="inline-flex items-center px-6 py-3 bg-white text-slate-700 font-semibold rounded-lg border border-slate-200 hover:border-brand-300">
+                강사 자료실
+              </a>
+              <a href="#jobs" class="inline-flex items-center px-6 py-3 bg-white text-slate-700 font-semibold rounded-lg border border-slate-200 hover:border-brand-300">
+                공고 둘러보기
+              </a>
+            </div>
+            <p class="mt-4 text-xs text-slate-500">🧪 베타 운영 중 · 강사 가입 무료 · 수수료 무료</p>
+          </div>
+        </div>`;
+      return;
+    }
     grid.innerHTML = __instructors.map((p) => {
       const pro = p.membership === "pro";
       const tags = (p.expertise || []).slice(0, 4).map((t) => `<span class="chip bg-slate-100 text-slate-700">${escape(t)}</span>`).join(" ");
