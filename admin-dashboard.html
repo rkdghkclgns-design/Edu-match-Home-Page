@@ -311,6 +311,92 @@
       </section>
     </main>
 
+    <!-- 유저 정보 수정 모달 -->
+    <div id="user-edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-bold">유저 정보 수정</h3>
+            <p class="text-xs text-slate-500 mt-0.5" id="ue-meta">—</p>
+          </div>
+          <button type="button" data-close-edit class="text-slate-400 hover:text-slate-700 text-2xl">×</button>
+        </div>
+        <form id="user-edit-form" class="p-6 space-y-4">
+          <input id="ue-id" type="hidden" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">이름 *</label>
+              <input id="ue-name" type="text" required minlength="2" maxlength="40"
+                pattern="[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\.\-_'()]+"
+                class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">휴대폰</label>
+              <input id="ue-phone" type="tel" pattern="01[0-9][-\s]?\d{3,4}[-\s]?\d{4}" placeholder="010-0000-0000"
+                class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">활동 분야 · 직함</label>
+              <input id="ue-title" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">활동 지역</label>
+              <input id="ue-location" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">대표 카테고리</label>
+              <select id="ue-category" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="">선택</option>
+                <option value="corporate-lecture">기업출강 워크샵</option>
+                <option value="teambuilding">팀빌딩 프로그램</option>
+                <option value="craft-experience">공방체험</option>
+                <option value="diy-kit">DIY키트</option>
+                <option value="it-ai">IT · AI 교육</option>
+                <option value="leadership">리더십 · 조직개발</option>
+                <option value="design">디자인 · UX</option>
+                <option value="data">데이터 분석</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">경력 (년)</label>
+              <input id="ue-years" type="number" min="0" max="60" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">매칭용 연락 이메일 <span class="text-xs text-slate-400">(공개됨)</span></label>
+              <input id="ue-contact-email" type="email" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">웹사이트</label>
+              <input id="ue-website" type="url" placeholder="https://..." class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">한 줄 소개</label>
+            <textarea id="ue-bio" rows="2" maxlength="200" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">주요 이력 · 경력</label>
+            <textarea id="ue-career" rows="5" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300 font-mono"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">어필 메시지</label>
+            <textarea id="ue-appeal" rows="3" maxlength="400" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">전문 키워드 <span class="text-xs text-slate-400">(쉼표 구분 · 최대 8개)</span></label>
+            <input id="ue-expertise" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+          </div>
+
+          <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <button type="submit" class="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700">저장</button>
+            <button type="button" data-close-edit class="px-4 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200">취소</button>
+          </div>
+          <p class="text-xs text-slate-400">※ 이메일 · 멤버십 · 유형 · 삭제는 테이블 행에서 직접 변경/삭제하세요.</p>
+          <div id="ue-msg" class="text-sm text-center font-medium"></div>
+        </form>
+      </div>
+    </div>
+
     <script src="./app-admin.js" defer></script>
   </body>
 </html>

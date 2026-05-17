@@ -173,7 +173,8 @@
         </td>
         <td class="px-4 py-3 text-slate-500 text-xs">${fmtDate(u.pro_since)}</td>
         <td class="px-4 py-3 text-slate-500 text-xs">${fmtDate(u.created_at)}</td>
-        <td class="px-4 py-3 text-right">
+        <td class="px-4 py-3 text-right whitespace-nowrap">
+          <button data-edit-user="${escape(u.id)}" class="text-xs font-semibold text-brand-600 hover:text-brand-800 mr-3">수정</button>
           <button data-delete-user="${escape(u.id)}" class="text-xs text-red-600 hover:text-red-800 font-semibold">삭제</button>
         </td>
       </tr>
@@ -253,7 +254,89 @@
     }
   });
 
+  // ---------- 유저 정보 수정 모달 ----------
+  const ueModal = qs("#user-edit-modal");
+  function openEdit() { ueModal.classList.remove("hidden"); ueModal.classList.add("flex"); }
+  function closeEdit() { ueModal.classList.add("hidden"); ueModal.classList.remove("flex"); }
+  qsa("[data-close-edit]").forEach((b) => b.addEventListener("click", closeEdit));
+  ueModal.addEventListener("click", (e) => { if (e.target === ueModal) closeEdit(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !ueModal.classList.contains("hidden")) closeEdit(); });
+
+  function ueSet(text, type) {
+    const m = qs("#ue-msg");
+    m.textContent = text;
+    m.className = "text-sm text-center font-medium " + (type === "ok" ? "text-emerald-600" : "text-red-600");
+  }
+
+  async function openUserEdit(userId) {
+    // 최신 데이터 fetch
+    const { data: u, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    if (error || !u) { EM.toast("유저를 찾을 수 없습니다.", "err"); return; }
+    qs("#ue-id").value          = u.id;
+    qs("#ue-meta").textContent  = `${u.email} · ${u.role || "client"} · ${u.membership || "basic"}`;
+    qs("#ue-name").value         = u.full_name || "";
+    qs("#ue-phone").value        = u.phone || "";
+    qs("#ue-title").value        = u.title || "";
+    qs("#ue-location").value     = u.location || "";
+    qs("#ue-category").value     = u.category || "";
+    qs("#ue-years").value        = u.experience_years || 0;
+    qs("#ue-contact-email").value = u.contact_email || u.email || "";
+    qs("#ue-website").value      = u.website_url || "";
+    qs("#ue-bio").value           = u.bio || "";
+    qs("#ue-career").value        = u.career_summary || "";
+    qs("#ue-appeal").value        = u.appeal_message || "";
+    qs("#ue-expertise").value     = Array.isArray(u.expertise) ? u.expertise.join(", ") : "";
+    ueSet("", "ok");
+    openEdit();
+  }
+
+  qs("#user-edit-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = qs("#ue-id").value;
+    const name = qs("#ue-name").value.trim();
+    const NAME_OK = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\.\-_'()]{2,40}$/;
+    const NAME_BAD = /[�<>{}\[\]\\\/\^\$\*\+=|@#!?]/;
+    if (!NAME_OK.test(name) || NAME_BAD.test(name)) {
+      ueSet("이름에 특수문자/이모지는 사용할 수 없습니다.", "err"); return;
+    }
+    const phoneRaw = qs("#ue-phone").value.replace(/[\s-]/g, "");
+    if (phoneRaw && !/^01[0-9]\d{7,8}$/.test(phoneRaw)) {
+      ueSet("휴대폰 번호 형식을 확인해주세요.", "err"); return;
+    }
+    const expertiseList = qs("#ue-expertise").value.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 8);
+
+    const payload = {
+      full_name: name,
+      phone: phoneRaw || null,
+      title: qs("#ue-title").value.trim() || null,
+      location: qs("#ue-location").value.trim() || null,
+      category: qs("#ue-category").value || null,
+      experience_years: Number(qs("#ue-years").value) || 0,
+      contact_email: qs("#ue-contact-email").value.trim() || null,
+      website_url: qs("#ue-website").value.trim() || null,
+      bio: qs("#ue-bio").value.trim() || null,
+      career_summary: qs("#ue-career").value.trim() || null,
+      appeal_message: qs("#ue-appeal").value.trim() || null,
+      expertise: expertiseList,
+    };
+
+    ueSet("저장 중…", "ok");
+    try {
+      const { data: rows, error } = await supabase.from("profiles").update(payload).eq("id", id).select();
+      if (error) throw error;
+      if (!rows?.length) throw new Error("권한이 없거나 유저를 찾을 수 없습니다.");
+      ueSet("✓ 저장되었습니다.", "ok");
+      EM.toast(`'${name}' 정보 저장 완료`, "ok");
+      loadUsers();
+      setTimeout(closeEdit, 700);
+    } catch (err) {
+      ueSet("저장 실패: " + err.message, "err");
+    }
+  });
+
   document.body.addEventListener("click", async (e) => {
+    const editBtn = e.target.closest("[data-edit-user]");
+    if (editBtn) { openUserEdit(editBtn.getAttribute("data-edit-user")); return; }
     const delBtn = e.target.closest("[data-delete-user]");
     if (delBtn) {
       const targetId = delBtn.getAttribute("data-delete-user");
