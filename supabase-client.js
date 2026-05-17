@@ -172,7 +172,8 @@
     wrap.innerHTML = `
       <span style="background:rgba(255,255,255,0.18);padding:3px 8px;border-radius:999px;font-weight:800;letter-spacing:0.05em;font-size:11px;">BETA</span>
       <span style="flex:1;line-height:1.5;">
-        현재 Edu-match 는 <strong>베타 운영 중</strong> 입니다 — <strong>강의 공고 등록 · 강사 매칭</strong> 기능만 제공됩니다. 결제 · Pro 멤버십 · 정산 기능은 정식 오픈 시 공개됩니다.
+        현재 Edu-match 는 <strong>베타 운영 중</strong> 입니다 — <strong>강의 공고 등록 · 강사 매칭</strong> 기능만 제공되며,
+        <strong>베타 기간 동안 모든 수수료는 무료</strong>입니다. 결제 · Pro 멤버십 · 정산 자동화는 정식 오픈 시 공개됩니다.
       </span>
       <button id="em-beta-dismiss" type="button" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">오늘 하루 보지 않기</button>
       <button id="em-beta-close" type="button" aria-label="닫기" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;line-height:1;padding:4px 8px;">×</button>
