@@ -36,12 +36,24 @@
     return false;
   }
 
+  // ID 별칭 매핑 — "admin" 같은 별칭을 실제 이메일로 변환
+  const ID_ALIASES = {
+    "admin": "admin@edumatch.kr",
+  };
+  function resolveEmail(input) {
+    const v = String(input || "").trim().toLowerCase();
+    if (!v) return v;
+    if (ID_ALIASES[v]) return ID_ALIASES[v];
+    return v;
+  }
+
   qs("#gate-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const msg = qs("#gate-msg");
     try {
-      await EM.signIn({ email: fd.get("email"), password: fd.get("password") });
+      const email = resolveEmail(fd.get("email"));
+      await EM.signIn({ email, password: fd.get("password") });
       const ok = await assertAdmin();
       if (!ok) { msg.textContent = "관리자 권한이 없습니다."; return; }
       closeGate();
