@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <link rel="icon" type="image/png" href="./assets/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/logo.png" />
+    <link rel="shortcut icon" href="./assets/logo.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>컨설팅 요청 게시판 — Edu-match</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: {
+        brand:{50:"#eef2ff",100:"#e0e7ff",500:"#6366f1",600:"#4f46e5",700:"#4338ca"},
+        accent:{500:"#06b6d4"},
+      } } } };
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js" defer></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-100">
+      <div class="max-w-6xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-center gap-2.5">
+          <img src="./assets/logo.png" alt="Edu-match" class="h-8 w-8 object-contain" />
+          <span class="text-xl font-extrabold tracking-tight text-brand-600">Edu-match</span>
+          <span class="text-xs font-medium text-slate-400 hidden sm:inline">컨설팅 요청</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="./index.html#jobs" class="hover:text-slate-900">공고</a>
+          <a href="./index.html#instructors" class="hover:text-slate-900">강사진</a>
+          <a href="./board.html" class="hover:text-slate-900">자유 게시판</a>
+          <a href="./materials.html" class="hover:text-slate-900">자료실</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <span id="me-label" class="text-sm text-slate-500 hidden sm:inline">비로그인</span>
+          <a id="login-link" href="./login.html" class="px-3 py-1.5 text-sm font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">로그인</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-5 py-8">
+      <div class="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Consulting Requests</span>
+          <h1 class="mt-2 text-2xl font-extrabold">컨설팅 요청 게시판</h1>
+          <p class="mt-1 text-sm text-slate-500">교육 컨설팅이 필요한 기관/기업이 요청을 올리고, 강사가 직접 견적·제안을 제출합니다.</p>
+        </div>
+        <button id="btn-new-req" class="px-4 py-2 text-sm font-bold bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm">+ 컨설팅 요청하기</button>
+      </div>
+
+      <!-- Filter row -->
+      <div class="mt-5 bg-white rounded-xl border border-slate-200 p-3">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <input id="cf-q" type="search" placeholder="🔍 제목·기관·내용" class="px-3 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-brand-300 col-span-2" />
+          <select id="cf-cat" class="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:ring-2 focus:ring-brand-300">
+            <option value="">전체 분야</option>
+            <option value="corporate-lecture">기업출강</option>
+            <option value="teambuilding">팀빌딩</option>
+            <option value="craft-experience">공방체험</option>
+            <option value="diy-kit">DIY키트</option>
+            <option value="it-ai">IT · AI</option>
+            <option value="leadership">리더십</option>
+            <option value="design">디자인 · UX</option>
+            <option value="data">데이터 분석</option>
+          </select>
+          <select id="cf-status" class="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:ring-2 focus:ring-brand-300">
+            <option value="">전체 상태</option>
+            <option value="open">모집중</option>
+            <option value="reviewing">검토중</option>
+            <option value="matched">매칭됨</option>
+            <option value="completed">완료</option>
+            <option value="closed">종료</option>
+          </select>
+          <select id="cf-sort" class="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:ring-2 focus:ring-brand-300">
+            <option value="recent">최신순</option>
+            <option value="urgent">긴급 우선</option>
+            <option value="quotes">제안 많은 순</option>
+          </select>
+        </div>
+        <div id="cf-count" class="mt-2 text-xs text-slate-500">요청을 불러오는 중…</div>
+      </div>
+
+      <div id="consult-list" class="mt-5 grid gap-4 md:grid-cols-2"></div>
+    </main>
+
+    <!-- New request modal -->
+    <div id="modal-req" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold">컨설팅 요청하기</h3>
+          <button type="button" data-close-req class="text-slate-400 hover:text-slate-700 text-2xl">×</button>
+        </div>
+        <form id="req-form" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">담당자 성함 *</label>
+              <input id="r-name" type="text" required minlength="2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">이메일 *</label>
+              <input id="r-email" type="email" required class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">연락처</label>
+              <input id="r-phone" type="tel" placeholder="010-0000-0000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">기관 · 기업명</label>
+              <input id="r-org" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">제목 *</label>
+            <input id="r-title" type="text" required minlength="4" maxlength="120" placeholder="예) 임직원 대상 생성형 AI 도입 컨설팅" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">상세 내용 * <span class="text-xs text-slate-400">(현황·목표·기대효과 등)</span></label>
+            <textarea id="r-desc" rows="6" required minlength="10" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">분야</label>
+              <select id="r-cat" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="">선택</option>
+                <option value="corporate-lecture">기업출강</option>
+                <option value="teambuilding">팀빌딩</option>
+                <option value="craft-experience">공방체험</option>
+                <option value="diy-kit">DIY키트</option>
+                <option value="it-ai">IT · AI</option>
+                <option value="leadership">리더십</option>
+                <option value="design">디자인 · UX</option>
+                <option value="data">데이터 분석</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">예산 타입</label>
+              <select id="r-btype" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="negotiable" selected>협의</option>
+                <option value="per_hour">시간당</option>
+                <option value="per_project">프로젝트당</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">예산 금액 (원)</label>
+              <input id="r-bamount" type="number" min="0" step="100000" placeholder="협의면 비워두세요" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-slate-700">희망 일정</label>
+              <input id="r-sched" type="text" placeholder="예) 2026.06 ~ 2026.08 / 2일 집중" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">긴급도</label>
+              <select id="r-urg" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="normal" selected>일반</option>
+                <option value="high">긴급</option>
+                <option value="low">여유</option>
+              </select>
+            </div>
+          </div>
+          <label class="flex items-center gap-2 text-xs text-slate-600">
+            <input id="r-anon" type="checkbox" class="rounded" />
+            게시 시 담당자/기관명을 익명 처리 (강사 응답 시 운영자 통해 전달)
+          </label>
+          <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <button type="submit" class="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700">요청 등록</button>
+            <button type="button" data-close-req class="px-4 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200">취소</button>
+          </div>
+          <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">🧪 BETA — 베타 운영 중에는 강사와 개인간 협의로 진행됩니다 (수수료 무료).</p>
+          <div id="req-msg" class="text-sm text-center font-medium"></div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="max-w-6xl mx-auto px-5 py-10 text-center text-sm text-slate-500">© <span id="year">2026</span> Edu-match Platform</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
+    <script src="./consult.js" defer></script>
+  </body>
+</html>
