@@ -123,6 +123,8 @@
           <button data-tab="matching" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900">매칭 관리</button>
           <button data-tab="jobs" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900">공고</button>
           <button data-tab="apps" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900">지원 내역</button>
+          <button data-tab="pbl" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900">🎯 PBL 의뢰</button>
+          <button data-tab="slides" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900">🎞 슬라이드 의뢰</button>
         </div>
 
         <!-- Users table -->
@@ -240,6 +242,70 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        <!-- PBL Requests (admin only) -->
+        <div data-panel="pbl" class="panel hidden">
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-4 flex items-center justify-between">
+              <div>
+                <h3 class="font-bold">🎯 PBL 문서 초안 의뢰 (관리자 전용)</h3>
+                <p class="text-xs text-slate-500 mt-0.5">KDT 훈련운영계획서 표준 양식 기반 의뢰. 상태를 변경하거나 상세를 펼쳐보세요.</p>
+              </div>
+              <button id="refresh-pbl" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold">새로고침</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-semibold">의뢰자</th>
+                    <th class="px-4 py-3 text-left font-semibold">기관</th>
+                    <th class="px-4 py-3 text-left font-semibold">주제</th>
+                    <th class="px-4 py-3 text-left font-semibold">규모 / 시간</th>
+                    <th class="px-4 py-3 text-left font-semibold">상태</th>
+                    <th class="px-4 py-3 text-left font-semibold">의뢰일</th>
+                    <th class="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody id="pbl-tbody" class="divide-y divide-slate-100">
+                  <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">불러오는 중…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="pbl-detail" class="border-t border-slate-100 p-4 bg-slate-50/50"></div>
+          </div>
+        </div>
+
+        <!-- Slide Requests (admin only) -->
+        <div data-panel="slides" class="panel hidden">
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-4 flex items-center justify-between">
+              <div>
+                <h3 class="font-bold">🎞 강의 슬라이드 의뢰 (관리자 전용)</h3>
+                <p class="text-xs text-slate-500 mt-0.5">슬라이드 초안 의뢰 관리. 상태 변경 및 상세 확인 가능.</p>
+              </div>
+              <button id="refresh-slides" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold">새로고침</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-semibold">의뢰자</th>
+                    <th class="px-4 py-3 text-left font-semibold">기관</th>
+                    <th class="px-4 py-3 text-left font-semibold">주제</th>
+                    <th class="px-4 py-3 text-left font-semibold">규모 / 슬라이드</th>
+                    <th class="px-4 py-3 text-left font-semibold">상태</th>
+                    <th class="px-4 py-3 text-left font-semibold">의뢰일</th>
+                    <th class="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody id="slides-tbody" class="divide-y divide-slate-100">
+                  <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">불러오는 중…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="slides-detail" class="border-t border-slate-100 p-4 bg-slate-50/50"></div>
           </div>
         </div>
       </section>

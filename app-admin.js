@@ -510,9 +510,268 @@
     }
   }
 
+  // ---------- PBL · Slide 의뢰 (관리자 전용) ----------
+  const PBL_STATUSES = ["pending","reviewing","drafted","delivered","closed"];
+  const SLIDE_STATUSES = PBL_STATUSES;
+
+  async function loadPbl() {
+    const tb = qs("#pbl-tbody");
+    if (!tb) return;
+    tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">불러오는 중…</td></tr>`;
+    try {
+      const { data, error } = await supabase
+        .from("em_pbl_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      if (!data || !data.length) {
+        tb.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-slate-400">접수된 PBL 의뢰가 없습니다.</td></tr>`;
+        return;
+      }
+      tb.innerHTML = data.map((p) => `
+        <tr class="hover:bg-slate-50">
+          <td class="px-4 py-3">
+            <div class="font-medium">${escape(p.requester_name)}</div>
+            <div class="text-xs text-slate-500">${escape(p.requester_email)}${p.requester_phone ? " · " + escape(p.requester_phone) : ""}</div>
+          </td>
+          <td class="px-4 py-3 text-sm">${escape(p.organization || "—")}</td>
+          <td class="px-4 py-3 text-sm">
+            <div class="font-medium">${escape(p.topic)}</div>
+            <div class="text-xs text-slate-500">${escape(p.domain || "—")} · ${escape(p.target_level || "—")}</div>
+          </td>
+          <td class="px-4 py-3 text-sm">${escape(p.audience_size || 0)}명 / ${escape(p.duration_hours || 0)}h</td>
+          <td class="px-4 py-3">
+            <select data-pbl-status data-id="${escape(p.id)}" data-prev="${escape(p.status)}"
+              class="rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold outline-none focus:ring-2 focus:ring-brand-300">
+              ${PBL_STATUSES.map((s) => `<option value="${s}" ${p.status === s ? "selected" : ""}>${s}</option>`).join("")}
+            </select>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-500">${fmtDate(p.created_at)}</td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <button data-pbl-detail="${escape(p.id)}" class="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-semibold mr-1">상세</button>
+            <button data-pbl-delete="${escape(p.id)}" class="text-xs text-red-600 hover:text-red-800 font-semibold">삭제</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch (err) {
+      tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-red-600">오류: ${escape(err.message)}</td></tr>`;
+    }
+  }
+
+  function kdtSection(title, entries) {
+    const rows = entries.filter(([_, v]) => v && String(v).trim()).map(([k, v]) =>
+      `<div class="text-xs"><span class="text-slate-500">${escape(k)}</span><div class="mt-0.5 text-sm whitespace-pre-wrap">${escape(v)}</div></div>`
+    ).join("");
+    if (!rows) return "";
+    return `<details class="rounded-lg border border-slate-200 bg-white p-3 mb-2" open><summary class="cursor-pointer font-bold text-sm">${escape(title)}</summary><div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">${rows}</div></details>`;
+  }
+
+  async function renderPblDetail(id) {
+    const root = qs("#pbl-detail");
+    if (!root) return;
+    root.innerHTML = `<div class="text-sm text-slate-500">로딩 중…</div>`;
+    try {
+      const [{ data: req }, { data: mats }] = await Promise.all([
+        supabase.from("em_pbl_requests").select("*").eq("id", id).maybeSingle(),
+        supabase.from("em_pbl_materials").select("*").eq("request_id", id).order("created_at", { ascending: true }),
+      ]);
+      if (!req) { root.innerHTML = `<div class="text-sm text-slate-400">의뢰를 찾을 수 없습니다.</div>`; return; }
+      const p = req.kdt_plan || {};
+      const o = p.overview || {}, c = p.capability || {};
+      const ed = c.enterprise_demand || {}, tc = c.training_content || {}, tm = c.trainee_management || {};
+      const inf = p.infrastructure || {}; const mp = inf.manpower || {}; const rs = inf.resources || {};
+      const ap = p.appendix || {};
+
+      root.innerHTML = `
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xs text-slate-500">${escape(req.organization || "—")}</div>
+              <h4 class="font-extrabold text-lg">${escape(req.topic)}</h4>
+              <p class="mt-1 text-sm text-slate-700"><strong>훈련목표:</strong> ${escape(req.objectives || "—")}</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${escape(req.status)}</span>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+            <div><div class="text-slate-500">의뢰자</div><div class="font-semibold">${escape(req.requester_name)}</div></div>
+            <div><div class="text-slate-500">이메일</div><a href="mailto:${escape(req.requester_email)}" class="font-semibold text-brand-600 hover:underline break-all">${escape(req.requester_email)}</a></div>
+            <div><div class="text-slate-500">연락처</div><div class="font-semibold">${escape(req.requester_phone || "—")}</div></div>
+            <div><div class="text-slate-500">아카데미/유형</div><div class="font-semibold">${escape(req.academy_type || "—")} · ${escape(req.training_type || "—")}</div></div>
+            <div><div class="text-slate-500">과정명</div><div class="font-semibold">${escape(req.training_course_name || "—")}</div></div>
+            <div><div class="text-slate-500">분야·수준</div><div class="font-semibold">${escape(req.domain || "—")} · ${escape(req.target_level || "—")}</div></div>
+            <div><div class="text-slate-500">규모·시간</div><div class="font-semibold">총 ${escape(req.total_trainees || 0)}명 · 회차당 ${escape(req.audience_size || 0)}명 · ${escape(req.duration_hours || 0)}h · ${escape(req.deliverable_format || "—")}</div></div>
+            <div><div class="text-slate-500">비고</div><div class="font-semibold">${escape(req.notes || "—")}</div></div>
+          </div>
+
+          <div class="mt-4 space-y-2">
+            ${kdtSection("Ⅰ. 사업 개요", [["가. 참여 목적", o.purpose], ["나. 추진 방향·목표", o.direction], ["다. 최근 2개년 성과", o.past_results], ["라. 결과 분석", o.analysis]])}
+            ${kdtSection("Ⅱ-1. 참여기업 수요", [["① 구성", ed.composition], ["② 관리 체계", ed.management], ["③ 수요조사", ed.survey]])}
+            ${kdtSection("Ⅱ-2. 훈련내용", [["① 정규교과", tc.regular_curriculum], ["② 프로젝트 학습", tc.project_learning], ["③ 관리 계획", tc.management_plan]])}
+            ${kdtSection("Ⅱ-3. 훈련생 관리", [["① 선발 계획", tm.selection], ["② 취업지원 계획", tm.career_support]])}
+            ${kdtSection("Ⅲ-1. 투입인력", [["① 정규교과 교강사", mp.regular_instructors], ["② 프로젝트 교강사·멘토", mp.project_instructors], ["③ 활용·관리", mp.management], ["주강사 인원", mp.main_instructor_count], ["보조강사 인원", mp.assistant_instructor_count]])}
+            ${kdtSection("Ⅲ-2. 투입자원", [["① 시설·장비 확보", rs.facility_equipment], ["② 활용 계획", rs.utilization]])}
+            ${kdtSection("붙임", [["자율성과지표", ap.autonomy_metric], ["사업참여기관 적절성", ap.partner_appropriateness], ["비대면 실시간 유의사항", ap.online_realtime_guidance]])}
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100">
+            <div class="text-sm font-bold">📎 첨부 자료 (${(mats || []).length}건)</div>
+            <ul class="mt-2 text-sm space-y-1">
+              ${(mats || []).map((m) => `<li>· ${escape(m.name || "(이름 없음)")} ${m.url ? `— <a href="${escape(m.url)}" target="_blank" rel="noopener" class="text-brand-600 hover:underline break-all">${escape(m.url)}</a>` : ""}</li>`).join("") || "<li class='text-slate-400'>첨부 자료 없음</li>"}
+            </ul>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      root.innerHTML = `<div class="text-sm text-red-600">오류: ${escape(err.message)}</div>`;
+    }
+  }
+
+  async function loadSlides() {
+    const tb = qs("#slides-tbody");
+    if (!tb) return;
+    tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">불러오는 중…</td></tr>`;
+    try {
+      const { data, error } = await supabase
+        .from("em_slide_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      if (!data || !data.length) {
+        tb.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-slate-400">접수된 슬라이드 의뢰가 없습니다.</td></tr>`;
+        return;
+      }
+      tb.innerHTML = data.map((s) => `
+        <tr class="hover:bg-slate-50">
+          <td class="px-4 py-3">
+            <div class="font-medium">${escape(s.requester_name)}</div>
+            <div class="text-xs text-slate-500">${escape(s.requester_email)}${s.requester_phone ? " · " + escape(s.requester_phone) : ""}</div>
+          </td>
+          <td class="px-4 py-3 text-sm">${escape(s.organization || "—")}</td>
+          <td class="px-4 py-3 text-sm">
+            <div class="font-medium">${escape(s.topic)}</div>
+            <div class="text-xs text-slate-500">${escape(s.domain || "—")} · ${escape(s.target_level || "—")}</div>
+          </td>
+          <td class="px-4 py-3 text-sm">${escape(s.audience_size || 0)}명 · ${escape(s.slide_count || 0)}장</td>
+          <td class="px-4 py-3">
+            <select data-slide-status data-id="${escape(s.id)}" data-prev="${escape(s.status)}"
+              class="rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold outline-none focus:ring-2 focus:ring-brand-300">
+              ${SLIDE_STATUSES.map((st) => `<option value="${st}" ${s.status === st ? "selected" : ""}>${st}</option>`).join("")}
+            </select>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-500">${fmtDate(s.created_at)}</td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <button data-slide-detail="${escape(s.id)}" class="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 font-semibold mr-1">상세</button>
+            <button data-slide-delete="${escape(s.id)}" class="text-xs text-red-600 hover:text-red-800 font-semibold">삭제</button>
+          </td>
+        </tr>
+      `).join("");
+    } catch (err) {
+      tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-red-600">오류: ${escape(err.message)}</td></tr>`;
+    }
+  }
+
+  async function renderSlideDetail(id) {
+    const root = qs("#slides-detail");
+    if (!root) return;
+    root.innerHTML = `<div class="text-sm text-slate-500">로딩 중…</div>`;
+    try {
+      const [{ data: req }, { data: mats }] = await Promise.all([
+        supabase.from("em_slide_requests").select("*").eq("id", id).maybeSingle(),
+        supabase.from("em_slide_materials").select("*").eq("request_id", id).order("created_at", { ascending: true }),
+      ]);
+      if (!req) { root.innerHTML = `<div class="text-sm text-slate-400">의뢰를 찾을 수 없습니다.</div>`; return; }
+      root.innerHTML = `
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xs text-slate-500">${escape(req.organization || "—")}</div>
+              <h4 class="font-extrabold text-lg">${escape(req.topic)}</h4>
+              <p class="mt-1 text-sm text-slate-700"><strong>목표:</strong> ${escape(req.objectives || "—")}</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${escape(req.status)}</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+            <div><div class="text-slate-500">의뢰자</div><div class="font-semibold">${escape(req.requester_name)}</div></div>
+            <div><div class="text-slate-500">이메일</div><a href="mailto:${escape(req.requester_email)}" class="font-semibold text-brand-600 hover:underline break-all">${escape(req.requester_email)}</a></div>
+            <div><div class="text-slate-500">연락처</div><div class="font-semibold">${escape(req.requester_phone || "—")}</div></div>
+            <div><div class="text-slate-500">분야/수준</div><div class="font-semibold">${escape(req.domain || "—")} · ${escape(req.target_level || "—")}</div></div>
+            <div><div class="text-slate-500">규모</div><div class="font-semibold">${escape(req.audience_size || 0)}명 · ${escape(req.duration_hours || 0)}h · ${escape(req.slide_count || 0)}장 · ${escape(req.deliverable_format || "—")}</div></div>
+            <div><div class="text-slate-500">스타일</div><div class="font-semibold">${escape(req.style_preference || "—")}</div></div>
+            <div><div class="text-slate-500">컬러</div><div class="font-semibold">${escape(req.color_theme || "—")}</div></div>
+            <div><div class="text-slate-500">비고</div><div class="font-semibold">${escape(req.notes || "—")}</div></div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100">
+            <div class="text-sm font-bold">📎 첨부 자료 (${(mats || []).length}건)</div>
+            <ul class="mt-2 text-sm space-y-1">
+              ${(mats || []).map((m) => `<li>· ${escape(m.name || "(이름 없음)")} ${m.url ? `— <a href="${escape(m.url)}" target="_blank" rel="noopener" class="text-brand-600 hover:underline break-all">${escape(m.url)}</a>` : ""}</li>`).join("") || "<li class='text-slate-400'>첨부 자료 없음</li>"}
+            </ul>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      root.innerHTML = `<div class="text-sm text-red-600">오류: ${escape(err.message)}</div>`;
+    }
+  }
+
+  // PBL · Slide 액션 위임
+  document.body.addEventListener("click", async (e) => {
+    const pblDet = e.target.closest("[data-pbl-detail]");
+    if (pblDet) { return renderPblDetail(pblDet.getAttribute("data-pbl-detail")); }
+    const pblDel = e.target.closest("[data-pbl-delete]");
+    if (pblDel) {
+      if (!confirm("이 PBL 의뢰를 삭제할까요?")) return;
+      const { error } = await supabase.from("em_pbl_requests").delete().eq("id", pblDel.getAttribute("data-pbl-delete"));
+      if (error) return EM.toast("삭제 실패: " + error.message, "err");
+      EM.toast("PBL 의뢰 삭제 완료", "ok");
+      qs("#pbl-detail").innerHTML = "";
+      loadPbl();
+      return;
+    }
+    const slDet = e.target.closest("[data-slide-detail]");
+    if (slDet) { return renderSlideDetail(slDet.getAttribute("data-slide-detail")); }
+    const slDel = e.target.closest("[data-slide-delete]");
+    if (slDel) {
+      if (!confirm("이 슬라이드 의뢰를 삭제할까요?")) return;
+      const { error } = await supabase.from("em_slide_requests").delete().eq("id", slDel.getAttribute("data-slide-delete"));
+      if (error) return EM.toast("삭제 실패: " + error.message, "err");
+      EM.toast("슬라이드 의뢰 삭제 완료", "ok");
+      qs("#slides-detail").innerHTML = "";
+      loadSlides();
+      return;
+    }
+  });
+
+  document.body.addEventListener("change", async (e) => {
+    const pblSel = e.target.closest("[data-pbl-status]");
+    if (pblSel) {
+      const id = pblSel.getAttribute("data-id");
+      const prev = pblSel.dataset.prev;
+      const { error } = await supabase.from("em_pbl_requests").update({ status: pblSel.value }).eq("id", id);
+      if (error) { EM.toast("상태 변경 실패: " + error.message, "err"); pblSel.value = prev; return; }
+      EM.toast(`PBL 상태: ${prev} → ${pblSel.value}`, "ok");
+      pblSel.dataset.prev = pblSel.value;
+      return;
+    }
+    const slSel = e.target.closest("[data-slide-status]");
+    if (slSel) {
+      const id = slSel.getAttribute("data-id");
+      const prev = slSel.dataset.prev;
+      const { error } = await supabase.from("em_slide_requests").update({ status: slSel.value }).eq("id", id);
+      if (error) { EM.toast("상태 변경 실패: " + error.message, "err"); slSel.value = prev; return; }
+      EM.toast(`슬라이드 상태: ${prev} → ${slSel.value}`, "ok");
+      slSel.dataset.prev = slSel.value;
+      return;
+    }
+  });
+
+  qs("#refresh-pbl")?.addEventListener("click", () => loadPbl());
+  qs("#refresh-slides")?.addEventListener("click", () => loadSlides());
+
   // ---------- Bootstrap ----------
   function bootstrap() {
     loadKpis(); loadUsers(); loadMatching(); loadJobs(); loadApps();
+    loadPbl(); loadSlides();
   }
 
   (async () => {
