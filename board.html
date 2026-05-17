@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <link rel="icon" type="image/png" href="./assets/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/logo.png" />
+    <link rel="shortcut icon" href="./assets/logo.png" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>자유 게시판 — Edu-match</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: {
+        brand:{50:"#eef2ff",100:"#e0e7ff",500:"#6366f1",600:"#4f46e5",700:"#4338ca"},
+        accent:{500:"#06b6d4"},
+      } } } };
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>body{font-family:Pretendard,system-ui,sans-serif}</style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js" defer></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-100">
+      <div class="max-w-5xl mx-auto flex items-center justify-between px-5 h-16">
+        <a href="./index.html" class="flex items-center gap-2.5">
+          <img src="./assets/logo.png" alt="Edu-match" class="h-8 w-8 object-contain" />
+          <span class="text-xl font-extrabold tracking-tight text-brand-600">Edu-match</span>
+          <span class="text-xs font-medium text-slate-400 hidden sm:inline">자유 게시판</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-5 text-sm text-slate-600">
+          <a href="./index.html#jobs" class="hover:text-slate-900">공고</a>
+          <a href="./index.html#instructors" class="hover:text-slate-900">강사진</a>
+          <a href="./materials.html" class="hover:text-slate-900">자료실</a>
+          <a href="./register-lecture.html" class="hover:text-slate-900">강의 등록</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <span id="me-label" class="text-sm text-slate-500 hidden sm:inline">비로그인</span>
+          <a id="login-link" href="./login.html" class="px-3 py-1.5 text-sm font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700">로그인</a>
+          <a id="profile-link" href="./profile.html" class="hidden px-3 py-1.5 text-sm font-semibold text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200">프로필</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-5 py-8">
+      <div class="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <span class="text-xs font-bold tracking-widest text-brand-600 uppercase">Community Board</span>
+          <h1 class="mt-2 text-2xl font-extrabold">자유 게시판</h1>
+          <p class="mt-1 text-sm text-slate-500">강사 · 의뢰자 · 운영진이 자유롭게 의견을 나누는 공간입니다.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="board-search" type="search" placeholder="제목·내용·작성자 검색" class="w-64 max-w-full px-3 py-2 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-brand-300" />
+          <button id="btn-new-post" class="px-4 py-2 text-sm font-bold bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm">+ 새 글</button>
+        </div>
+      </div>
+
+      <div id="board-list" class="mt-6 grid gap-3">
+        <div class="text-sm text-slate-400 text-center py-12">게시글을 불러오는 중…</div>
+      </div>
+    </main>
+
+    <!-- Compose modal -->
+    <div id="modal-compose" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div class="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold" id="compose-title">새 글 쓰기</h3>
+          <button type="button" data-close-compose class="text-slate-400 hover:text-slate-700 text-2xl">×</button>
+        </div>
+        <form id="compose-form" class="p-6 space-y-4">
+          <input id="compose-id" type="hidden" />
+          <div>
+            <label class="block text-sm font-medium text-slate-700">제목 *</label>
+            <input id="compose-title-input" type="text" required minlength="2" maxlength="120" placeholder="제목을 입력하세요" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700">본문 *</label>
+            <div class="mt-1 flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 border-b-0 rounded-t-lg">
+              <button type="button" id="compose-img-btn" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded hover:border-brand-300 hover:text-brand-600">🖼 이미지</button>
+              <button type="button" id="compose-yt-btn" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded hover:border-brand-300 hover:text-brand-600">🎥 YouTube</button>
+              <span class="text-xs text-slate-500 ml-auto">💡 클립보드 이미지 Ctrl+V 자동 업로드 · YouTube URL 자동 임베드</span>
+            </div>
+            <textarea id="compose-body" rows="10" required minlength="2" placeholder="자유롭게 작성해주세요.
+
+마크다운 지원: # 제목, **굵게**, - 리스트, [링크](url)
+이미지: ![이름](https://...)  ·  YouTube: 영상 URL 붙여넣기" class="w-full rounded-b-lg border border-slate-200 border-t-0 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-300 font-mono"></textarea>
+            <div id="compose-hint" class="mt-1 text-xs text-slate-500">마크다운 지원 · Ctrl+V 이미지 자동 업로드</div>
+          </div>
+          <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <button type="submit" class="flex-1 px-4 py-2.5 bg-brand-600 text-white font-bold rounded-lg hover:bg-brand-700">저장</button>
+            <button type="button" data-close-compose class="px-4 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200">취소</button>
+          </div>
+          <div id="compose-msg" class="text-sm text-center font-medium"></div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="max-w-5xl mx-auto px-5 py-10 text-center text-sm text-slate-500">© <span id="year">2026</span> Edu-match Platform</footer>
+    <script>document.getElementById("year").textContent = String(new Date().getFullYear());</script>
+    <script src="./board.js" defer></script>
+  </body>
+</html>
