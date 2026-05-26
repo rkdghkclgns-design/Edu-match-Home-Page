@@ -244,6 +244,15 @@
     else if (sort === "budget-high") list.sort((a,b) => (b.budget_amount || b.budget || 0) - (a.budget_amount || a.budget || 0));
     else if (sort === "budget-low")  list.sort((a,b) => (a.budget_amount || a.budget || 0) - (b.budget_amount || b.budget || 0));
 
+    // ppleedu 패턴: 내 활동지역 우선 표시 (안정 보조 정렬, 항상 적용)
+    if (__myCities.length) {
+      list.sort((a, b) => Number(isMyArea(b)) - Number(isMyArea(a)));
+    }
+
+    // 상단 안내 텍스트
+    const hint = qs("#jf-hint");
+    if (hint) hint.textContent = __myCities.length ? "· 내 활동지역 우선 표시" : "";
+
     qs("#jf-count").textContent = `총 ${__jobs.length}건 중 ${list.length}건 표시`;
     renderJobs(list);
   }

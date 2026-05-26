@@ -184,7 +184,28 @@
 
     setAvatar(currentProfile.avatar_url || "");
     updateCompletenessUI(currentProfile);
+    loadApplicationStats(user.id);
     showContent();
+  }
+
+  // ppleedu 패턴: 내 지원 현황 (전체 · 검토중 · 선발)
+  async function loadApplicationStats(uid) {
+    try {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("status")
+        .eq("lecturer_id", uid);
+      if (error) throw error;
+      const rows = data || [];
+      const total = rows.length;
+      const pending  = rows.filter((r) => ["pending","reviewing","submitted"].includes((r.status || "").toLowerCase())).length;
+      const selected = rows.filter((r) => ["selected","accepted","matched","approved"].includes((r.status || "").toLowerCase())).length;
+      const t = $("ap-total"); if (t) t.textContent = total;
+      const p = $("ap-pending"); if (p) p.textContent = pending;
+      const s = $("ap-selected"); if (s) s.textContent = selected;
+    } catch (err) {
+      // 통계는 보조 정보 — 조용히 무시
+    }
   }
 
   // ---------- Avatar upload ----------
