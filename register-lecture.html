@@ -223,15 +223,85 @@ TIP: YouTube 영상 URL을 복사 후 붙여넣으면 자동 임베드됩니다.
               <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="제주" data-amount="350000" /><span class="text-sm font-medium">제주</span></div><span class="text-xs text-slate-500">350,000원</span>
             </label>
           </div>
-          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
             <div>
               <label class="block text-sm font-medium text-slate-700">지원 마감일 <span class="text-xs text-slate-400">(선택)</span></label>
               <input id="j-deadline" type="date" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
-              <p class="mt-1 text-xs text-slate-500">강사 카드에 D-day 카운트다운으로 노출됩니다.</p>
             </div>
-            <label class="flex items-center gap-2 text-sm text-slate-700 mt-6">
-              <input type="checkbox" id="j-urgent" /> 긴급 공고로 표시 (48시간 내 강사 매칭 희망)
-            </label>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">마감 시각</label>
+              <input id="j-deadline-time" type="time" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+          </div>
+          <label class="flex items-center gap-2 text-sm text-slate-700 mt-3">
+            <input type="checkbox" id="j-urgent" /> 긴급 공고로 표시 (48시간 내 강사 매칭 희망)
+          </label>
+        </section>
+
+        <!-- Section 5: 회차 기반 일정 + 자동 합산 (ppleedu 패턴) -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <h2 class="font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-extrabold">⑤</span>회차 기반 일정 · 강사료 자동 합산 <span class="text-xs font-normal text-slate-400">(선택 — 입력 시 카드에 자동 계산 표시)</span></h2>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">총 회차</label>
+              <input id="j-sessions" type="number" min="0" placeholder="예) 6" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">회차당 시간 (h)</label>
+              <input id="j-hours-each" type="number" min="0" step="0.5" placeholder="예) 2" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">시급 (원)</label>
+              <input id="j-rate" type="number" min="0" step="1000" placeholder="예) 40000" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">모집 인원 (주강사)</label>
+              <input id="j-headcount" type="number" min="1" value="1" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-slate-700">시간대</label>
+              <div class="mt-1 grid grid-cols-2 gap-2">
+                <input id="j-time-start" type="time" class="rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+                <input id="j-time-end" type="time" class="rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+              </div>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-sm font-medium text-slate-700">요일 (다중 선택)</label>
+              <div id="j-weekdays" class="mt-1 grid grid-cols-7 gap-1">
+                ${"월화수목금토일".split("").map((d) => `<label class=\"flex items-center justify-center gap-1 px-2 py-2 rounded-lg border border-slate-200 cursor-pointer text-sm has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50\"><input type=\"checkbox\" data-weekday=\"${d}\" class=\"sr-only\"/><span>${d}</span></label>`).join("")}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">대상 학년/연령</label>
+              <select id="j-target-grade" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="">선택</option>
+                <option>초등 저학년</option><option>초등 고학년</option>
+                <option>중등 저학년</option><option>중등 고학년</option>
+                <option>고등</option><option>대학생</option>
+                <option>성인 일반</option><option>임직원</option><option>기타</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">세부 과목 태그</label>
+              <input id="j-subject-tag" type="text" placeholder="예) AI 리터러시 기본" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">도시</label>
+              <input id="j-city" type="text" placeholder="예) 서울" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700">구·군</label>
+              <input id="j-district" type="text" placeholder="예) 강남구" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+            <div class="md:col-span-1">
+              <label class="block text-sm font-medium text-slate-700">구체 장소</label>
+              <input id="j-venue" type="text" placeholder="예) 강남청소년센터" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+            </div>
+          </div>
+          <!-- 자동 합산 미리보기 -->
+          <div id="totals-preview" class="hidden mt-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-900">
+            <div>주 시급 <strong id="tp-rate">—</strong> × <strong id="tp-headcount">1</strong>명</div>
+            <div class="mt-1">총 <strong id="tp-sessions">—</strong>회차 · 합산 <strong id="tp-hours">—</strong>h · 주강사 총 <strong id="tp-total">—</strong></div>
           </div>
         </section>
 

@@ -59,6 +59,30 @@
   budgetAmount.addEventListener("input", renderFee);
   syncBudget();
 
+  // 회차/시간/시급 자동 합산 미리보기 (ppleedu 패턴)
+  const tpFields = ["j-sessions","j-hours-each","j-rate","j-headcount"];
+  function recalcTotals() {
+    const sc = Number($("j-sessions")?.value) || 0;
+    const sh = Number($("j-hours-each")?.value) || 0;
+    const rate = Number($("j-rate")?.value) || 0;
+    const head = Math.max(1, Number($("j-headcount")?.value) || 1);
+    const tp = $("totals-preview"); if (!tp) return;
+    if (!sc || !sh || !rate) { tp.classList.add("hidden"); return; }
+    const hours = sc * sh;
+    const total = rate * hours * head;
+    $("tp-rate").textContent = rate.toLocaleString("ko-KR") + "원";
+    $("tp-headcount").textContent = head;
+    $("tp-sessions").textContent = sc;
+    $("tp-hours").textContent = hours.toFixed(1);
+    $("tp-total").textContent = total.toLocaleString("ko-KR") + "원";
+    tp.classList.remove("hidden");
+  }
+  tpFields.forEach((id) => $(id)?.addEventListener("input", recalcTotals));
+
+  function selectedWeekdays() {
+    return Array.from(document.querySelectorAll("[data-weekday]:checked")).map((el) => el.dataset.weekday);
+  }
+
   function validateRequired(fields) {
     for (const [id, label, min] of fields) {
       const el = $(id);
@@ -323,6 +347,20 @@
       tags: $("j-tags").value.split(",").map((s) => s.trim()).filter(Boolean),
       is_urgent: $("j-urgent").checked,
       deadline: ($("j-deadline")?.value || null) || null,
+      deadline_time: ($("j-deadline-time")?.value || null) || null,
+      // ppleedu 패턴 필드
+      session_count: Number($("j-sessions")?.value) || null,
+      session_hours_each: Number($("j-hours-each")?.value) || null,
+      hourly_rate: Number($("j-rate")?.value) || null,
+      headcount: Math.max(1, Number($("j-headcount")?.value) || 1),
+      time_start: $("j-time-start")?.value || null,
+      time_end: $("j-time-end")?.value || null,
+      weekdays: selectedWeekdays(),
+      target_grade: $("j-target-grade")?.value || null,
+      subject_tag: $("j-subject-tag")?.value.trim() || null,
+      city: $("j-city")?.value.trim() || null,
+      district: $("j-district")?.value.trim() || null,
+      venue: $("j-venue")?.value.trim() || null,
       status: "open",
       match_status: "open",
       platform_fee_percent: 5,

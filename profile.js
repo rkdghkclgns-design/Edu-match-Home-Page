@@ -40,6 +40,67 @@
   let currentUser = null;
   let currentProfile = null;
 
+  // ppleedu 패턴: 교육 대상 옵션
+  const TARGET_OPTIONS = [
+    "초등 저학년","초등 고학년","중등 저학년","중등 고학년","고등",
+    "대학생","청년(취준생)","성인 일반","중장년(4050)","시니어(60+)","임직원","기타"
+  ];
+
+  function renderTargetAudiences(selected) {
+    const root = document.getElementById("p-target-audiences");
+    if (!root) return;
+    const sel = new Set(selected || []);
+    root.innerHTML = TARGET_OPTIONS.map((t) => `
+      <label class="flex items-center justify-center gap-1 px-2 py-2 rounded-lg border border-slate-200 cursor-pointer text-xs has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+        <input type="checkbox" data-target="${t}" ${sel.has(t) ? "checked" : ""} class="sr-only"/>
+        <span>${t}</span>
+      </label>
+    `).join("");
+  }
+
+  function selectedTargetAudiences() {
+    return Array.from(document.querySelectorAll('[data-target]:checked')).map((el) => el.dataset.target);
+  }
+
+  // 프로필 완성도 계산 (각 항목 가중치 합 = 100)
+  function computeCompleteness(p) {
+    const items = [
+      { key: "full_name",       label: "이름",         weight: 5,  ok: !!(p.full_name || "").trim() },
+      { key: "phone",           label: "휴대폰",       weight: 5,  ok: !!(p.phone || "").trim() },
+      { key: "avatar_url",      label: "프로필 사진",  weight: 10, ok: !!(p.avatar_url || "").trim() },
+      { key: "title",           label: "직함",         weight: 5,  ok: !!(p.title || "").trim() },
+      { key: "bio",             label: "한 줄 소개",   weight: 5,  ok: !!(p.bio || "").trim() },
+      { key: "career_summary",  label: "주요 이력",    weight: 15, ok: !!(p.career_summary || "").trim() },
+      { key: "appeal_message",  label: "어필 메시지",  weight: 10, ok: !!(p.appeal_message || "").trim() },
+      { key: "expertise",       label: "전문 키워드",  weight: 10, ok: Array.isArray(p.expertise) && p.expertise.length > 0 },
+      { key: "target_audiences",label: "교육 대상",    weight: 10, ok: Array.isArray(p.target_audiences) && p.target_audiences.length > 0 },
+      { key: "active_cities",   label: "활동 지역",    weight: 10, ok: Array.isArray(p.active_cities) && p.active_cities.length > 0 },
+      { key: "education_history", label: "학력",       weight: 5,  ok: !!(p.education_history || "").trim() },
+      { key: "certifications",  label: "자격증",       weight: 5,  ok: !!(p.certifications || "").trim() },
+      { key: "resume_url",      label: "이력서 파일",  weight: 5,  ok: !!(p.resume_url || "").trim() },
+    ];
+    const pct = items.reduce((acc, it) => acc + (it.ok ? it.weight : 0), 0);
+    const missing = items.filter((it) => !it.ok).sort((a, b) => b.weight - a.weight).slice(0, 4);
+    return { pct, missing };
+  }
+
+  function updateCompletenessUI(p) {
+    const { pct, missing } = computeCompleteness(p);
+    const pctEl = document.getElementById("pc-pct");
+    const bar   = document.getElementById("pc-bar");
+    const miss  = document.getElementById("pc-missing");
+    if (pctEl) pctEl.textContent = pct + "%";
+    if (bar)   bar.style.width = pct + "%";
+    if (miss) {
+      if (missing.length === 0) {
+        miss.innerHTML = `<div class="font-bold text-emerald-700">✓ 모든 항목 완료!</div>`;
+      } else {
+        miss.innerHTML = `<div class="font-bold mb-1">아직 빠진 정보:</div>` +
+          missing.map((m) => `<div class="text-slate-600">· ${m.label} <span class="text-brand-600 font-bold">+${m.weight}%</span></div>`).join("");
+      }
+    }
+  }
+
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { showGate(); return; }
@@ -101,6 +162,8 @@
     $("p-title").value          = currentProfile.title || "";
     $("p-phone").value          = currentProfile.phone || "";
     $("p-location").value       = currentProfile.location || "";
+    const ac = $("p-active-cities");
+    if (ac) ac.value = Array.isArray(currentProfile.active_cities) ? currentProfile.active_cities.join(", ") : "";
     $("p-category").value       = currentProfile.category || "";
     $("p-website").value        = currentProfile.website_url || "";
     $("p-bio").value            = currentProfile.bio || "";
@@ -110,7 +173,17 @@
     $("p-years").value          = currentProfile.experience_years || 0;
     $("p-contact-email").value  = currentProfile.contact_email || currentProfile.email || user.email;
 
+    // ppleedu 패턴: 교육 대상 / 학력 / 자격증 / 이력서
+    renderTargetAudiences(currentProfile.target_audiences);
+    const eduEl  = $("p-edu-history");
+    const certEl = $("p-certifications");
+    const resEl  = $("p-resume");
+    if (eduEl)  eduEl.value  = currentProfile.education_history || "";
+    if (certEl) certEl.value = currentProfile.certifications || "";
+    if (resEl)  resEl.value  = currentProfile.resume_url || "";
+
     setAvatar(currentProfile.avatar_url || "");
+    updateCompletenessUI(currentProfile);
     showContent();
   }
 
@@ -200,6 +273,7 @@
       title: $("p-title").value.trim() || null,
       phone: phoneRaw || null,
       location: $("p-location").value.trim() || null,
+      active_cities: ($("p-active-cities")?.value || "").split(",").map((s) => s.trim()).filter(Boolean).slice(0, 12),
       category: $("p-category").value || null,
       website_url: $("p-website").value.trim() || null,
       bio: $("p-bio").value.trim() || null,
@@ -208,6 +282,11 @@
       expertise: expertiseList,
       experience_years: Number($("p-years").value) || 0,
       contact_email: $("p-contact-email").value.trim() || currentProfile.email,
+      // ppleedu 패턴
+      target_audiences: selectedTargetAudiences(),
+      education_history: ($("p-edu-history")?.value || "").trim() || null,
+      certifications: ($("p-certifications")?.value || "").trim() || null,
+      resume_url: ($("p-resume")?.value || "").trim() || null,
     };
 
     setMsg("저장 중…", "ok");

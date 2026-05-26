@@ -168,10 +168,58 @@
       if (error) throw error;
       __jobs = data || [];
       await loadBookmarks();
+      await loadMyCities();
       applyFilters();
     } catch (err) {
       qs("#jobs-grid").innerHTML = `<div class="col-span-full text-sm text-red-600">오류: ${escape(err.message)}</div>`;
     }
+  }
+
+  function computeTotals(j) {
+    const sc = Number(j.session_count) || 0;
+    const sh = Number(j.session_hours_each) || 0;
+    const rate = Number(j.hourly_rate) || 0;
+    const totalHours = sc * sh;
+    const totalPay = rate * totalHours * (Number(j.headcount) || 1);
+    return { sc, sh, rate, totalHours, totalPay };
+  }
+  function regionLabel(j) {
+    const bits = [j.city, j.district].filter(Boolean);
+    const main = bits.join(" ");
+    return j.venue ? (main ? `${main} · ${j.venue}` : j.venue) : main;
+  }
+  function deadlineFull(j) {
+    if (!j.deadline) return "";
+    try {
+      const d = new Date(j.deadline + "T" + (j.deadline_time || "23:59"));
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mi = String(d.getMinutes()).padStart(2, "0");
+      return `마감 ${yyyy}.${mm}.${dd}. ${hh}:${mi}`;
+    } catch { return ""; }
+  }
+  async function matchesMyArea(j) {
+    if (!j.city) return false;
+    const prof = await EM.getCurrentProfile();
+    if (!prof?.id) return false;
+    const cities = Array.isArray(prof.active_cities) ? prof.active_cities : [];
+    if (cities.length === 0 && prof.location) cities.push(prof.location);
+    return cities.some((c) => c && (c.includes(j.city) || j.city.includes(c)));
+  }
+  // 한 번 계산해서 캐싱 (렌더에서 동기 조회용)
+  let __myCities = [];
+  async function loadMyCities() {
+    const prof = await EM.getCurrentProfile();
+    if (!prof?.id) { __myCities = []; return; }
+    const list = Array.isArray(prof.active_cities) ? prof.active_cities.slice() : [];
+    if (list.length === 0 && prof.location) list.push(prof.location);
+    __myCities = list.filter(Boolean);
+  }
+  function isMyArea(j) {
+    if (!j.city || !__myCities.length) return false;
+    return __myCities.some((c) => c && (c.includes(j.city) || j.city.includes(c)));
   }
 
   function applyFilters() {
@@ -180,6 +228,7 @@
     const fmt = qs("#jf-format").value;
     const urg = qs("#jf-urgent").checked;
     const shr = qs("#jf-share").checked;
+    const myArea = qs("#jf-myarea")?.checked;
     const sort = qs("#jf-sort").value;
 
     let list = __jobs.slice();
@@ -188,6 +237,7 @@
     if (fmt) list = list.filter((j) => j.format === fmt);
     if (urg) list = list.filter((j) => j.is_urgent);
     if (shr) list = list.filter((j) => Number(j.revenue_share_percent) > 0);
+    if (myArea) list = list.filter((j) => isMyArea(j));
 
     if (sort === "recent") list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
     else if (sort === "premium") list.sort((a,b) => Number(b.is_premium) - Number(a.is_premium) || new Date(b.created_at) - new Date(a.created_at));
@@ -276,9 +326,32 @@
             <span class="truncate">${escape(j.organization || "기관 미지정")}</span>
             ${j.posted_by_email ? `<a href="mailto:${escape(j.posted_by_email)}" onclick="event.stopPropagation()" class="text-brand-600 hover:underline text-[11px] whitespace-nowrap">✉ 연락</a>` : ""}
           </div>
+          <!-- ppleedu 스타일 메타 태그 행 -->
+          <div class="mt-2 flex items-center gap-1 flex-wrap text-[11px] font-semibold">
+            ${isMyArea(j) ? '<span class="chip bg-brand-100 text-brand-700 border border-brand-200">📍 내 활동지역</span>' : ''}
+            ${j.subject_tag ? `<span class="chip bg-violet-50 text-violet-700 border border-violet-200">${escape(j.subject_tag)}</span>` : ''}
+            ${j.target_grade ? `<span class="chip bg-slate-100 text-slate-700">${escape(j.target_grade)}</span>` : ''}
+          </div>
           <h3 class="mt-2 font-bold text-lg leading-snug line-clamp-2">${escape(j.title)}</h3>
+          ${regionLabel(j) ? `<div class="mt-1 text-xs text-slate-600">📍 ${escape(regionLabel(j))}</div>` : ''}
+          ${(() => {
+            const T = computeTotals(j);
+            const sched = j.period || (T.sc ? `총 ${T.sc}회` : '');
+            const wd = (j.weekdays || []).length ? ` · 매주 ${(j.weekdays || []).join('·')}` : '';
+            const time = (j.time_start && j.time_end) ? ` · ${j.time_start}–${j.time_end}` : '';
+            return sched ? `<div class="mt-1 text-xs text-slate-600">🗓 ${escape(sched)}${escape(wd)}${escape(time)}</div>` : '';
+          })()}
           <div class="mt-2 flex flex-wrap gap-1.5">${budget}${feeChip}${share}${travel}</div>
+          ${(() => {
+            const T = computeTotals(j);
+            if (!T.totalHours || !T.totalPay) return '';
+            return `<div class="mt-2 text-xs px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-900">
+              ${T.rate ? `주 시급 <strong>${T.rate.toLocaleString('ko-KR')}원</strong>${j.headcount > 1 ? ` × ${j.headcount}명` : ''} · ` : ''}
+              합산 <strong>${T.totalHours.toFixed(1)}h</strong> · 주강사 총 <strong>${T.totalPay.toLocaleString('ko-KR')}원</strong>
+            </div>`;
+          })()}
           <p class="mt-3 text-sm text-slate-600 line-clamp-3">${escape(j.description || "")}</p>
+          ${deadlineFull(j) ? `<div class="mt-2 text-[11px] text-slate-500">⏱ ${escape(deadlineFull(j))}</div>` : ''}
           <div class="mt-auto pt-4 flex gap-2">
             <button data-detail-id="${escape(j.id)}" class="flex-1 px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">자세히 보기</button>
             <button data-apply-id="${escape(j.id)}" data-apply-title="${escape(j.title)}" class="flex-1 px-3 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition">지원하기 →</button>
@@ -288,7 +361,7 @@
   }
 
   // Filter bindings
-  ["jf-q","jf-category","jf-format","jf-urgent","jf-share","jf-sort"].forEach((id) => {
+  ["jf-q","jf-category","jf-format","jf-urgent","jf-share","jf-myarea","jf-sort"].forEach((id) => {
     const el = qs("#" + id);
     if (!el) return;
     const ev = el.tagName === "INPUT" && el.type === "search" ? "input" : "change";
@@ -297,7 +370,9 @@
   qs("#jf-reset").addEventListener("click", () => {
     qs("#jf-q").value = ""; qs("#jf-category").value = "";
     qs("#jf-format").value = ""; qs("#jf-urgent").checked = false;
-    qs("#jf-share").checked = false; qs("#jf-sort").value = "recent";
+    qs("#jf-share").checked = false;
+    const ma = qs("#jf-myarea"); if (ma) ma.checked = false;
+    qs("#jf-sort").value = "recent";
     applyFilters();
   });
 
