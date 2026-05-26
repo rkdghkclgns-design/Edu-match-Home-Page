@@ -133,6 +133,27 @@
 
   // ---------- Jobs ----------
   let __jobs = [];
+  let __bookmarks = new Set();
+
+  function ddayLabel(deadline) {
+    if (!deadline) return null;
+    const d = new Date(deadline + "T23:59:59");
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((d - today) / 86400000);
+    if (diff < 0) return { text: "마감", cls: "bg-slate-200 text-slate-600" };
+    if (diff === 0) return { text: "오늘 마감", cls: "bg-red-100 text-red-700" };
+    if (diff <= 3) return { text: `D-${diff}`, cls: "bg-red-50 text-red-700 border border-red-200" };
+    if (diff <= 7) return { text: `D-${diff}`, cls: "bg-amber-50 text-amber-700 border border-amber-200" };
+    return { text: `D-${diff}`, cls: "bg-slate-50 text-slate-600 border border-slate-200" };
+  }
+
+  async function loadBookmarks() {
+    const prof = await EM.getCurrentProfile();
+    if (!prof?.id) return;
+    const { data } = await supabase.from("em_job_bookmarks").select("job_id").eq("user_id", prof.id);
+    __bookmarks = new Set((data || []).map((b) => b.job_id));
+  }
+
   async function loadJobs() {
     try {
       const { data, error } = await supabase
@@ -146,6 +167,7 @@
         .limit(200);
       if (error) throw error;
       __jobs = data || [];
+      await loadBookmarks();
       applyFilters();
     } catch (err) {
       qs("#jobs-grid").innerHTML = `<div class="col-span-full text-sm text-red-600">오류: ${escape(err.message)}</div>`;
@@ -229,6 +251,10 @@
         : (j.is_urgent
             ? '<span class="chip bg-red-100 text-red-700">긴급</span>'
             : '<span class="chip bg-emerald-50 text-emerald-700">모집 중</span>');
+      const dd = ddayLabel(j.deadline);
+      const ddayChip = dd ? `<span class="chip ${dd.cls}">⏰ ${dd.text}</span>` : '';
+      const isBookmarked = __bookmarks.has(j.id);
+      const bookmarkBtn = `<button type="button" data-bookmark-id="${escape(j.id)}" class="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition ${isBookmarked ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-white/80 text-slate-400 hover:text-red-500 hover:bg-red-50'} border border-slate-200 shadow-sm" title="${isBookmarked ? '북마크 해제' : '북마크'}" aria-label="bookmark">${isBookmarked ? '♥' : '♡'}</button>`;
       const share  = Number(j.revenue_share_percent) > 0
         ? `<span class="chip bg-yellow-50 text-yellow-800 border border-yellow-200" title="품앗이 쉐어">🤝 품앗이 ${j.revenue_share_percent}%${j.posted_by_name ? ` · ${escape(j.posted_by_name)}` : ""}</span>` : "";
       const travel = j.travel_fee_region
@@ -241,9 +267,10 @@
       return `
         <article class="relative bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition flex flex-col">
           ${hero}
-          <div class="flex items-start justify-between gap-2">
+          ${bookmarkBtn}
+          <div class="flex items-start justify-between gap-2 pr-12">
             <span class="text-xs font-semibold text-brand-600">${escape(catLabel(j.category))}</span>
-            <div class="flex gap-1 flex-wrap justify-end">${premium}${urgent}</div>
+            <div class="flex gap-1 flex-wrap justify-end">${premium}${urgent}${ddayChip}</div>
           </div>
           <div class="mt-1 text-xs text-slate-500 flex items-center justify-between gap-2">
             <span class="truncate">${escape(j.organization || "기관 미지정")}</span>
@@ -371,6 +398,38 @@
       </div>
     `;
     openModal("modal-detail");
+  });
+
+  // Bookmark toggle
+  document.body.addEventListener("click", async (e) => {
+    const bm = e.target.closest("[data-bookmark-id]");
+    if (!bm) return;
+    e.preventDefault(); e.stopPropagation();
+    const prof = await EM.getCurrentProfile();
+    if (!prof?.id) {
+      EM.toast("로그인 후 북마크할 수 있습니다.", "warn");
+      openModal("modal-auth"); syncAuthMode();
+      return;
+    }
+    const jobId = bm.getAttribute("data-bookmark-id");
+    const has = __bookmarks.has(jobId);
+    try {
+      if (has) {
+        const { error } = await supabase.from("em_job_bookmarks").delete()
+          .eq("user_id", prof.id).eq("job_id", jobId);
+        if (error) throw error;
+        __bookmarks.delete(jobId);
+        EM.toast("북마크가 해제되었습니다.", "ok");
+      } else {
+        const { error } = await supabase.from("em_job_bookmarks").insert({ user_id: prof.id, job_id: jobId });
+        if (error) throw error;
+        __bookmarks.add(jobId);
+        EM.toast("♥ 북마크에 추가되었습니다.", "ok");
+      }
+      applyFilters();
+    } catch (err) {
+      EM.toast("북마크 실패: " + err.message, "err");
+    }
   });
 
   // Apply

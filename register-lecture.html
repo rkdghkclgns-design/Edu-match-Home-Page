@@ -223,7 +223,16 @@ TIP: YouTube 영상 URL을 복사 후 붙여넣으면 자동 임베드됩니다.
               <div class="flex items-center gap-2"><input type="radio" name="travel_fee_region" value="제주" data-amount="350000" /><span class="text-sm font-medium">제주</span></div><span class="text-xs text-slate-500">350,000원</span>
             </label>
           </div>
-          <label class="mt-4 flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="j-urgent" /> 긴급 공고로 표시 (48시간 내 강사 매칭 희망)</label>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+            <div>
+              <label class="block text-sm font-medium text-slate-700">지원 마감일 <span class="text-xs text-slate-400">(선택)</span></label>
+              <input id="j-deadline" type="date" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-300"/>
+              <p class="mt-1 text-xs text-slate-500">강사 카드에 D-day 카운트다운으로 노출됩니다.</p>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-700 mt-6">
+              <input type="checkbox" id="j-urgent" /> 긴급 공고로 표시 (48시간 내 강사 매칭 희망)
+            </label>
+          </div>
         </section>
 
         <!-- Fee breakdown preview -->

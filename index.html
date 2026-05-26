@@ -52,6 +52,7 @@
           <div class="relative group">
             <button class="hover:text-slate-900 inline-flex items-center gap-1">더보기 ▾</button>
             <div class="hidden group-hover:block absolute right-0 top-full w-56 bg-white border border-slate-100 shadow-lg rounded-xl p-2 text-sm">
+              <a href="./my.html" class="block px-3 py-2 rounded-md hover:bg-slate-50 text-brand-600 font-semibold">🎓 내 교육</a>
               <a href="./profile.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">👤 내 프로필 꾸미기</a>
               <a href="./board.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">💬 자유 게시판</a>
               <a href="./consult.html" class="block px-3 py-2 rounded-md hover:bg-slate-50">💼 컨설팅 요청</a>
@@ -280,8 +281,57 @@
         </div>
       </section>
 
-      <footer class="max-w-6xl mx-auto px-5 py-10 text-center text-sm text-slate-500">
-        <p>© <span id="year">2026</span> Edu-match Platform · 단가 참고: <a href="https://www.hrd.go.kr" target="_blank" rel="noopener" class="text-brand-600 hover:underline">고용노동부 HRD-Net</a></p>
+      <footer class="bg-slate-900 text-slate-300">
+        <div class="max-w-6xl mx-auto px-5 py-12 grid md:grid-cols-4 gap-8 text-sm">
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2">
+              <img src="./assets/logo.png" alt="Edu-match" class="h-8 w-8 object-contain bg-white rounded p-1" />
+              <span class="text-xl font-extrabold text-white">Edu-match</span>
+            </div>
+            <p class="mt-3 text-slate-400 leading-relaxed">
+              강사를 위한 강의 공고 허브.<br/>기업·공공기관·대학의 매칭 공고와 강사 네트워크를 연결합니다.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2 text-xs">
+              <span class="px-2 py-1 rounded-full bg-emerald-900/50 text-emerald-300 border border-emerald-800">● 베타 운영 중</span>
+              <span class="px-2 py-1 rounded-full bg-amber-900/40 text-amber-300 border border-amber-800">수수료 무료</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-white font-bold mb-2">서비스</div>
+            <ul class="space-y-1.5 text-slate-400">
+              <li><a href="#jobs" class="hover:text-white">강의 공고</a></li>
+              <li><a href="./consult.html" class="hover:text-white">컨설팅 요청</a></li>
+              <li><a href="./pbl-request.html" class="hover:text-white">PBL 문서 의뢰</a></li>
+              <li><a href="./slide-request.html" class="hover:text-white">슬라이드 의뢰</a></li>
+              <li><a href="./materials.html" class="hover:text-white">강사 자료실</a></li>
+              <li><a href="./board.html" class="hover:text-white">자유 게시판</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-white font-bold mb-2">정보</div>
+            <ul class="space-y-1.5 text-slate-400">
+              <li><a href="./my.html" class="hover:text-white">내 교육</a></li>
+              <li><a href="./profile.html" class="hover:text-white">내 프로필</a></li>
+              <li><a href="./register-lecture.html" class="hover:text-white">강의 등록 (의뢰자)</a></li>
+              <li><a href="https://www.hrd.go.kr" target="_blank" rel="noopener" class="hover:text-white">단가 참고 · HRD-Net ↗</a></li>
+              <li><a href="mailto:rkdghkclgns@naver.com" class="hover:text-white">운영자 문의</a></li>
+              <li><a href="./admin-dashboard.html" class="hover:text-white">관리자</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="border-t border-slate-800">
+          <div class="max-w-6xl mx-auto px-5 py-5 grid md:grid-cols-2 gap-3 text-xs text-slate-500">
+            <div>
+              <div>© <span id="year">2026</span> Edu-match Platform. All rights reserved.</div>
+              <div class="mt-1">대표 이메일 <a href="mailto:rkdghkclgns@naver.com" class="hover:text-slate-300">rkdghkclgns@naver.com</a> · 베타 기간 모든 수수료 무료</div>
+            </div>
+            <div class="md:text-right">
+              <a href="#" class="hover:text-slate-300">이용약관</a> ·
+              <a href="#" class="hover:text-slate-300 font-semibold">개인정보처리방침</a> ·
+              <a href="mailto:rkdghkclgns@naver.com" class="hover:text-slate-300">신고/문의</a>
+            </div>
+          </div>
+        </div>
       </footer>
     </main>
 

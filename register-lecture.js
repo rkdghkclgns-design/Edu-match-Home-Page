@@ -322,6 +322,7 @@
       budget_amount: btype === "negotiable" ? null : bamount,
       tags: $("j-tags").value.split(",").map((s) => s.trim()).filter(Boolean),
       is_urgent: $("j-urgent").checked,
+      deadline: ($("j-deadline")?.value || null) || null,
       status: "open",
       match_status: "open",
       platform_fee_percent: 5,
